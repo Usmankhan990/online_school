@@ -5,6 +5,9 @@ const api = axios.create({
   timeout: 30000,
 });
 
+export const FILE_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : '/online_school';
+
+
 // Attach JWT token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

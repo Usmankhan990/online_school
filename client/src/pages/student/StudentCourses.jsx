@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+import api, { FILE_BASE } from '../../services/api';
 
 export default function StudentCourses() {
   const [courses, setCourses] = useState([]);
@@ -16,7 +16,6 @@ export default function StudentCourses() {
   }, []);
 
   const typeIcons = { video: '🎥', reading: '📄', interactive: '🎮', quiz: '📝', pdf: '📄', notes: '📝' };
-  const FILE_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
   if (loading) return <div className="animate-fade-in" className="flex flex-col gap-5 min-w-0">{[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 160, borderRadius: 18 }} />)}</div>;
 

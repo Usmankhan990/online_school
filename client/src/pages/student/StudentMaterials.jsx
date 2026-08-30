@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../services/api';
-const FILE_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+import api, { FILE_BASE } from '../../services/api';
 
 export default function StudentMaterials() {
   const [courses, setCourses] = useState([]);
