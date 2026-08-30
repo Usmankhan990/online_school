@@ -93,7 +93,7 @@ const P = ({ title, roles }) => (
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/online_school">
       <AuthProvider>
         <Routes>
           {/* ═══════ Public Website ═══════ */}
