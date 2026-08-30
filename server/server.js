@@ -33,6 +33,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve frontend in production (Monorepo setup)
 app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use('/online_school', express.static(path.join(__dirname, '../client/dist')));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
