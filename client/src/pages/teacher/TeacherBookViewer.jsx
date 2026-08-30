@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 
+const FILE_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
 const formatDate = (d) => {
   if (!d) return '';
   return new Date(d).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -35,7 +37,7 @@ export default function BookViewer() {
 
   const hasLocalFile = book?.local_file && book.local_file.trim() !== '';
   const hasExternalUrl = book?.pdf_url && book.pdf_url.trim() !== '';
-  const viewUrl = hasLocalFile ? book.local_file : null;
+  const viewUrl = hasLocalFile ? `${FILE_BASE}${book.local_file}` : hasExternalUrl ? book.pdf_url : null;
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -135,12 +137,20 @@ export default function BookViewer() {
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
               {viewUrl ? (
                 <>
-                  <button onClick={() => setShowPdf(true)} className="btn btn-primary btn-lg">
-                    Read Book
-                  </button>
-                  <a href={viewUrl} download className="btn btn-accent" style={{ textDecoration: 'none' }}>
-                    Download PDF
-                  </a>
+                  {hasLocalFile ? (
+                    <>
+                      <button onClick={() => setShowPdf(true)} className="btn btn-primary btn-lg">
+                        Read Book
+                      </button>
+                      <a href={viewUrl} download className="btn btn-accent" style={{ textDecoration: 'none' }}>
+                        Download PDF
+                      </a>
+                    </>
+                  ) : (
+                    <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
+                      Read Online (New Tab)
+                    </a>
+                  )}
                 </>
               ) : (
                 <div className="alert alert-warning" style={{ width: '100%' }}>
