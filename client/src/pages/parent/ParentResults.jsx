@@ -20,7 +20,7 @@ export default function ParentResults() {
 
   const gradeColor = (g) => ({ 'A+': '#10b981', 'A': '#059669', 'B': '#3b82f6', 'C': '#f59e0b', 'D': '#f97316', 'F': '#ef4444' }[g] || '#6b7280');
 
-  if (loading) return <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
+  if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
   const child = dashboard?.child;
 

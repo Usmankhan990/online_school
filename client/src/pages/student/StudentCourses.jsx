@@ -18,10 +18,10 @@ export default function StudentCourses() {
   const typeIcons = { video: '🎥', reading: '📄', interactive: '🎮', quiz: '📝', pdf: '📄', notes: '📝' };
   const FILE_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
-  if (loading) return <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 160, borderRadius: 18 }} />)}</div>;
+  if (loading) return <div className="animate-fade-in" className="flex flex-col gap-5 min-w-0">{[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 160, borderRadius: 18 }} />)}</div>;
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
       <div>
         <h1 className="text-gradient" style={{ fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>📚 Interactive Tuition Learning</h1>
         <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 6, maxWidth: 600 }}>
@@ -36,7 +36,7 @@ export default function StudentCourses() {
           <p style={{ fontSize: 14, marginTop: 8 }}>Your academic curriculum will appear here once finalized by the administration.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div className="flex flex-col gap-8 min-w-0">
           {courses.map(c => (
             <div key={c.id} className="card-glass shadow-glow overflow-hidden" style={{ border: '1px solid var(--border-light)' }}>
               {/* Course Header */}

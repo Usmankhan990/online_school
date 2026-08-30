@@ -46,9 +46,9 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex' }}>
       {/* Left Panel — Branding */}
-      <div className="hidden lg:flex" style={{
+      <div className="hidden lg:flex flex-col justify-center items-center relative overflow-hidden" style={{
         width: '45%', background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 48, position: 'relative', overflow: 'hidden'
+        padding: 48
       }}>
         <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
@@ -64,7 +64,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel — Form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: '#f8fafc' }}>
+      <div className="flex-1 flex items-center justify-center bg-slate-50 p-6">
         <div style={{ width: '100%', maxWidth: 440 }} className="animate-fade-in">
           {/* Mobile logo */}
           <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 32 }}>

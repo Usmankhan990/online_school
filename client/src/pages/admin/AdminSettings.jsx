@@ -61,7 +61,7 @@ export default function AdminSettings() {
       </div>
 
       <div className="card" style={{ padding: 24 }}>
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <form onSubmit={handleSave} className="flex flex-col gap-5 min-w-0">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>

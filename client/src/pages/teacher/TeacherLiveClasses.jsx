@@ -42,7 +42,7 @@ export default function TeacherLiveClasses() {
   const getStatusColor = (s) => ({ scheduled: '#3b82f6', live: '#10b981', completed: '#6b7280', cancelled: '#ef4444' }[s] || '#6b7280');
   const getStatusBg = (s) => ({ scheduled: '#eff6ff', live: '#ecfdf5', completed: '#f9fafb', cancelled: '#fef2f2' }[s] || '#f9fafb');
 
-  if (loading) return <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
+  if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

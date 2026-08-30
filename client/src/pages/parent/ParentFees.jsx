@@ -20,7 +20,7 @@ export default function ParentFees() {
 
   const statusStyle = { pending: { color: '#f59e0b', bg: '#fffbeb', label: 'Pending' }, paid: { color: '#10b981', bg: '#ecfdf5', label: 'Paid' }, overdue: { color: '#ef4444', bg: '#fef2f2', label: 'Overdue' }, waived: { color: '#6366f1', bg: '#f5f3ff', label: 'Waived' } };
 
-  if (loading) return <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
+  if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
   const child = dashboard?.child;
   const totalPaid = fees.filter(f => f.status === 'paid').reduce((s, f) => s + parseFloat(f.amount || 0), 0);

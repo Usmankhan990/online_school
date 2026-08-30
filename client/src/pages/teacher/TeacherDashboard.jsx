@@ -13,7 +13,7 @@ export default function TeacherDashboard() {
   }, []);
 
   if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="flex flex-col gap-5 min-w-0">
       {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}
     </div>
   );
@@ -36,7 +36,7 @@ export default function TeacherDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
       <div className="card premium-gradient" style={{ padding: '40px', border: 'none', color: 'white', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
@@ -114,7 +114,7 @@ export default function TeacherDashboard() {
         </div>
 
         {/* Right Side: Feed / Activities */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div className="flex flex-col gap-8 min-w-0">
           <div className="card-glass" style={{ padding: 28 }}>
             <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 20 }}>🔔 Activity Feed</h3>
             {(d.notifications || []).length === 0 ? (

@@ -24,7 +24,7 @@ export default function ParentAttendance() {
   const statusColors = { present: '#10b981', absent: '#ef4444', late: '#f59e0b', leave: '#6366f1' };
   const statusEmoji = { present: '✅', absent: '❌', late: '⏰', leave: '🏠' };
 
-  if (loading) return <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
+  if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
   const child = dashboard?.child;
   const stats = dashboard?.attendanceStats || {};

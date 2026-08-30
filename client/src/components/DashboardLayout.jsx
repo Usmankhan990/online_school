@@ -199,7 +199,7 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className="main-content flex flex-col flex-1">
+      <div className="main-content flex flex-col flex-1 min-w-0">
         {/* Top bar */}
         <header className="topbar">
           <div className="flex items-center gap-4">

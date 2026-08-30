@@ -519,8 +519,7 @@ body {
   display: flex; align-items: center; justify-content: space-between;
 }
 .modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-.modal-html, body { overflow-x: hidden; }
-body { padding: 16px 24px; }
+.modal-body { padding: 16px 24px; }
 .modal-footer { padding: 0 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ═══════════════════════════════════════════════════
@@ -633,8 +632,7 @@ body { padding: 16px 24px; }
 @media print {
   .sidebar, .topbar { display: none !important; }
   .main-content { margin-left: 0 !important; }
-  html, body { overflow-x: hidden; }
-body { background: white !important; }
+  body { background: white !important; }
 }
 
 /* Admission form */

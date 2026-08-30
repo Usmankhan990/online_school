@@ -17,7 +17,7 @@ export default function AdminDashboard() {
   }, []);
 
   if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="flex flex-col gap-5 min-w-0">
       {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}
     </div>
   );
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
       <div className="card premium-gradient" style={{ padding: '40px', border: 'none', color: 'white', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
@@ -83,10 +83,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grid for Quick Actions & Recent Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8 items-start min-w-0">
         
         {/* Left Side: Table & Detailed Stats */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div className="flex flex-col gap-8 min-w-0">
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>📋 Recent Member Registrations</h3>
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Right Side: Quick Actions & System Info */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div className="flex flex-col gap-8 min-w-0">
           <div className="card-glass" style={{ padding: 24 }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 20 }}>⚡ CRM Core Actions</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

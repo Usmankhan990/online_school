@@ -13,7 +13,7 @@ export default function ParentDashboard() {
   }, []);
 
   if (loading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="flex flex-col gap-5 min-w-0">
       {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}
     </div>
   );
@@ -37,7 +37,7 @@ export default function ParentDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
       <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: 'white', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
