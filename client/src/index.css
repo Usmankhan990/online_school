@@ -72,6 +72,7 @@
   margin: 0; padding: 0; box-sizing: border-box;
 }
 
+html, body { overflow-x: hidden; }
 body {
   font-family: var(--font-sans);
   background: var(--bg-body);
@@ -518,7 +519,8 @@ body {
   display: flex; align-items: center; justify-content: space-between;
 }
 .modal-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-.modal-body { padding: 16px 24px; }
+.modal-html, body { overflow-x: hidden; }
+body { padding: 16px 24px; }
 .modal-footer { padding: 0 24px 20px; display: flex; gap: 8px; justify-content: flex-end; }
 
 /* ═══════════════════════════════════════════════════
@@ -631,7 +633,8 @@ body {
 @media print {
   .sidebar, .topbar { display: none !important; }
   .main-content { margin-left: 0 !important; }
-  body { background: white !important; }
+  html, body { overflow-x: hidden; }
+body { background: white !important; }
 }
 
 /* Admission form */

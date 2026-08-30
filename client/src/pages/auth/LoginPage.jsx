@@ -117,7 +117,7 @@ export default function LoginPage() {
           {/* Demo credentials */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20, marginTop: 8 }}>
             <p style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, textAlign: 'center' }}>Quick Demo Access</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {DEMO_CREDS.map(c => (
                 <button key={c.label} onClick={() => fillDemo(c)} style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',

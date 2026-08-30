@@ -57,7 +57,7 @@ export default function AdminNotifications() {
         <p>Send announcements and manage system notifications.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24, alignItems: 'start' }}>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-start">
         {/* Send Notification Form */}
         <div className="card" style={{ padding: 24 }}>
           <h2 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>New Announcement</h2>
