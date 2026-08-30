@@ -6,7 +6,7 @@ require('dotenv').config();
 const generateToken = (user) => {
   return jwt.sign(
     { id: user.id, role: user.role, email: user.email },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || 'usman_online_school_jwt_secret_2026_very_secure',
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
