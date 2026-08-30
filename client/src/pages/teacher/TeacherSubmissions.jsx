@@ -36,7 +36,7 @@ export default function TeacherSubmissions() {
           <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📥</span>
           <p style={{ fontSize: 16, fontWeight: 600 }}>No submissions yet</p></div>
       ) : (
-        <div className="card" style={{ padding: 0, overflow: 'auto' }}>
+        <div className="card-glass table-responsive">
           <table className="data-table">
             <thead><tr>
               <th>Student</th><th>Homework</th><th>Subject</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Action</th>

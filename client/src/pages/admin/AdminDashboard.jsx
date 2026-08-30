@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Grid for Quick Actions & Recent Activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8 items-start">
         
         {/* Left Side: Table & Detailed Stats */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
               <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>📋 Recent Member Registrations</h3>
               <Link to="/admin/students" style={{ fontSize: 14, color: '#1e3a5f', fontWeight: 700, textDecoration: 'none' }}>View Detailed Directory →</Link>
             </div>
-            <div className="card-glass" style={{ overflow: 'hidden' }}>
+            <div className="card-glass table-responsive">
               <table className="data-table">
                 <thead>
                   <tr><th>Identity</th><th>Class Level</th><th>Current Status</th><th>Joined</th></tr>
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           <div className="card-glass" style={{ padding: 24 }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 20 }}>⚡ CRM Core Actions</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {quickActions.map(a => (
                 <Link key={a.label} to={a.path} className="card hover-lift" style={{ padding: '20px 12px', textDecoration: 'none', textAlign: 'center', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 24 }}>{a.icon}</span>

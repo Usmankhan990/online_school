@@ -28,7 +28,7 @@ export default function AdminParents() {
         <p>View all registered parents and their details.</p>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>Registered Parents</h2>
         
         {loading ? (

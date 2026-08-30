@@ -63,7 +63,7 @@ export default function BookViewer() {
         <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{book.title}</span>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
           <div style={{
             width: 240,

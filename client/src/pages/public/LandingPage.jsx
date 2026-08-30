@@ -132,7 +132,7 @@ export default function LandingPage() {
       <section className="gradient-bg-hero" style={{ paddingTop: 120, paddingBottom: 80, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 40, alignItems: 'center' }} className="lg:grid-cols-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
             <div className="animate-slide-up">
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.15)', borderRadius: 999, padding: '6px 16px', marginBottom: 20, border: '1px solid rgba(16,185,129,0.2)' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', animation: 'pulse-soft 2s infinite' }}></span>

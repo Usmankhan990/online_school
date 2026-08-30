@@ -45,7 +45,7 @@ export default function AdminAttendance() {
         <div style={{ padding: 16, background: '#fee2e2', color: '#b91c1c', borderRadius: 8 }}>{error}</div>
       ) : data ? (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Present', value: data.summary.present, color: '#10b981' },
               { label: 'Absent', value: data.summary.absent, color: '#ef4444' },
@@ -59,7 +59,7 @@ export default function AdminAttendance() {
             ))}
           </div>
 
-          <div className="card" style={{ overflow: 'hidden' }}>
+          <div className="card table-responsive">
             <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>Attendance Records</h2>
             <div style={{ overflowX: 'auto' }}>
               <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>

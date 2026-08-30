@@ -28,7 +28,7 @@ export default function AdminExams() {
         <p>Monitor all exams across the school — upcoming, active, and completed.</p>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>All Exams</h2>
         
         {loading ? (

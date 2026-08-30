@@ -126,7 +126,7 @@ export default function AdminSubjects() {
           </div>
           <form onSubmit={onSubmit}>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="form-label">Subject Name (English) *</label>
                   <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}

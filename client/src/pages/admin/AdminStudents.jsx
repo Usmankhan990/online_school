@@ -23,7 +23,7 @@ export default function AdminStudents() {
           ))}
         </div>
       </div>
-      <div className="glass-card overflow-hidden">
+      <div className="glass-card table-responsive">
         <table className="table-dark">
           <thead><tr><th>Student</th><th>Class</th><th>Roll No</th><th>Father</th><th>Contact</th><th>Status</th></tr></thead>
           <tbody>

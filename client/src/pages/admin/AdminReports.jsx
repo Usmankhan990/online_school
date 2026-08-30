@@ -35,7 +35,7 @@ export default function AdminReports() {
       ) : reports ? (
         <>
           <h2 style={{ fontSize: 18, margin: '16px 0 0' }}>Enrollment Statistics</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Active Students', value: reports.enrollment.totalStudents, color: '#3b82f6' },
               { label: 'Pending Students', value: reports.enrollment.pendingStudents, color: '#f59e0b' },

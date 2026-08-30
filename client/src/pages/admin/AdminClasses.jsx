@@ -255,7 +255,7 @@ export default function AdminClasses() {
             </div>
             <form onSubmit={handleAdd}>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="form-label">Class Name *</label>
                     <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
@@ -267,7 +267,7 @@ export default function AdminClasses() {
                       required className="form-input" placeholder="e.g. Class 1, KG / Pre-1" />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="form-label">Grade Level *</label>
                     <input type="number" min="0" max="12" value={form.grade_level}
@@ -305,7 +305,7 @@ export default function AdminClasses() {
             </div>
             <form onSubmit={handleEdit}>
               <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="form-label">Class Name *</label>
                     <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
@@ -317,7 +317,7 @@ export default function AdminClasses() {
                       required className="form-input" />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="form-label">Grade Level *</label>
                     <input type="number" min="0" max="12" value={form.grade_level}

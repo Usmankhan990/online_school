@@ -9,7 +9,7 @@ export default function ProfilePage() {
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 700 }}>
       <div><h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>👤 My Profile</h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Your account information</p></div>
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <div style={{ background: `linear-gradient(135deg, ${roleBg[user?.role] || '#1e3a5f'}, #0f172a)`, padding: 32, color: 'white', display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, flexShrink: 0 }}>
             {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}

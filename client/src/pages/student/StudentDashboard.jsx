@@ -81,8 +81,8 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Schedule & Alerts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }}>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8 items-start">
         
         {/* Left: Schedule */}
         <div className="card-glass" style={{ padding: 32 }}>

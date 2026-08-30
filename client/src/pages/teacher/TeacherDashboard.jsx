@@ -77,7 +77,7 @@ export default function TeacherDashboard() {
       </div>
 
       {/* Detailed View Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8 items-start">
         
         {/* Left Side: Course Management */}
         <div className="card-glass" style={{ padding: 32 }}>

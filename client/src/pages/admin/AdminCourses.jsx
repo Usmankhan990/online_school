@@ -28,7 +28,7 @@ export default function AdminCourses() {
         <p>View all courses created by teachers across all classes.</p>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>All Courses</h2>
         
         {loading ? (

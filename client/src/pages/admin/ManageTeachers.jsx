@@ -64,7 +64,7 @@ export default function ManageTeachers() {
         </div>
       )}
 
-      <div className="glass-card overflow-hidden">
+      <div className="glass-card table-responsive">
         <table className="table-dark">
           <thead><tr><th>Teacher</th><th>Qualification</th><th>Specialization</th><th>Experience</th><th>Action</th></tr></thead>
           <tbody>

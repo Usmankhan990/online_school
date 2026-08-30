@@ -281,7 +281,7 @@ export default function AdminBooks() {
           </div>
           <form onSubmit={onSubmit}>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="form-label">Class *</label>
                   <select value={form.class_id} onChange={e => setForm({...form, class_id: e.target.value})}
@@ -299,7 +299,7 @@ export default function AdminBooks() {
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-3">
                 <div>
                   <label className="form-label">Title (English) *</label>
                   <input type="text" value={form.title} onChange={e => setForm({...form, title: e.target.value})}
@@ -345,7 +345,7 @@ export default function AdminBooks() {
                   className="form-input" placeholder="https://... online textbook page or PDF" />
                 <p className="form-helper">⚠️ External URL is used only as a fallback when no local file is uploaded</p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="form-label">Publisher</label>
                   <input type="text" value={form.publisher} onChange={e => setForm({...form, publisher: e.target.value})}
@@ -610,7 +610,7 @@ export default function AdminBooks() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 Select a class and subject, then upload multiple PDF files. Each file will be saved as a separate book.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="form-label">Class *</label>
                   <select value={bulkClass} onChange={e => setBulkClass(e.target.value)} className="form-select" disabled={bulkUploading}>

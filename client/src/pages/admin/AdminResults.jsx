@@ -28,7 +28,7 @@ export default function AdminResults() {
         <p>Recent exam results across all classes and subjects.</p>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
+      <div className="card table-responsive">
         <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>Recent Graded Exams</h2>
         
         {loading ? (
