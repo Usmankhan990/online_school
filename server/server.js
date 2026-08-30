@@ -6,6 +6,15 @@ require('dotenv').config();
 const { sequelize } = require('./models');
 
 const app = express();
+
+// Normalize URL for cPanel Passenger subdirectory
+app.use((req, res, next) => {
+  if (req.url.startsWith('/online_school')) {
+    req.url = req.url.replace('/online_school', '') || '/';
+  }
+  next();
+});
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
