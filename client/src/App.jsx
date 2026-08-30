@@ -38,6 +38,8 @@ import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import TeacherCourses from './pages/teacher/TeacherCourses';
 import TeacherExams from './pages/teacher/TeacherExams';
 import TeacherLiveClasses from './pages/teacher/TeacherLiveClasses';
+import TeacherBooks from './pages/teacher/TeacherBooks';
+import TeacherBookViewer from './pages/teacher/TeacherBookViewer';
 import TeacherAttendance from './pages/teacher/TeacherAttendance';
 import TeacherMaterials from './pages/teacher/TeacherMaterials';
 import TeacherHomework from './pages/teacher/TeacherHomework';
@@ -47,15 +49,13 @@ import TeacherNotifications from './pages/teacher/TeacherNotifications';
 
 // ── Student Pages ──
 import StudentDashboard from './pages/student/StudentDashboard';
-import StudentBooks from './pages/student/StudentBooks';
-import BookViewer from './pages/student/BookViewer';
+import StudentMaterials from './pages/student/StudentMaterials';
 import StudentResults from './pages/student/StudentResults';
 import StudentAttendance from './pages/student/StudentAttendance';
 import StudentLiveClasses from './pages/student/StudentLiveClasses';
 import StudentFees from './pages/student/StudentFees';
 import StudentNotifications from './pages/student/StudentNotifications';
 import StudentCourses from './pages/student/StudentCourses';
-import StudentLectures from './pages/student/StudentLectures';
 import StudentHomework from './pages/student/StudentHomework';
 import StudentExams from './pages/student/StudentExams';
 import StudentReportCard from './pages/student/StudentReportCard';
@@ -139,17 +139,17 @@ function App() {
           <Route path="/teacher/submissions" element={<D roles={['teacher']}><TeacherSubmissions /></D>} />
           <Route path="/teacher/attendance" element={<D roles={['teacher']}><TeacherAttendance /></D>} />
           <Route path="/teacher/live-classes" element={<D roles={['teacher']}><TeacherLiveClasses /></D>} />
+          <Route path="/teacher/books" element={<D roles={['teacher']}><TeacherBooks /></D>} />
+          <Route path="/teacher/books/:id" element={<D roles={['teacher']}><TeacherBookViewer /></D>} />
           <Route path="/teacher/results" element={<D roles={['teacher']}><TeacherResults /></D>} />
           <Route path="/teacher/notifications" element={<D roles={['teacher']}><TeacherNotifications /></D>} />
           <Route path="/teacher/profile" element={<D roles={['teacher']}><ProfilePage /></D>} />
 
           {/* ═══════ STUDENT PORTAL ═══════ */}
           <Route path="/student" element={<D roles={['student']}><StudentDashboard /></D>} />
-          <Route path="/student/books" element={<D roles={['student']}><StudentBooks /></D>} />
-          <Route path="/student/books/:id" element={<D roles={['student']}><BookViewer /></D>} />
           <Route path="/student/courses" element={<D roles={['student']}><StudentCourses /></D>} />
           <Route path="/student/live-classes" element={<D roles={['student']}><StudentLiveClasses /></D>} />
-          <Route path="/student/lectures" element={<D roles={['student']}><StudentLectures /></D>} />
+          <Route path="/student/materials" element={<D roles={['student']}><StudentMaterials /></D>} />
           <Route path="/student/homework" element={<D roles={['student']}><StudentHomework /></D>} />
           <Route path="/student/exams" element={<D roles={['student']}><StudentExams /></D>} />
           <Route path="/student/results" element={<D roles={['student']}><StudentResults /></D>} />

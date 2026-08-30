@@ -58,7 +58,7 @@ export default function BookViewer() {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-tertiary)' }}>
-        <Link to="/student/books" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Library</Link>
+        <Link to="/teacher/books" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Library</Link>
         <span>/</span>
         <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{book.title}</span>
       </div>

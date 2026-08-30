@@ -29,7 +29,7 @@ export default function StudentDashboard() {
   ];
 
   const shortcuts = [
-    { label: 'My Books', path: '/student/books', icon: '📚', desc: 'PCTB 2026 Library' },
+    { label: 'Study Materials', path: '/student/materials', icon: '📚', desc: 'Notes, PDFs & Videos' },
     { label: 'Live Classes', path: '/student/live-classes', icon: '🎥', desc: 'Join now' },
     { label: 'Submit HW', path: '/student/homework', icon: '📝', desc: 'Pending tasks' },
     { label: 'Take Exam', path: '/student/exams', icon: '✍️', desc: 'Active exams' },

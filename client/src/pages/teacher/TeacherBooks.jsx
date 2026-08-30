@@ -65,7 +65,7 @@ export default function StudentBooks() {
 
   // Navigate to internal viewer instead of external redirect
   const openBook = (bookId) => {
-    navigate(`/student/books/${bookId}`);
+    navigate(`/teacher/books/${bookId}`);
   };
 
   // Recently added (last 5)

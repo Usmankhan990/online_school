@@ -26,14 +26,14 @@ export default function TeacherDashboard() {
     { label: 'Upcoming Exams', value: d.upcomingExams || 0, icon: '📝', color: '#8b5cf6', bg: '#f5f3ff', link: '/teacher/exams' },
   ];
 
-  const quickActions = [
-    { label: 'Create Course', path: '/teacher/courses', icon: '➕' },
-    { label: 'Upload Material', path: '/teacher/materials', icon: '📤' },
-    { label: 'Post Homework', path: '/teacher/homework', icon: '📝' },
-    { label: 'Mark Attendance', path: '/teacher/attendance', icon: '✅' },
-    { label: 'Create Exam', path: '/teacher/exams', icon: '📋' },
-    { label: 'Grade Papers', path: '/teacher/results', icon: '📊' },
-  ];
+    const quickActions = [
+      { label: 'Create Course', path: '/teacher/courses', icon: '➕' },
+      { label: 'Upload Material', path: '/teacher/materials', icon: '📤' },
+      { label: 'Post Homework', path: '/teacher/homework', icon: '📝' },
+      { label: 'Digital Library', path: '/teacher/books', icon: '📚' },
+      { label: 'Create Exam', path: '/teacher/exams', icon: '📋' },
+      { label: 'Grade Papers', path: '/teacher/results', icon: '📊' },
+    ];
 
   return (
     <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
