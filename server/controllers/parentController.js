@@ -22,7 +22,7 @@ exports.getParentDashboard = async (req, res) => {
     for (const child of children) {
       // Attendance
       const attendanceRecords = await Attendance.findAll({
-        where: { student_id: child.user_id },
+        where: { user_id: child.user_id, user_role: 'student' },
       });
       const totalDays = attendanceRecords.length;
       const presentDays = attendanceRecords.filter(a => a.status === 'present' || a.status === 'late').length;
@@ -87,7 +87,7 @@ exports.getChildAttendance = async (req, res) => {
     });
     if (!child) return res.status(403).json({ error: 'Access denied.' });
 
-    const where = { student_id };
+    const where = { user_id: student_id, user_role: 'student' };
     if (month) where.date = { [Op.like]: `${month}%` };
 
     const attendance = await Attendance.findAll({ where, order: [['date', 'DESC']] });

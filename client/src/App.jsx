@@ -59,9 +59,11 @@ import StudentCourses from './pages/student/StudentCourses';
 import StudentHomework from './pages/student/StudentHomework';
 import StudentExams from './pages/student/StudentExams';
 import StudentReportCard from './pages/student/StudentReportCard';
+import CurriculumRoadmap from './pages/student/CurriculumRoadmap';
 
 // ── Parent Pages ──
 import ParentDashboard from './pages/parent/ParentDashboard';
+import ChildOverview from './pages/parent/ChildOverview';
 import ParentAttendance from './pages/parent/ParentAttendance';
 import ParentResults from './pages/parent/ParentResults';
 import ParentFees from './pages/parent/ParentFees';
@@ -107,6 +109,7 @@ function App() {
           {/* ═══════ Auth ═══════ */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/apply" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<LoginPage />} />
           <Route path="/dashboard" element={<RoleRedirect />} />
 
@@ -148,20 +151,29 @@ function App() {
           {/* ═══════ STUDENT PORTAL ═══════ */}
           <Route path="/student" element={<D roles={['student']}><StudentDashboard /></D>} />
           <Route path="/student/courses" element={<D roles={['student']}><StudentCourses /></D>} />
+          <Route path="/my-courses" element={<D roles={['student']}><StudentCourses /></D>} />
+          <Route path="/curriculum-roadmap" element={<D roles={['student']}><CurriculumRoadmap /></D>} />
+          <Route path="/student/books" element={<D roles={['student']}><TeacherBooks /></D>} />
+          <Route path="/student/books/:id" element={<D roles={['student']}><TeacherBookViewer /></D>} />
+          <Route path="/my-textbooks" element={<D roles={['student']}><TeacherBooks /></D>} />
           <Route path="/student/live-classes" element={<D roles={['student']}><StudentLiveClasses /></D>} />
           <Route path="/student/materials" element={<D roles={['student']}><StudentMaterials /></D>} />
           <Route path="/student/homework" element={<D roles={['student']}><StudentHomework /></D>} />
+          <Route path="/homework" element={<D roles={['student']}><StudentHomework /></D>} />
           <Route path="/student/exams" element={<D roles={['student']}><StudentExams /></D>} />
           <Route path="/student/results" element={<D roles={['student']}><StudentResults /></D>} />
+          <Route path="/results" element={<D roles={['student']}><StudentResults /></D>} />
           <Route path="/student/report-card" element={<D roles={['student']}><StudentReportCard /></D>} />
           <Route path="/student/attendance" element={<D roles={['student']}><StudentAttendance /></D>} />
           <Route path="/student/fees" element={<D roles={['student']}><StudentFees /></D>} />
+          <Route path="/fees" element={<D roles={['student']}><StudentFees /></D>} />
           <Route path="/student/notifications" element={<D roles={['student']}><StudentNotifications /></D>} />
           <Route path="/student/profile" element={<D roles={['student']}><ProfilePage /></D>} />
 
           {/* ═══════ PARENT PORTAL ═══════ */}
           <Route path="/parent" element={<D roles={['parent']}><ParentDashboard /></D>} />
-          <Route path="/parent/child" element={<D roles={['parent']}><ParentDashboard /></D>} />
+          <Route path="/parent/child-overview" element={<D roles={['parent']}><ChildOverview /></D>} />
+          <Route path="/parent/child" element={<D roles={['parent']}><ChildOverview /></D>} />
           <Route path="/parent/attendance" element={<D roles={['parent']}><ParentAttendance /></D>} />
           <Route path="/parent/homework" element={<D roles={['parent']}><ParentHomework /></D>} />
           <Route path="/parent/results" element={<D roles={['parent']}><ParentResults /></D>} />

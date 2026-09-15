@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../services/api';
+import api, { FILE_BASE } from '../../services/api';
 
 export default function StudentHomework() {
   const [homework, setHomework] = useState([]);
@@ -9,6 +9,7 @@ export default function StudentHomework() {
   const [file, setFile] = useState(null);
   const [msg, setMsg] = useState('');
   const [filter, setFilter] = useState('all');
+  const [previewSubmission, setPreviewSubmission] = useState(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -88,29 +89,157 @@ export default function StudentHomework() {
                   <span>📊 {hw.total_marks} marks</span>
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                 {sub?.status === 'graded' && (
-                  <div><span style={{ fontSize: 24, fontWeight: 800, color: '#10b981' }}>{sub.marks_obtained}/{hw.total_marks}</span>
+                  <div>
+                    <span style={{ fontSize: 24, fontWeight: 800, color: '#10b981' }}>{sub.marks_obtained}/{hw.total_marks}</span>
                     {sub.feedback && <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>💬 {sub.feedback}</p>}
                   </div>
                 )}
-                {!sub && new Date(hw.due_date) >= new Date() && (
-                  <button className="btn btn-sm btn-accent" onClick={() => setSubmitting(submitting === hw.id ? null : hw.id)}>
-                    {submitting === hw.id ? '✕ Cancel' : '📤 Submit'}
-                  </button>
-                )}
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {/* View Submission (Eye action) */}
+                  {sub && (
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => setPreviewSubmission({ ...sub, hwTitle: hw.title, totalMarks: hw.total_marks })}
+                      title="View your submitted work"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <span>👁️</span> View Submission
+                    </button>
+                  )}
+
+                  {/* Edit / Resubmit (Pencil action) */}
+                  {sub && sub.status !== 'graded' && new Date(hw.due_date) >= new Date() && (
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => {
+                        if (submitting === hw.id) {
+                          setSubmitting(null);
+                        } else {
+                          setSubmitting(hw.id);
+                          setSubmitForm({ content: sub.answer_text || '' });
+                        }
+                      }}
+                      title="Edit and resubmit your work"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <span>✏️</span> {submitting === hw.id ? 'Cancel' : 'Edit / Resubmit'}
+                    </button>
+                  )}
+
+                  {/* Initial Submit */}
+                  {!sub && new Date(hw.due_date) >= new Date() && (
+                    <button className="btn btn-sm btn-accent" onClick={() => setSubmitting(submitting === hw.id ? null : hw.id)}>
+                      {submitting === hw.id ? '✕ Cancel' : '📤 Submit'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             {submitting === hw.id && (
               <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-surface-2)', borderRadius: 10, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <textarea className="form-input" rows={3} value={submitForm.content} onChange={e => setSubmitForm(f => ({ ...f, content: e.target.value }))} placeholder="Your answer or notes..." />
+                <textarea
+                  className="form-input"
+                  rows={3}
+                  value={submitForm.content}
+                  onChange={e => setSubmitForm(f => ({ ...f, content: e.target.value }))}
+                  placeholder="Your answer or notes..."
+                />
                 <input type="file" className="form-input" style={{ padding: 8 }} onChange={e => setFile(e.target.files[0])} />
-                <button className="btn btn-accent" onClick={() => handleSubmit(hw.id)}>🚀 Submit Homework</button>
+                <button className="btn btn-accent" onClick={() => handleSubmit(hw.id)}>
+                  {sub ? '🔄 Update & Resubmit' : '🚀 Submit Homework'}
+                </button>
               </div>
             )}
           </div>
         );
       })}
+
+      {/* View Submission Modal */}
+      {previewSubmission && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+          <div className="card" style={{ maxWidth: 550, width: '100%', padding: 28, position: 'relative', maxHeight: '90vh', overflowY: 'auto' }}>
+            <button
+              onClick={() => setPreviewSubmission(null)}
+              style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-tertiary)' }}
+            >
+              ✕
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <span style={{ fontSize: 24 }}>👁️</span>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>Submission Preview</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{previewSubmission.hwTitle}</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-surface-2)', borderRadius: 8, fontSize: 13 }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Submitted:</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {new Date(previewSubmission.submitted_at || previewSubmission.createdAt).toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' })}
+                </span>
+              </div>
+
+              {previewSubmission.status === 'graded' && (
+                <div style={{ padding: '12px 14px', background: '#ecfdf5', borderRadius: 8, border: '1px solid #a7f3d0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#065f46' }}>Grading Result:</span>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: '#059669' }}>
+                      {previewSubmission.marks_obtained}/{previewSubmission.totalMarks}
+                    </span>
+                  </div>
+                  {previewSubmission.feedback && (
+                    <p style={{ fontSize: 13, color: '#047857', marginTop: 6 }}>
+                      <strong>Feedback:</strong> {previewSubmission.feedback}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                  Written Response:
+                </label>
+                <div style={{ padding: 14, background: 'var(--bg-surface-2)', borderRadius: 8, border: '1px solid var(--border-light)', minHeight: 60, fontSize: 14, color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                  {previewSubmission.answer_text || previewSubmission.content || (
+                    <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No written response provided.</span>
+                  )}
+                </div>
+              </div>
+
+              {previewSubmission.file_path && (
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                    Attached File:
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg-surface-2)', borderRadius: 8, border: '1px solid var(--border-light)' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span>📎</span> {previewSubmission.file_path.split('/').pop()}
+                    </span>
+                    <a
+                      href={`${FILE_BASE}/uploads/${previewSubmission.file_path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-primary"
+                      style={{ textDecoration: 'none', flexShrink: 0, marginLeft: 12 }}
+                    >
+                      View / Download
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                <button className="btn btn-secondary" onClick={() => setPreviewSubmission(null)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

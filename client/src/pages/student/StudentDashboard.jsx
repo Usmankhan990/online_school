@@ -91,7 +91,7 @@ export default function StudentDashboard() {
             <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-tertiary)' }}>
               <span style={{ fontSize: 48, display: 'block', marginBottom: 16 }}>📭</span>
               <p style={{ fontWeight: 600 }}>No live classes scheduled for today.</p>
-              <Link to="/student/courses" className="btn btn-outline btn-sm" style={{ marginTop: 20 }}>Browse Recorded Courses</Link>
+              <Link to="/my-courses" className="btn btn-outline btn-sm" style={{ marginTop: 20 }}>Browse Recorded Courses</Link>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

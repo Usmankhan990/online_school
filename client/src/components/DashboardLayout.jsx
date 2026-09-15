@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -102,7 +102,7 @@ const NAV_CONFIG = {
     { label: 'Results', path: '/student/results', icon: 'results' },
     { label: 'Report Card', path: '/student/report-card', icon: 'reportcard' },
     { section: 'PTB 2026' },
-    { label: 'Curriculum Roadmap', path: '/student/courses', icon: 'courses' },
+    { label: 'Curriculum Roadmap', path: '/curriculum-roadmap', icon: 'courses' },
     { label: 'My Textbooks', path: '/student/books', icon: 'books' },
     { section: 'Other' },
     { label: 'Attendance', path: '/student/attendance', icon: 'attendance' },
@@ -113,7 +113,7 @@ const NAV_CONFIG = {
   parent: [
     { section: 'Main' },
     { label: 'Dashboard', path: '/parent', icon: 'dashboard' },
-    { label: 'Child Overview', path: '/parent/child', icon: 'child' },
+    { label: 'Child Overview', path: '/parent/child-overview', icon: 'child' },
     { section: 'Academics' },
     { label: 'Attendance', path: '/parent/attendance', icon: 'attendance' },
     { label: 'Homework', path: '/parent/homework', icon: 'homework' },
@@ -141,6 +141,22 @@ export default function DashboardLayout({ children }) {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
+  const navRef = useRef(null);
+
+  // Preserve sidebar scroll position or scroll active item into view
+  useEffect(() => {
+    if (navRef.current) {
+      const activeEl = navRef.current.querySelector('.sidebar-link.active');
+      if (activeEl) {
+        const navRect = navRef.current.getBoundingClientRect();
+        const activeRect = activeEl.getBoundingClientRect();
+        if (activeRect.top < navRect.top || activeRect.bottom > navRect.bottom) {
+          activeEl.scrollIntoView({ block: 'nearest' });
+        }
+      }
+    }
+  }, [location.pathname]);
+
   const navItems = NAV_CONFIG[user?.role] || [];
   const roleName = { super_admin: 'Super Admin', teacher: 'Teacher', student: 'Student', parent: 'Parent' }[user?.role] || '';
   const rolePortal = { super_admin: 'Admin Portal', teacher: 'Teacher Portal', student: 'Student Portal', parent: 'Parent Portal' }[user?.role] || '';
@@ -167,12 +183,20 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <nav className="sidebar-nav">
+        <nav ref={navRef} className="sidebar-nav">
           {navItems.map((item, i) => {
             if (item.section) {
               return <div key={i} className="sidebar-section">{item.section}</div>;
             }
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path ||
+              (item.path === '/student/courses' && location.pathname === '/my-courses') ||
+              (item.path === '/student/books' && (location.pathname === '/my-textbooks' || location.pathname.startsWith('/student/books/'))) ||
+              (item.path === '/student/homework' && location.pathname === '/homework') ||
+              (item.path === '/student/results' && location.pathname === '/results') ||
+              (item.path === '/student/fees' && location.pathname === '/fees' && user?.role === 'student') ||
+              (item.path === '/admin/fees' && location.pathname === '/fees' && user?.role === 'super_admin') ||
+              (item.path === '/parent/fees' && location.pathname === '/fees' && user?.role === 'parent') ||
+              (item.path === '/parent/child-overview' && (location.pathname === '/parent/child-overview' || location.pathname === '/parent/child'));
             return (
               <Link key={i} to={item.path} className={`sidebar-link ${isActive ? 'active' : ''}`}
                 onClick={() => setSidebarOpen(false)}>

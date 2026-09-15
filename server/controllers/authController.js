@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { User, StudentProfile, TeacherProfile, ParentProfile, Class, Document, Notification } = require('../models');
+const { sequelize, User, StudentProfile, TeacherProfile, ParentProfile, Class, Document, Notification } = require('../models');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
@@ -27,8 +27,12 @@ exports.registerStudent = async (req, res) => {
       return res.status(400).json({ error: 'Father CNIC format must be: 00000-0000000-0' });
     }
 
-    // Check duplicate email
-    const existing = await User.findOne({ where: { email } });
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+
+    // Check duplicate email (case-insensitive)
+    const existing = await User.findOne({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
+    });
     if (existing) {
       return res.status(400).json({ error: 'Email already registered.' });
     }
@@ -41,11 +45,11 @@ exports.registerStudent = async (req, res) => {
 
     // Create user with pending status
     const user = await User.create({
-      email,
+      email: normalizedEmail,
       password,
       role: 'student',
-      full_name,
-      phone: contact_number_1,
+      full_name: full_name?.trim(),
+      phone: contact_number_1?.trim(),
       status: 'pending',
     });
 
@@ -108,9 +112,10 @@ exports.registerStudent = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
     
     const user = await User.findOne({ 
-      where: { email },
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
       include: [
         { model: StudentProfile, as: 'studentProfile', include: [{ model: Class, as: 'class' }] },
         { model: TeacherProfile, as: 'teacherProfile' },
@@ -176,14 +181,17 @@ exports.getProfile = async (req, res) => {
 exports.registerParent = async (req, res) => {
   try {
     const { email, password, full_name, phone, relation, cnic, occupation, address, student_roll_number } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
 
-    const existing = await User.findOne({ where: { email } });
+    const existing = await User.findOne({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
+    });
     if (existing) {
       return res.status(400).json({ error: 'Email already registered.' });
     }
 
     const user = await User.create({
-      email, password, role: 'parent', full_name, phone, status: 'active',
+      email: normalizedEmail, password, role: 'parent', full_name: full_name?.trim(), phone: phone?.trim(), status: 'active',
     });
 
     await ParentProfile.create({

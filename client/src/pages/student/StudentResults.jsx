@@ -21,7 +21,7 @@ export default function StudentResults() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-white">📊 My Results</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>📊 My Results</h1>
         <p className="text-dark-400 text-sm mt-1">View your exam results and grades</p>
       </div>
 

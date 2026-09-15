@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft } from 'react-icons/hi';
+import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 
 const fallbackClasses = [
   { id: 1, display_name: 'KG / Pre-1' },
@@ -27,6 +27,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +46,12 @@ export default function RegisterPage() {
       if (v.length > 13) v = v.slice(0, 13) + '-' + v.slice(13);
       if (v.length > 15) v = v.slice(0, 15);
       setForm(f => ({ ...f, [name]: v }));
+      return;
+    }
+
+    if (['full_name', 'father_name', 'mother_name'].includes(name)) {
+      const capitalized = value.replace(/(^|\s)([a-z\u00E0-\u00FC])/g, (m, p, c) => p + c.toUpperCase());
+      setForm(f => ({ ...f, [name]: capitalized }));
       return;
     }
 
@@ -136,16 +144,54 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="auth-form">
             <FormSection title="Student Information" tone="primary">
               <Field label="Full Name *">
-                <input name="full_name" value={form.full_name} onChange={handleChange} className="form-input" placeholder="Student full name" required />
+                <input name="full_name" value={form.full_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Student full name" required />
               </Field>
               <Field label="Email *">
                 <input name="email" type="email" value={form.email} onChange={handleChange} className="form-input" placeholder="student@email.com" required />
               </Field>
               <Field label="Password *">
-                <input name="password" type="password" value={form.password} onChange={handleChange} className="form-input" placeholder="Min 6 characters" required />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="Min 6 characters"
+                    required
+                    style={{ paddingRight: 40 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center' }}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                  </button>
+                </div>
               </Field>
               <Field label="Confirm Password *">
-                <input name="confirm_password" type="password" value={form.confirm_password} onChange={handleChange} className="form-input" placeholder="Confirm password" required />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    name="confirm_password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={form.confirm_password}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="Confirm password"
+                    required
+                    style={{ paddingRight: 40 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center' }}
+                    title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
+                  </button>
+                </div>
               </Field>
               <Field label="Date of Birth">
                 <input name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} className="form-input" />
@@ -154,13 +200,14 @@ export default function RegisterPage() {
 
             <FormSection title="Parent / Guardian Information" tone="accent">
               <Field label="Father Name *">
-                <input name="father_name" value={form.father_name} onChange={handleChange} className="form-input" placeholder="Father's full name" required />
+                <input name="father_name" value={form.father_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Father's full name" required />
               </Field>
               <Field label="Mother Name *">
-                <input name="mother_name" value={form.mother_name} onChange={handleChange} className="form-input" placeholder="Mother's full name" required />
+                <input name="mother_name" value={form.mother_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Mother's full name" required />
               </Field>
               <Field label="Father CNIC *">
                 <input name="father_cnic" value={form.father_cnic} onChange={handleChange} className="form-input" placeholder="00000-0000000-0" required />
+                <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>Fill this form as per CNIC</span>
               </Field>
               <Field label="Contact Number 1 *">
                 <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} className="form-input" placeholder="03001234567" required />

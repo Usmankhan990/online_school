@@ -1,10 +1,40 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 
+/* Visual Payment Method Logos */
+const JazzCashLogo = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
+    <rect width="40" height="40" rx="8" fill="#E30613" />
+    <circle cx="20" cy="20" r="13" fill="#FFC800" />
+    <circle cx="20" cy="20" r="10" fill="#E30613" />
+    <text x="20" y="24" textAnchor="middle" fill="#FFC800" fontSize="12" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif">JC</text>
+  </svg>
+);
+
+const EasyPaisaLogo = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
+    <rect width="40" height="40" rx="8" fill="#00A652" />
+    <path d="M12 20C12 15.58 15.58 12 20 12C24.42 12 28 15.58 28 20" stroke="white" strokeWidth="3" strokeLinecap="round" />
+    <path d="M20 20L25 25M25 20L20 25" stroke="#78D64B" strokeWidth="2.5" strokeLinecap="round" />
+    <circle cx="20" cy="20" r="4" fill="white" />
+  </svg>
+);
+
+const BankLogo = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
+    <rect width="40" height="40" rx="8" fill="#1E3A5F" />
+    <path d="M20 11L11 16V18H29V16L20 11Z" fill="#38BDF8" />
+    <rect x="13" y="19" width="2.5" height="7" fill="white" />
+    <rect x="18.75" y="19" width="2.5" height="7" fill="white" />
+    <rect x="24.5" y="19" width="2.5" height="7" fill="white" />
+    <rect x="11" y="27" width="18" height="2.5" rx="1" fill="#38BDF8" />
+  </svg>
+);
+
 const PAYMENT_INFO = {
-  jazzcash: { name: 'JazzCash', icon: '📱', color: '#e30613', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
-  easypaisa: { name: 'EasyPaisa', icon: '📲', color: '#00a652', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
-  bank_transfer: { name: 'Bank Transfer', icon: '🏦', color: '#1e3a5f', account: 'IBAN: PK00XXXX0000000000000', holder: 'Usman Online School', bank: 'HBL / Meezan Bank' },
+  jazzcash: { name: 'JazzCash', Logo: JazzCashLogo, color: '#e30613', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
+  easypaisa: { name: 'EasyPaisa', Logo: EasyPaisaLogo, color: '#00a652', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
+  bank_transfer: { name: 'Bank Transfer', Logo: BankLogo, color: '#1e3a5f', account: 'IBAN: PK00XXXX0000000000000', holder: 'Usman Online School', bank: 'HBL / Meezan Bank' },
 };
 
 export default function StudentFees() {
@@ -69,10 +99,10 @@ export default function StudentFees() {
         <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14 }}>💳 Payment Methods</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
           {Object.entries(PAYMENT_INFO).map(([key, info]) => (
-            <div key={key} style={{ padding: 14, borderRadius: 10, border: '1px solid var(--border-light)', background: 'var(--bg-body)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 20 }}>{info.icon}</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: info.color }}>{info.name}</span>
+            <div key={key} style={{ padding: 16, borderRadius: 12, border: '1px solid var(--border-light)', background: 'var(--bg-body)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <info.Logo size={32} />
+                <span style={{ fontSize: 15, fontWeight: 800, color: info.color }}>{info.name}</span>
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
                 <div><strong>Account:</strong> {info.account}</div>

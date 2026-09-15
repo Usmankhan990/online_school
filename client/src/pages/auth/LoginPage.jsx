@@ -17,13 +17,14 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedDemo, setSelectedDemo] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const userData = await login(email, password);
+      const userData = await login(email.trim().toLowerCase(), password);
       if (userData && userData.role) {
         const routes = { super_admin: '/admin', teacher: '/teacher', student: '/student', parent: '/parent' };
         navigate(routes[userData.role] || '/');
@@ -38,6 +39,7 @@ export default function LoginPage() {
   };
 
   const fillDemo = (cred) => {
+    setSelectedDemo(cred.label);
     setEmail(cred.email);
     setPassword(cred.pass);
     setError('');
@@ -118,21 +120,50 @@ export default function LoginPage() {
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20, marginTop: 8 }}>
             <p style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, textAlign: 'center' }}>Quick Demo Access</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DEMO_CREDS.map(c => (
-                <button key={c.label} onClick={() => fillDemo(c)} style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
-                  borderRadius: 10, border: '1px solid #e2e8f0', background: 'white',
-                  cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left'
-                }}
-                onMouseOver={e => { e.currentTarget.style.borderColor = c.color; e.currentTarget.style.background = '#f8fafc'; }}
-                onMouseOut={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'white'; }}>
-                  <span style={{ fontSize: 20 }}>{c.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>{c.label}</div>
-                    <div style={{ fontSize: 11, color: '#94a3b8' }}>Demo Login</div>
-                  </div>
-                </button>
-              ))}
+              {DEMO_CREDS.map(c => {
+                const isSelected = selectedDemo === c.label;
+                return (
+                  <button
+                    key={c.label}
+                    type="button"
+                    onClick={() => fillDemo(c)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '10px 14px',
+                      borderRadius: 10,
+                      border: isSelected ? `2px solid ${c.color}` : '1px solid #e2e8f0',
+                      background: isSelected ? '#f1f5f9' : 'white',
+                      boxShadow: isSelected ? `0 0 0 3px ${c.color}25, 0 4px 12px rgba(0,0,0,0.06)` : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
+                      outline: 'none',
+                    }}
+                    onMouseOver={e => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = c.color;
+                        e.currentTarget.style.background = '#f8fafc';
+                      }
+                    }}
+                    onMouseOut={e => {
+                      if (!isSelected) {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.background = 'white';
+                      }
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>{c.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: isSelected ? 700 : 600, color: '#0f172a' }}>{c.label}</div>
+                      <div style={{ fontSize: 11, color: isSelected ? c.color : '#94a3b8', fontWeight: isSelected ? 600 : 400 }}>
+                        {isSelected ? '✓ Selected' : 'Demo Login'}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

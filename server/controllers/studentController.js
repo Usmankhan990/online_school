@@ -49,11 +49,11 @@ exports.getStudentDashboard = async (req, res) => {
 
     const today = new Date().toISOString().split('T')[0];
     const todayAttendance = await Attendance.findOne({
-      where: { student_id: req.user.id, date: today },
+      where: { user_id: req.user.id, user_role: 'student', date: today },
     });
 
     const attendanceStats = await Attendance.findAll({
-      where: { student_id: req.user.id },
+      where: { user_id: req.user.id, user_role: 'student' },
       attributes: ['status'],
     });
     const totalDays = attendanceStats.length;
@@ -168,7 +168,7 @@ exports.markSelfieAttendance = async (req, res) => {
 
     // Check if already marked today
     const existing = await Attendance.findOne({
-      where: { student_id: req.user.id, class_id: profile.class_id, date: today },
+      where: { user_id: req.user.id, user_role: 'student', class_id: profile.class_id, date: today },
     });
     if (existing) {
       return res.status(400).json({ error: 'Attendance already marked for today.', attendance: existing });
@@ -187,7 +187,8 @@ exports.markSelfieAttendance = async (req, res) => {
     }
 
     const attendance = await Attendance.create({
-      student_id: req.user.id,
+      user_id: req.user.id,
+      user_role: 'student',
       class_id: profile.class_id,
       date: today,
       status: 'present',
@@ -406,7 +407,7 @@ exports.getMyResults = async (req, res) => {
 exports.getMyAttendance = async (req, res) => {
   try {
     const { month } = req.query;
-    const where = { student_id: req.user.id };
+    const where = { user_id: req.user.id, user_role: 'student' };
     if (month) {
       where.date = { [Op.like]: `${month}%` };
     }
@@ -416,7 +417,7 @@ exports.getMyAttendance = async (req, res) => {
     });
 
     // Attendance stats
-    const all = await Attendance.findAll({ where: { student_id: req.user.id } });
+    const all = await Attendance.findAll({ where: { user_id: req.user.id, user_role: 'student' } });
     const totalDays = all.length;
     const presentDays = all.filter(a => a.status === 'present' || a.status === 'late').length;
 
@@ -531,26 +532,44 @@ exports.getMyHomework = async (req, res) => {
   }
 };
 
-// Submit homework
+// Submit or edit/resubmit homework
 exports.submitHomework = async (req, res) => {
   try {
     const { homework_id, content } = req.body;
+    const answerText = content !== undefined ? content : req.body.answer_text;
     const hw = await ClassworkHomework.findByPk(homework_id);
     if (!hw) return res.status(404).json({ error: 'Homework not found.' });
 
+    // Check deadline
+    if (hw.due_date && new Date(hw.due_date) < new Date()) {
+      return res.status(400).json({ error: 'Homework deadline has passed.' });
+    }
+
     // Check if already submitted
     const existing = await Submission.findOne({ where: { homework_id, student_id: req.user.id } });
-    if (existing) return res.status(400).json({ error: 'Already submitted.' });
+    if (existing) {
+      if (existing.status === 'graded') {
+        return res.status(400).json({ error: 'Graded homework cannot be edited or resubmitted.' });
+      }
+
+      await existing.update({
+        answer_text: answerText !== undefined ? answerText : existing.answer_text,
+        file_path: req.file ? req.file.filename : existing.file_path,
+        submitted_at: new Date(),
+        status: 'submitted',
+      });
+      return res.json({ message: 'Homework resubmitted successfully!', submission: existing });
+    }
 
     const submission = await Submission.create({
       homework_id,
       student_id: req.user.id,
-      content,
+      answer_text: answerText || null,
       file_path: req.file ? req.file.filename : null,
       submitted_at: new Date(),
       status: 'submitted',
     });
-    res.status(201).json({ submission });
+    res.status(201).json({ message: 'Homework submitted successfully!', submission });
   } catch (err) {
     console.error('Submit homework error:', err);
     res.status(500).json({ error: 'Failed to submit homework.' });
