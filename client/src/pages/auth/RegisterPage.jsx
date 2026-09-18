@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineEye, HiOutlineEyeOff, HiOutlineExclamationCircle } from 'react-icons/hi';
+import logoImg from '../../assets/logo.jpg';
 
 const fallbackClasses = [
   { id: 1, display_name: 'KG / Pre-1' },
@@ -133,10 +134,10 @@ export default function RegisterPage() {
             Home
           </Link>
           <div className="auth-brand">
-            <div className="auth-brand-mark">U</div>
+            <img src={logoImg} alt="Taleem Ghar" className="auth-brand-mark" style={{ objectFit: 'cover', background: '#ffffff', padding: 2, borderRadius: 14 }} />
             <div>
               <h1>Student Admission</h1>
-              <p>Usman Online School</p>
+              <p>Taleem Ghar</p>
             </div>
           </div>
           <div className="auth-aside-copy">

@@ -8,7 +8,7 @@ export default function AboutPage() {
         {/* Hero */}
         <section className="gradient-bg-hero" style={{ padding: '60px 24px' }}>
           <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-            <h1 style={{ color: 'white', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>About Usman Online School</h1>
+            <h1 style={{ color: 'white', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>About Taleem Ghar</h1>
             <p style={{ color: '#94a3b8', fontSize: 18, lineHeight: 1.6 }}>Empowering students across Pakistan with quality education — from KG to 8th grade.</p>
           </div>
         </section>

@@ -3,9 +3,9 @@ import api from '../../services/api';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
-    schoolName: 'Usman Online School',
+    schoolName: 'Taleem Ghar',
     academicYear: '2026-2027',
-    contactEmail: 'admin@usmanschool.edu',
+    contactEmail: 'admin@taleemghar.edu',
     contactPhone: '+92 300 1234567',
     address: '123 Education Street, Lahore',
     maintenanceMode: 'false'
@@ -102,7 +102,7 @@ export default function AdminSettings() {
               </div>
               <div>
                 <label className="block mb-2 text-[15px] font-bold text-gray-900">JazzCash Account Title</label>
-                <input type="text" name="paymentJazzcashName" value={settings.paymentJazzcashName || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+                <input type="text" name="paymentJazzcashName" value={settings.paymentJazzcashName || ''} onChange={handleChange} placeholder="Taleem Ghar" className="form-input" />
               </div>
             </div>
 
@@ -113,7 +113,7 @@ export default function AdminSettings() {
               </div>
               <div>
                 <label className="block mb-2 text-[15px] font-bold text-gray-900">EasyPaisa Account Title</label>
-                <input type="text" name="paymentEasypaisaName" value={settings.paymentEasypaisaName || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+                <input type="text" name="paymentEasypaisaName" value={settings.paymentEasypaisaName || ''} onChange={handleChange} placeholder="Taleem Ghar" className="form-input" />
               </div>
             </div>
 
@@ -128,7 +128,7 @@ export default function AdminSettings() {
               </div>
               <div>
                 <label className="block mb-2 text-[15px] font-bold text-gray-900">Bank Account Title</label>
-                <input type="text" name="paymentBankHolder" value={settings.paymentBankHolder || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+                <input type="text" name="paymentBankHolder" value={settings.paymentBankHolder || ''} onChange={handleChange} placeholder="Taleem Ghar" className="form-input" />
               </div>
             </div>
           </div>

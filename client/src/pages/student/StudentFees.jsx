@@ -18,9 +18,9 @@ const BankLogo = ({ size = 28 }) => (
 );
 
 const DEFAULT_PAYMENT_INFO = {
-  jazzcash: { name: 'JazzCash', Logo: JazzCashLogo, color: '#e30613', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
-  easypaisa: { name: 'easypaisa', Logo: EasyPaisaLogo, color: '#292735', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
-  bank_transfer: { name: 'Bank Transfer', Logo: BankLogo, color: '#1e3a5f', account: 'IBAN: PK00XXXX0000000000000', holder: 'Usman Online School', bank: 'HBL / Meezan Bank' },
+  jazzcash: { name: 'JazzCash', Logo: JazzCashLogo, color: '#e30613', account: '03XX-XXXXXXX', holder: 'Taleem Ghar' },
+  easypaisa: { name: 'easypaisa', Logo: EasyPaisaLogo, color: '#292735', account: '03XX-XXXXXXX', holder: 'Taleem Ghar' },
+  bank_transfer: { name: 'Bank Transfer', Logo: BankLogo, color: '#1e3a5f', account: 'IBAN: PK00XXXX0000000000000', holder: 'Taleem Ghar', bank: 'HBL / Meezan Bank' },
 };
 
 export default function StudentFees() {

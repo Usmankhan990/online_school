@@ -13,7 +13,7 @@ export default function TermsPage() {
         <section style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
           <div className="card" style={{ padding: 40 }}>
             {[
-              { t: 'Acceptance', c: 'By using Usman Online School, you agree to these Terms. If you do not agree, please do not use the platform.' },
+              { t: 'Acceptance', c: 'By using Taleem Ghar, you agree to these Terms. If you do not agree, please do not use the platform.' },
               { t: 'Services', c: 'We provide an online school management platform including digital books, exams, homework management, attendance, results, and fee tracking for KG to 8th grade following PCTB Punjab curriculum.' },
               { t: 'User Accounts', c: 'Users must provide accurate information. Students require admin approval for account activation. Users are responsible for maintaining account security.' },
               { t: 'Academic Integrity', c: 'Students must not cheat on exams or submit plagiarized work. Violations may result in account suspension.' },

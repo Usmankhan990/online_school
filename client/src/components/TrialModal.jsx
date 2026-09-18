@@ -114,7 +114,7 @@ export default function TrialModal({ onClose, onSuccess }) {
 
           {/* Title & Subtitle */}
           <h2 style={{ fontSize: 28, fontWeight: 800, color: '#1e293b', marginBottom: 12, lineHeight: 1.2 }}>
-            Experience Usman Online School Free!
+            Experience Taleem Ghar Free!
           </h2>
           <p style={{ fontSize: 15, color: '#475569', lineHeight: 1.6, marginBottom: 24 }}>
             Get instant 3-day full access to video lectures, practice quizzes, and study material for KG to 8th Punjab Board.

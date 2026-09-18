@@ -37,7 +37,7 @@ app.use('/api/subjects', require('./routes/subjects'));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', school: 'Usman Online School', version: '1.0.0' });
+  res.json({ status: 'ok', school: 'Taleem Ghar', version: '1.0.0' });
 });
 
 // Serve frontend in production (Monorepo setup)
@@ -71,7 +71,7 @@ async function start() {
     }
     
     app.listen(PORT, () => {
-      console.log(`\n🏫 Usman Online School Server running on http://localhost:${PORT}`);
+      console.log(`\n🏫 Taleem Ghar Server running on http://localhost:${PORT}`);
       console.log(`📚 API: http://localhost:${PORT}/api/health\n`);
     });
   } catch (err) {

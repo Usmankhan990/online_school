@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
+import logoImg from '../assets/logo.jpg';
 /* ═══════════════════════════════════════════════════
    ICON COMPONENTS (inline SVG for zero-dep icons)
    ═══════════════════════════════════════════════════ */
@@ -190,9 +191,9 @@ export default function DashboardLayout({ children }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
-          <div className="sidebar-brand-icon">U</div>
+          <img src={logoImg} alt="Taleem Ghar" className="sidebar-brand-icon" style={{ objectFit: 'cover', background: '#ffffff', padding: 1 }} />
           <div className="sidebar-brand-text">
-            <h2>Usman Online School</h2>
+            <h2>Taleem Ghar</h2>
             <p>KG to 8th Punjab Board</p>
           </div>
         </div>

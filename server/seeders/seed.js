@@ -276,7 +276,7 @@ async function seed() {
 
     await Notification.create({
       user_id: student.id,
-      title: 'Welcome to Usman Online School! 🎓',
+      title: 'Welcome to Taleem Ghar! 🎓',
       message: 'Your account is active. Explore your courses, books, and timetable.',
       type: 'success',
     });

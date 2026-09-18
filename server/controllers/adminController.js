@@ -110,7 +110,7 @@ exports.approveStudent = async (req, res) => {
         // Notify parent
         await Notification.create({
           user_id: parentUser.id,
-          title: 'Welcome to Usman Online School! 👋',
+          title: 'Welcome to Taleem Ghar! 👋',
           message: `Your child ${student.full_name} has been admitted. Login with email: ${parentEmail} and password: your CNIC number (without dashes).`,
           type: 'success',
         });
@@ -137,7 +137,7 @@ exports.approveStudent = async (req, res) => {
     await Notification.create({
       user_id: id,
       title: 'Registration Approved! 🎉',
-      message: 'Welcome to Usman Online School! Your registration has been approved. You can now login and access your courses.',
+      message: 'Welcome to Taleem Ghar! Your registration has been approved. You can now login and access your courses.',
       type: 'success',
     });
 

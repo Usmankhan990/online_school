@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import logoImg from '../../assets/logo.jpg';
 
 export default function StudentReportCard() {
   const [data, setData] = useState(null);
@@ -41,10 +42,13 @@ export default function StudentReportCard() {
       {/* Student Info Card */}
       <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, #1e3a5f, #0f172a)', color: 'white' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800 }}>{data.student?.name}</h2>
-            <p style={{ fontSize: 14, opacity: 0.8, marginTop: 4 }}>Class: {data.student?.class} | Roll No: {data.student?.rollNo || '-'}</p>
-            <p style={{ fontSize: 12, opacity: 0.6, marginTop: 2 }}>Usman Online School — Punjab Board (PCTB)</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <img src={logoImg} alt="Taleem Ghar" style={{ width: 48, height: 48, borderRadius: 10, background: '#ffffff', padding: 2, objectFit: 'cover', flexShrink: 0 }} />
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 800 }}>{data.student?.name}</h2>
+              <p style={{ fontSize: 14, opacity: 0.8, marginTop: 4 }}>Class: {data.student?.class} | Roll No: {data.student?.rollNo || '-'}</p>
+              <p style={{ fontSize: 12, opacity: 0.6, marginTop: 2 }}>Taleem Ghar — Punjab Board (PCTB)</p>
+            </div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 48, fontWeight: 900, color: gradeColors[data.summary?.grade] || 'white' }}>{data.summary?.grade}</div>

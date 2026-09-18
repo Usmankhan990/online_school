@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import logoImg from '../../assets/logo.jpg';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -41,9 +42,9 @@ function PublicNav() {
     <nav style={{ background: 'rgba(30, 58, 95, 0.95)', backdropFilter: 'blur(20px)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 70 }}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18 }}>U</div>
+          <img src={logoImg} alt="Taleem Ghar" style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'cover', background: '#ffffff', padding: 1 }} />
           <div>
-            <div style={{ color: 'white', fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>Usman Online School</div>
+            <div style={{ color: 'white', fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>Taleem Ghar</div>
             <div style={{ color: 'rgba(203,213,225,0.7)', fontSize: 11 }}>KG to 8th Punjab Board</div>
           </div>
         </Link>
@@ -85,8 +86,8 @@ function Footer() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32, marginBottom: 32 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 16 }}>U</div>
-              <span style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>Usman Online School</span>
+              <img src={logoImg} alt="Taleem Ghar" style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'cover', background: '#ffffff', padding: 1 }} />
+              <span style={{ color: 'white', fontWeight: 700, fontSize: 15 }}>Taleem Ghar</span>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.6 }}>Complete online school platform for KG to 8th grade following Punjab Board (PCTB 2026) curriculum.</p>
           </div>
@@ -112,7 +113,7 @@ function Footer() {
           </div>
         </div>
         <div style={{ borderTop: '1px solid #1e293b', paddingTop: 20, textAlign: 'center', fontSize: 13 }}>
-          © {new Date().getFullYear()} Usman Online School. All rights reserved.
+          © {new Date().getFullYear()} Taleem Ghar. All rights reserved.
         </div>
       </div>
     </footer>
@@ -276,7 +277,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <h2 style={{ color: 'white', fontSize: 36, fontWeight: 800, marginBottom: 16 }}>Ready to Start Learning?</h2>
           <p style={{ color: '#94a3b8', fontSize: 16, marginBottom: 32, lineHeight: 1.6 }}>
-            Join Usman Online School today. Admissions are open for session 2026.
+            Join Taleem Ghar today. Admissions are open for session 2026.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/register" className="btn btn-accent btn-lg" style={{ fontSize: 16 }}>Apply for Admission →</Link>

@@ -1,7 +1,7 @@
 {
   "name": "usman-online-school-server",
   "version": "1.0.0",
-  "description": "Usman Online School - KG to 8th Punjab Board Backend",
+  "description": "Taleem Ghar - KG to 8th Punjab Board Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

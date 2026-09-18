@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import logoImg from '../../assets/logo.jpg';
 
 const DEMO_CREDS = [
   { label: 'Admin', email: 'admin@usmanonlineschool.com', pass: 'Admin@123', icon: '🛡️', color: '#1e3a5f' },
@@ -54,8 +55,8 @@ export default function LoginPage() {
       }}>
         <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div style={{ width: 72, height: 72, borderRadius: 18, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 900, fontSize: 32, margin: '0 auto 24px', boxShadow: '0 8px 32px rgba(16,185,129,0.3)' }}>U</div>
-          <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Usman Online School</h1>
+          <img src={logoImg} alt="Taleem Ghar" style={{ width: 88, height: 88, borderRadius: 22, objectFit: 'cover', background: '#ffffff', padding: 2, margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
+          <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Taleem Ghar</h1>
           <p style={{ color: '#94a3b8', fontSize: 15, marginBottom: 40 }}>KG to 8th • Punjab Board • PCTB 2026</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
             {['📚 66+ Books', '📝 Exams', '📊 Results', '👨‍👩‍👧 Parent Portal'].map(t => (
@@ -70,8 +71,8 @@ export default function LoginPage() {
         <div style={{ width: '100%', maxWidth: 440 }} className="animate-fade-in">
           {/* Mobile logo */}
           <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'linear-gradient(135deg, #10b981, #059669)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 24, marginBottom: 12 }}>U</div>
-            <h2 style={{ color: '#0f172a', fontSize: 20, fontWeight: 800 }}>Usman Online School</h2>
+            <img src={logoImg} alt="Taleem Ghar" style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'cover', background: '#ffffff', padding: 2, display: 'inline-block', marginBottom: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
+            <h2 style={{ color: '#0f172a', fontSize: 20, fontWeight: 800 }}>Taleem Ghar</h2>
           </div>
 
           <div>

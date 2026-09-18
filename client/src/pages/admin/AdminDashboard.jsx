@@ -53,7 +53,7 @@ export default function AdminDashboard() {
                 Welcome, {user?.full_name?.split(' ')[0]}! 👑
               </h1>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 400 }}>
-                The Usman Online School ecosystem is running smoothly. Your super-admin control panel is ready.
+                The Taleem Ghar ecosystem is running smoothly. Your super-admin control panel is ready.
               </p>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>

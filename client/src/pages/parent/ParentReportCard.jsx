@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import logoImg from '../../assets/logo.jpg';
 
 export default function ParentReportCard() {
   const [children, setChildren] = useState([]);
@@ -47,11 +48,19 @@ export default function ParentReportCard() {
 
         return (
           <div key={child.profile.user_id} className="card" style={{ overflow: 'hidden' }}>
-            <div style={{ background: 'linear-gradient(135deg, #1e3a5f, #0f172a)', padding: 20, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div><h3 style={{ fontSize: 18, fontWeight: 800 }}>{child.profile.user?.full_name}</h3>
-                <p style={{ fontSize: 13, opacity: 0.7 }}>Class: {child.profile.class?.display_name} | Roll No: {child.profile.roll_number || '-'}</p></div>
-              <div style={{ textAlign: 'center' }}><div style={{ fontSize: 36, fontWeight: 900, color: gradeColors[overallGrade] }}>{overallGrade}</div>
-                <div style={{ fontSize: 13 }}>{overallPct}%</div></div>
+            <div style={{ background: 'linear-gradient(135deg, #1e3a5f, #0f172a)', padding: 20, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img src={logoImg} alt="Taleem Ghar" style={{ width: 44, height: 44, borderRadius: 10, background: '#ffffff', padding: 2, objectFit: 'cover', flexShrink: 0 }} />
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 800 }}>{child.profile.user?.full_name}</h3>
+                  <p style={{ fontSize: 13, opacity: 0.7 }}>Class: {child.profile.class?.display_name} | Roll No: {child.profile.roll_number || '-'}</p>
+                  <p style={{ fontSize: 11, opacity: 0.5, marginTop: 2 }}>Taleem Ghar — Punjab Board (PCTB)</p>
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: gradeColors[overallGrade] }}>{overallGrade}</div>
+                <div style={{ fontSize: 13 }}>{overallPct}%</div>
+              </div>
             </div>
             <div style={{ padding: 0, overflow: 'auto' }}>
               {subjects.length === 0 ? (
