@@ -62,7 +62,7 @@ export default function AdminStudents() {
     setSaving(false);
   };
 
-  const field = (label, value, onChange, type = 'text', opts = null) => (
+  const field = (label, value, onChange, type = 'text', opts = null, maxLength = undefined) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>{label}</label>
       {opts ? (
@@ -71,7 +71,7 @@ export default function AdminStudents() {
           {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : (
-        <input type={type} value={value || ''} onChange={e => onChange(e.target.value)}
+        <input type={type} maxLength={maxLength} value={value || ''} onChange={e => onChange(e.target.value)}
           style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, color: '#0f172a', background: '#fff' }} />
       )}
     </div>
@@ -181,7 +181,7 @@ export default function AdminStudents() {
             <form onSubmit={handleEdit} style={{ padding: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 {field('Full Name', editModal.full_name, v => setEditModal(p => ({ ...p, full_name: v })))}
-                {field('Phone', editModal.phone, v => setEditModal(p => ({ ...p, phone: v })))}
+                {field('Phone', editModal.phone, v => setEditModal(p => ({ ...p, phone: v.replace(/[^0-9]/g, '').slice(0, 11) })), 'text', null, 11)}
                 {field('Status', editModal.status, v => setEditModal(p => ({ ...p, status: v })), 'text', [
                   { value: 'active', label: 'Active' },
                   { value: 'trial', label: 'Trial' },
@@ -191,8 +191,8 @@ export default function AdminStudents() {
                 {field('Roll Number', editModal.studentProfile?.roll_number, v => setProfile('roll_number', v))}
                 {field('Father Name', editModal.studentProfile?.father_name, v => setProfile('father_name', v))}
                 {field('Mother Name', editModal.studentProfile?.mother_name, v => setProfile('mother_name', v))}
-                {field('Contact 1', editModal.studentProfile?.contact_number_1, v => setProfile('contact_number_1', v))}
-                {field('Contact 2', editModal.studentProfile?.contact_number_2, v => setProfile('contact_number_2', v))}
+                {field('Contact 1', editModal.studentProfile?.contact_number_1, v => setProfile('contact_number_1', v.replace(/[^0-9]/g, '').slice(0, 11)), 'text', null, 11)}
+                {field('Contact 2', editModal.studentProfile?.contact_number_2, v => setProfile('contact_number_2', v.replace(/[^0-9]/g, '').slice(0, 11)), 'text', null, 11)}
                 {field('Class', editModal.studentProfile?.class_id, v => setProfile('class_id', v), 'text',
                   [{ value: '', label: '— Select Class —' }, ...classes.map(c => ({ value: c.id, label: c.display_name }))]
                 )}

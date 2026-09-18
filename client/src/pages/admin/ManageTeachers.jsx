@@ -16,6 +16,11 @@ export default function ManageTeachers() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'phone') {
+      const numbersOnly = value.replace(/[^0-9]/g, '').slice(0, 11);
+      setForm(f => ({ ...f, phone: numbersOnly }));
+      return;
+    }
     if (['full_name', 'qualification', 'specialization'].includes(name)) {
       const capitalized = value.replace(/(^|\s)([a-z\u00E0-\u00FC])/g, (m, p, c) => p + c.toUpperCase());
       setForm(f => ({ ...f, [name]: capitalized }));
@@ -135,7 +140,7 @@ export default function ManageTeachers() {
               )}
             </div>
 
-            <input className="form-input" name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
+            <input className="form-input" name="phone" placeholder="Phone (11 digits)" maxLength={11} inputMode="numeric" value={form.phone} onChange={handleChange} />
             <input className="form-input" name="qualification" placeholder="Qualification" value={form.qualification} onChange={handleChange} />
             <input className="form-input" name="specialization" placeholder="Specialization" value={form.specialization} onChange={handleChange} />
             <input className="form-input" name="experience_years" type="number" min="0" placeholder="Experience (Years)" value={form.experience_years} onChange={handleChange} />

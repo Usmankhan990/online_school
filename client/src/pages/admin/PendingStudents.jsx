@@ -52,102 +52,125 @@ export default function PendingStudents() {
       </div>
 
       {students.length === 0 ? (
-        <div className="glass-card p-12 text-center">
-          <HiOutlineCheck className="w-16 h-16 text-emerald-400/30 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">All Clear!</h3>
-          <p className="text-dark-400 text-sm">No pending student registrations</p>
+        <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12 }}>
+          <HiOutlineCheck size={48} style={{ color: '#10b981', margin: '0 auto 12px', opacity: 0.6 }} />
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>All Clear!</h3>
+          <p style={{ color: '#64748b', fontSize: 14 }}>No pending student registrations waiting for approval.</p>
         </div>
       ) : (
-        <div className="glass-card table-responsive">
-          <table className="table-dark">
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Class & Medium</th>
-                <th>Father / CNIC</th>
-                <th>Contact</th>
-                <th>Parent Email</th>
-                <th>Docs</th>
-                <th style={{ textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(student => (
-                <tr key={student.id}>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {student.full_name?.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-gray-900 text-sm font-medium leading-tight">{student.full_name}</p>
-                        <p className="text-dark-500 text-xs">{student.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="text-sm font-medium text-gray-900">
-                      {student.studentProfile?.class?.display_name || 'N/A'}
-                    </div>
-                    <span className="text-xs text-dark-400">
-                      {student.studentProfile?.medium || 'English'} Medium
-                    </span>
-                  </td>
-                  <td>
-                    <div className="text-sm font-medium text-gray-900">
-                      {student.studentProfile?.father_name || '-'}
-                    </div>
-                    <span className="text-xs text-dark-400 font-mono">
-                      {student.studentProfile?.father_cnic || '-'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="text-sm text-gray-900 font-mono">
-                      {student.studentProfile?.contact_number_1 || student.phone || '-'}
-                    </div>
-                    {student.studentProfile?.contact_number_2 && (
-                      <span className="text-xs text-dark-400 font-mono block">
-                        {student.studentProfile?.contact_number_2}
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <span className="text-sm text-dark-400">
-                      {student.studentProfile?.parent_email || '-'}
-                    </span>
-                  </td>
-                  <td>
-                    {student.documents?.length > 0 ? (
-                      <span className="badge badge-info text-xs inline-flex items-center">
-                        <HiOutlineDocumentDownload className="w-3 h-3 mr-1" />
-                        {student.documents.length} docs
-                      </span>
-                    ) : (
-                      <span className="text-xs text-dark-400">-</span>
-                    )}
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleApprove(student.id)}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-                        title="Approve student"
-                      >
-                        <HiOutlineCheck className="w-3.5 h-3.5" /> Approve
-                      </button>
-                      <button
-                        onClick={() => setRejectModal(student.id)}
-                        className="px-3 py-1.5 rounded-lg bg-rose-500/15 text-rose-600 hover:bg-rose-500/25 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-                        title="Reject student"
-                      >
-                        <HiOutlineX className="w-3.5 h-3.5" /> Reject
-                      </button>
-                    </div>
-                  </td>
+        <div className="card" style={{ border: '1px solid #e2e8f0', borderRadius: 12, background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+          <div className="table-responsive" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '100%' }}>
+              <thead>
+                <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Student</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Class & Medium</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Father / CNIC</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Contact</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Parent Email</th>
+                  <th style={{ padding: '12px 8px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Docs</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {students.map(student => (
+                  <tr
+                    key={student.id}
+                    style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}
+                    onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
+                  >
+                    <td style={{ padding: '12px 10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                          {student.full_name?.charAt(0)}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{student.full_name}</div>
+                          <div style={{ fontSize: 11, color: '#64748b', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{student.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'inline-block', padding: '1px 7px', borderRadius: 5, background: '#eff6ff', color: '#1d4ed8', fontSize: 11, fontWeight: 600 }}>
+                        {student.studentProfile?.class?.display_name || 'N/A'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                        {student.studentProfile?.medium || 'English'} Medium
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>
+                        {student.studentProfile?.father_name || '-'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', marginTop: 2 }}>
+                        {student.studentProfile?.father_cnic || '-'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px 10px', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 12, color: '#0f172a', fontWeight: 500, fontFamily: 'monospace' }}>
+                        {student.studentProfile?.contact_number_1 || student.phone || '-'}
+                      </div>
+                      {student.studentProfile?.contact_number_2 && student.studentProfile?.contact_number_2 !== student.studentProfile?.contact_number_1 && (
+                        <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', marginTop: 2 }}>
+                          {student.studentProfile?.contact_number_2}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px 10px' }}>
+                      <span style={{ fontSize: 12, color: student.studentProfile?.parent_email ? '#0f172a' : '#94a3b8', wordBreak: 'break-all' }}>
+                        {student.studentProfile?.parent_email || '-'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      {student.documents?.length > 0 ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 5, background: '#f1f5f9', color: '#475569', fontSize: 11, fontWeight: 600 }}>
+                          <HiOutlineDocumentDownload size={13} />
+                          {student.documents.length}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: 12 }}>-</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '12px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <button
+                          onClick={() => handleApprove(student.id)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            padding: '5px 10px', borderRadius: 7,
+                            background: '#ecfdf5', color: '#059669',
+                            border: '1px solid #a7f3d0', fontSize: 11, fontWeight: 700,
+                            cursor: 'pointer', transition: 'all 0.15s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.background = '#d1fae5'}
+                          onMouseOut={e => e.currentTarget.style.background = '#ecfdf5'}
+                          title="Approve student"
+                        >
+                          <HiOutlineCheck size={14} /> Approve
+                        </button>
+                        <button
+                          onClick={() => setRejectModal(student.id)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            padding: '5px 10px', borderRadius: 7,
+                            background: '#fef2f2', color: '#dc2626',
+                            border: '1px solid #fecaca', fontSize: 11, fontWeight: 700,
+                            cursor: 'pointer', transition: 'all 0.15s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
+                          onMouseOut={e => e.currentTarget.style.background = '#fef2f2'}
+                          title="Reject student"
+                        >
+                          <HiOutlineX size={14} /> Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

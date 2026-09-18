@@ -49,6 +49,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (['contact_number_1', 'contact_number_2'].includes(name)) {
+      const numbersOnly = value.replace(/[^0-9]/g, '').slice(0, 11);
+      setForm(f => ({ ...f, [name]: numbersOnly }));
+      return;
+    }
+
     if (['full_name', 'father_name', 'mother_name'].includes(name)) {
       const capitalized = value.replace(/(^|\s)([a-z\u00E0-\u00FC])/g, (m, p, c) => p + c.toUpperCase());
       setForm(f => ({ ...f, [name]: capitalized }));
@@ -242,10 +248,10 @@ export default function RegisterPage() {
                 <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>Fill this form as per CNIC</span>
               </Field>
               <Field label="Contact Number 1 *">
-                <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} className="form-input" placeholder="03001234567" required />
+                <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" required />
               </Field>
               <Field label="Contact Number 2">
-                <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} className="form-input" placeholder="Optional" />
+                <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="Optional" />
               </Field>
               <Field label="Parent Email *">
                 <input name="parent_email" type="email" value={form.parent_email} onChange={handleChange} className="form-input" placeholder="parent@email.com" required />
