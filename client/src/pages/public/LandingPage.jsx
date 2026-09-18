@@ -57,7 +57,29 @@ function PublicNav() {
           ))}
         </div>
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: 12 }}>
-          <Link to="/login" className="btn btn-ghost" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}>Sign In</Link>
+          <Link
+            to="/login"
+            className="btn"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.25)',
+              fontWeight: 600,
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={e => {
+              e.currentTarget.style.background = '#ffffff';
+              e.currentTarget.style.color = '#1e3a5f';
+              e.currentTarget.style.borderColor = '#ffffff';
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+            }}
+          >
+            Sign In
+          </Link>
           <Link to="/register" className="btn btn-accent">Apply Now</Link>
         </div>
         <button className="md:hidden" onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}>
@@ -162,9 +184,22 @@ export default function LandingPage() {
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24' }} />
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981' }} />
                 </div>
-                <div style={{ flex: 1, borderRadius: 12, background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ fontSize: 56 }}>🎓</span>
-                  <span style={{ color: '#94a3b8', fontSize: 14 }}>Student Dashboard Preview</span>
+                <div style={{ flex: 1, borderRadius: 12, background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, border: '1px solid rgba(255,255,255,0.05)', padding: 16 }}>
+                  <img
+                    src={logoImg}
+                    alt="Taleem Ghar"
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 18,
+                      objectFit: 'cover',
+                      background: '#ffffff',
+                      padding: 2,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)'
+                    }}
+                  />
+                  <span style={{ color: '#ffffff', fontSize: 15, fontWeight: 700 }}>Taleem Ghar Portal</span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {['📚 Books', '📝 Exams', '📊 Results'].map(t => (
                       <span key={t} style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(16,185,129,0.15)' }}>{t}</span>
@@ -281,7 +316,29 @@ export default function LandingPage() {
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/register" className="btn btn-accent btn-lg" style={{ fontSize: 16 }}>Apply for Admission →</Link>
-            <Link to="/login" className="btn btn-lg" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', fontSize: 16 }}>Sign In</Link>
+            <Link
+              to="/login"
+              className="btn btn-lg"
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.25)',
+                fontSize: 16,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.background = '#ffffff';
+                e.currentTarget.style.color = '#1e3a5f';
+                e.currentTarget.style.borderColor = '#ffffff';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
+              }}
+            >
+              Sign In
+            </Link>
           </div>
         </div>
       </section>

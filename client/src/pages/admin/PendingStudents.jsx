@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { HiOutlineCheck, HiOutlineX, HiOutlineDocumentDownload, HiOutlineEye } from 'react-icons/hi';
+import PageLoader from '../../components/PageLoader';
 
 export default function PendingStudents() {
   const [students, setStudents] = useState([]);
@@ -38,7 +39,7 @@ export default function PendingStudents() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" /></div>;
+    return <PageLoader text="Loading pending registrations..." />;
   }
 
   return (

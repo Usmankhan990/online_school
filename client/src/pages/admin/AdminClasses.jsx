@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import PageLoader from '../../components/PageLoader';
 
 export default function AdminClasses() {
   const [classes, setClasses] = useState([]);
@@ -129,14 +130,7 @@ export default function AdminClasses() {
   const totalStudents = classes.reduce((sum, c) => sum + (c.studentsCount || 0), 0);
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 48, height: 48, border: '3px solid var(--border-light)', borderTopColor: '#1e3a5f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>Loading classes...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Loading classes..." />;
   }
 
   return (
