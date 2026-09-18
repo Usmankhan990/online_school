@@ -63,6 +63,13 @@ async function start() {
     await sequelize.sync();
     console.log('✅ Database connected');
     
+    try {
+      const runMigrations = require('./scripts/runMigrations');
+      await runMigrations();
+    } catch (migErr) {
+      console.error('Migration warning:', migErr.message);
+    }
+    
     app.listen(PORT, () => {
       console.log(`\n🏫 Usman Online School Server running on http://localhost:${PORT}`);
       console.log(`📚 API: http://localhost:${PORT}/api/health\n`);
