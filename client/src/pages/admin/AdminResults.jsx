@@ -28,62 +28,54 @@ export default function AdminResults() {
         <p>Recent exam results across all classes and subjects.</p>
       </div>
 
-      <div className="card table-responsive">
-        <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>Recent Graded Exams</h2>
+      <div className="glass-card table-responsive">
+        <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">Recent Graded Exams</h2>
         
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>Loading...</div>
+          <div className="text-center p-8 text-dark-500">Loading...</div>
         ) : error ? (
-          <div style={{ padding: 16, background: '#fee2e2', color: '#b91c1c', margin: 20, borderRadius: 8 }}>{error}</div>
+          <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg m-4">{error}</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-secondary)' }}>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Student</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Exam Title</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Class / Subject</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Score</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Percentage</th>
+          <table className="table-dark">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Exam Title</th>
+                <th>Class / Subject</th>
+                <th>Score</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center text-dark-500 py-8">No results found.</td>
                 </tr>
-              </thead>
-              <tbody>
-                {results.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)' }}>No results found.</td>
-                  </tr>
-                ) : (
-                  results.map(attempt => {
-                    const maxScore = attempt.exam?.total_marks || 1;
-                    const percentage = Math.round((attempt.score / maxScore) * 100);
-                    return (
-                      <tr key={attempt.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '12px 20px', fontWeight: 500 }}>{attempt.student?.full_name}</td>
-                        <td style={{ padding: '12px 20px' }}>{attempt.exam?.title}</td>
-                        <td style={{ padding: '12px 20px' }}>
-                          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                            {attempt.exam?.course?.class?.grade_level || '-'} • {attempt.exam?.course?.subject?.name || '-'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 20px', fontWeight: 600 }}>
-                          {attempt.score} / {maxScore}
-                        </td>
-                        <td style={{ padding: '12px 20px' }}>
-                          <span style={{
-                            padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-                            background: percentage >= 50 ? '#d1fae5' : '#fee2e2',
-                            color: percentage >= 50 ? '#065f46' : '#991b1b'
-                          }}>
-                            {percentage}%
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+              ) : (
+                results.map(attempt => {
+                  const maxScore = attempt.exam?.total_marks || 1;
+                  const percentage = Math.round((attempt.score / maxScore) * 100);
+                  return (
+                    <tr key={attempt.id}>
+                      <td className="font-medium text-gray-900">{attempt.student?.full_name}</td>
+                      <td className="text-dark-300 text-sm">{attempt.exam?.title}</td>
+                      <td className="text-dark-300 text-sm">
+                        {attempt.exam?.course?.class?.grade_level || '-'} • {attempt.exam?.course?.subject?.name || '-'}
+                      </td>
+                      <td className="font-semibold text-gray-900">
+                        {attempt.score} / {maxScore}
+                      </td>
+                      <td>
+                        <span className={`badge ${percentage >= 50 ? 'badge-success' : 'badge-danger'}`}>
+                          {percentage}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

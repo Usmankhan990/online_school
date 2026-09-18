@@ -62,27 +62,27 @@ export default function AdminAttendance() {
           <div className="card table-responsive">
             <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>Attendance Records</h2>
             <div style={{ overflowX: 'auto' }}>
-              <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', border: '1px solid var(--border-color)' }}>
                 <thead>
                   <tr style={{ background: 'var(--bg-secondary)' }}>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>User</th>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Role</th>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Class</th>
-                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
+                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600, border: '1px solid var(--border-color)' }}>User</th>
+                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600, border: '1px solid var(--border-color)' }}>Role</th>
+                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600, border: '1px solid var(--border-color)' }}>Class</th>
+                    <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600, border: '1px solid var(--border-color)' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.records.length === 0 ? (
                     <tr>
-                      <td colSpan="4" style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)' }}>No records for this date.</td>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>No records for this date.</td>
                     </tr>
                   ) : (
                     data.records.map(record => (
-                      <tr key={record.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '12px 20px' }}>{record.user?.full_name}</td>
-                        <td style={{ padding: '12px 20px', textTransform: 'capitalize' }}>{record.user?.role}</td>
-                        <td style={{ padding: '12px 20px' }}>{record.class ? `${record.class.grade_level} (${record.class.section})` : '-'}</td>
-                        <td style={{ padding: '12px 20px' }}>
+                      <tr key={record.id}>
+                        <td style={{ padding: '12px 20px', border: '1px solid var(--border-color)' }}>{record.user?.full_name}</td>
+                        <td style={{ padding: '12px 20px', textTransform: 'capitalize', border: '1px solid var(--border-color)' }}>{record.user?.role}</td>
+                        <td style={{ padding: '12px 20px', border: '1px solid var(--border-color)' }}>{record.class ? `${record.class.grade_level} (${record.class.section})` : '-'}</td>
+                        <td style={{ padding: '12px 20px', border: '1px solid var(--border-color)' }}>
                           <span style={{ 
                             padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
                             background: record.status === 'present' ? '#d1fae5' : record.status === 'absent' ? '#fee2e2' : record.status === 'late' ? '#fef3c7' : '#dbeafe',

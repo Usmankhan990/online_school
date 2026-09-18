@@ -40,14 +40,14 @@ export default function StudentResults() {
                     <HiOutlineAcademicCap className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-white font-semibold">{result.exam?.title}</h3>
+                    <h3 className="text-gray-900 font-semibold">{result.exam?.title}</h3>
                     <p className="text-dark-400 text-xs">{result.exam?.course?.subject?.name} • {result.exam?.type}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 text-center">
                   <div>
                     <p className="text-xs text-dark-500">Obtained</p>
-                    <p className="text-lg font-bold text-white">{result.total_obtained}/{result.exam?.total_marks}</p>
+                    <p className="text-lg font-bold text-gray-900">{result.total_obtained}/{result.exam?.total_marks}</p>
                   </div>
                   <div>
                     <p className="text-xs text-dark-500">Percentage</p>

@@ -10,8 +10,10 @@ export default function ParentFees() {
     const fetch = async () => {
       try {
         const res = await api.get('/parent/dashboard');
-        setDashboard(res.data);
-        setFees(res.data.child?.fees || []);
+        const childrenList = res.data.children || [];
+        const firstChild = childrenList.length > 0 ? childrenList[0] : null;
+        setDashboard(firstChild);
+        setFees(firstChild?.fees || []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -22,7 +24,7 @@ export default function ParentFees() {
 
   if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
-  const child = dashboard?.child;
+  const child = dashboard?.profile?.user;
   const totalPaid = fees.filter(f => f.status === 'paid').reduce((s, f) => s + parseFloat(f.amount || 0), 0);
   const totalDue = fees.filter(f => f.status !== 'paid' && f.status !== 'waived').reduce((s, f) => s + parseFloat(f.amount || 0), 0);
 

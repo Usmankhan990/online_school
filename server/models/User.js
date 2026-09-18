@@ -33,7 +33,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
   },
   status: {
-    type: DataTypes.ENUM('pending', 'active', 'rejected', 'suspended'),
+    type: DataTypes.ENUM('pending', 'active', 'trial', 'rejected', 'suspended'),
     defaultValue: 'active',
   },
   rejection_reason: {

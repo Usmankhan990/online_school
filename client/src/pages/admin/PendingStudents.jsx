@@ -45,7 +45,7 @@ export default function PendingStudents() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Pending Approvals</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
           <p className="text-dark-400 text-sm mt-1">{students.length} students waiting for approval</p>
         </div>
         <span className="badge badge-warning text-base px-4 py-1">{students.length} Pending</span>
@@ -54,54 +54,100 @@ export default function PendingStudents() {
       {students.length === 0 ? (
         <div className="glass-card p-12 text-center">
           <HiOutlineCheck className="w-16 h-16 text-emerald-400/30 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-1">All Clear!</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">All Clear!</h3>
           <p className="text-dark-400 text-sm">No pending student registrations</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {students.map(student => (
-            <div key={student.id} className="glass-card p-5 animate-slide-up">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {student.full_name?.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold">{student.full_name}</h3>
-                    <p className="text-dark-400 text-sm">{student.email}</p>
-                    <div className="flex flex-wrap gap-3 mt-2 text-xs text-dark-400">
-                      <span>📚 {student.studentProfile?.class?.display_name || 'N/A'}</span>
-                      <span>👨 {student.studentProfile?.father_name}</span>
-                      <span>🪪 {student.studentProfile?.father_cnic}</span>
-                      <span>📱 {student.studentProfile?.contact_number_1}</span>
-                      <span>🌐 {student.studentProfile?.medium} Medium</span>
+        <div className="glass-card table-responsive">
+          <table className="table-dark">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Class & Medium</th>
+                <th>Father / CNIC</th>
+                <th>Contact</th>
+                <th>Parent Email</th>
+                <th>Docs</th>
+                <th style={{ textAlign: 'center' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map(student => (
+                <tr key={student.id}>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        {student.full_name?.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-gray-900 text-sm font-medium leading-tight">{student.full_name}</p>
+                        <p className="text-dark-500 text-xs">{student.email}</p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {student.documents?.length > 0 && (
-                    <span className="badge badge-info">
-                      <HiOutlineDocumentDownload className="w-3 h-3 mr-1" />
-                      {student.documents.length} docs
+                  </td>
+                  <td>
+                    <div className="text-sm font-medium text-gray-900">
+                      {student.studentProfile?.class?.display_name || 'N/A'}
+                    </div>
+                    <span className="text-xs text-dark-400">
+                      {student.studentProfile?.medium || 'English'} Medium
                     </span>
-                  )}
-                  <button
-                    onClick={() => handleApprove(student.id)}
-                    className="px-4 py-2 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 text-sm font-medium transition-colors flex items-center gap-1.5"
-                  >
-                    <HiOutlineCheck className="w-4 h-4" /> Approve
-                  </button>
-                  <button
-                    onClick={() => setRejectModal(student.id)}
-                    className="px-4 py-2 rounded-lg bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 text-sm font-medium transition-colors flex items-center gap-1.5"
-                  >
-                    <HiOutlineX className="w-4 h-4" /> Reject
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td>
+                    <div className="text-sm font-medium text-gray-900">
+                      {student.studentProfile?.father_name || '-'}
+                    </div>
+                    <span className="text-xs text-dark-400 font-mono">
+                      {student.studentProfile?.father_cnic || '-'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="text-sm text-gray-900 font-mono">
+                      {student.studentProfile?.contact_number_1 || student.phone || '-'}
+                    </div>
+                    {student.studentProfile?.contact_number_2 && (
+                      <span className="text-xs text-dark-400 font-mono block">
+                        {student.studentProfile?.contact_number_2}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <span className="text-sm text-dark-400">
+                      {student.studentProfile?.parent_email || '-'}
+                    </span>
+                  </td>
+                  <td>
+                    {student.documents?.length > 0 ? (
+                      <span className="badge badge-info text-xs inline-flex items-center">
+                        <HiOutlineDocumentDownload className="w-3 h-3 mr-1" />
+                        {student.documents.length} docs
+                      </span>
+                    ) : (
+                      <span className="text-xs text-dark-400">-</span>
+                    )}
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handleApprove(student.id)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/25 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                        title="Approve student"
+                      >
+                        <HiOutlineCheck className="w-3.5 h-3.5" /> Approve
+                      </button>
+                      <button
+                        onClick={() => setRejectModal(student.id)}
+                        className="px-3 py-1.5 rounded-lg bg-rose-500/15 text-rose-600 hover:bg-rose-500/25 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                        title="Reject student"
+                      >
+                        <HiOutlineX className="w-3.5 h-3.5" /> Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -109,12 +155,12 @@ export default function PendingStudents() {
       {rejectModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="glass-card p-6 max-w-md w-full animate-slide-up">
-            <h3 className="text-lg font-bold text-white mb-4">Reject Registration</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Reject Registration</h3>
             <label className="text-sm text-dark-300 mb-2 block">Reason for rejection</label>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              className="input-dark h-24 resize-none"
+              className="form-input h-24 resize-none"
               placeholder="Enter reason..."
             />
             <div className="flex gap-3 mt-4">

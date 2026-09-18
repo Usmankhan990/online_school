@@ -129,7 +129,7 @@ export default function AdminFees() {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-light)' }}>
-                {['Student', 'Class', 'Month', 'Amount', 'Status', 'Method', 'Transaction ID', 'Actions'].map(h => (
+                {['Student', 'Class', 'Month', 'Amount', 'Status', 'Method', 'Transaction ID', 'Payment Slip', 'Actions'].map(h => (
                   <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)' }}>{h}</th>
                 ))}
               </tr>
@@ -150,6 +150,13 @@ export default function AdminFees() {
                     </td>
                     <td style={{ padding: '10px', fontSize: 12, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{f.payment_method?.replace('_', ' ') || '-'}</td>
                     <td style={{ padding: '10px', fontSize: 12, color: 'var(--text-tertiary)' }}>{f.transaction_id || '-'}</td>
+                    <td style={{ padding: '10px', fontSize: 12 }}>
+                      {f.payment_proof ? (
+                        <a href={`/online_school${f.payment_proof}`} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline', fontWeight: 600 }}>
+                          View Slip
+                        </a>
+                      ) : '-'}
+                    </td>
                     <td style={{ padding: '10px' }}>
                       {needsVerification && (
                         <div style={{ display: 'flex', gap: 4 }}>

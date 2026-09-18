@@ -140,8 +140,13 @@ exports.getMyCourses = async (req, res) => {
 // Get books for my class
 exports.getMyBooks = async (req, res) => {
   try {
-    const profile = await StudentProfile.findOne({ where: { user_id: req.user.id } });
-    if (!profile) return res.status(404).json({ error: 'Profile not found.' });
+    const profile = await StudentProfile.findOne({
+      where: { user_id: req.user.id },
+      include: [{ model: Class, as: 'class' }],
+    });
+    if (!profile || !profile.class_id) {
+      return res.json({ books: [], studentClass: null });
+    }
 
     const books = await Book.findAll({
       where: { class_id: profile.class_id, is_active: true },
@@ -149,10 +154,11 @@ exports.getMyBooks = async (req, res) => {
         { model: Class, as: 'class' },
         { model: Subject, as: 'subject' },
       ],
-      order: [['subject_id', 'ASC']],
+      order: [['sort_order', 'ASC'], ['subject_id', 'ASC'], ['title', 'ASC']],
     });
-    res.json({ books });
+    res.json({ books, studentClass: profile.class });
   } catch (err) {
+    console.error('Get my books error:', err);
     res.status(500).json({ error: 'Failed to fetch books.' });
   }
 };
@@ -447,7 +453,12 @@ exports.getMyFees = async (req, res) => {
     const totalPaid = fees.filter(f => f.status === 'paid').reduce((s, f) => s + parseFloat(f.amount || 0), 0);
     const totalDue = fees.filter(f => f.status !== 'paid' && f.status !== 'waived').reduce((s, f) => s + parseFloat(f.amount || 0), 0);
 
-    res.json({ fees, totalPaid, totalDue });
+    // Fetch Payment Settings
+    const { Settings } = require('../models');
+    const settingsRows = await Settings.findAll();
+    const settings = settingsRows.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+
+    res.json({ fees, totalPaid, totalDue, settings });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch fees.' });
   }

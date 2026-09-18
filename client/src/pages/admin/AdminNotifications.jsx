@@ -5,6 +5,7 @@ export default function AdminNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('All');
 
   const [formData, setFormData] = useState({
     role: 'all',
@@ -50,21 +51,28 @@ export default function AdminNotifications() {
     }
   };
 
-  return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div className="page-header">
-        <h1>🔔 Notifications Center</h1>
-        <p>Send announcements and manage system notifications.</p>
-      </div>
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const typeIcons = { info: '📢', success: '✅', warning: '⚠️', error: '❌', approval: '🎫', result: '📊', fee: '💰', homework: '📝' };
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-6 items-start">
-        {/* Send Notification Form */}
-        <div className="card" style={{ padding: 24 }}>
-          <h2 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>New Announcement</h2>
-          <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+  return (
+    <div className="page-container p-6 animate-fade-in max-w-7xl mx-auto flex flex-col md:flex-row gap-6 items-start">
+      <div className="w-full md:w-1/3 shrink-0 sticky top-6">
+        <div className="mb-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 leading-none">
+            🔔 Notifications
+          </h1>
+          <p className="text-[16px] text-gray-500 mt-1 leading-relaxed">
+            Send announcements and manage system notifications.
+          </p>
+        </div>
+
+        {/* Create Notification Form */}
+        <div className="glass-card p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">New Announcement</h2>
+          <form onSubmit={handleSend} className="flex flex-col gap-5">
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Send To</label>
-              <select name="role" value={formData.role} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Send To</label>
+              <select name="role" value={formData.role} onChange={handleChange} className="form-input">
                 <option value="all">All Active Users</option>
                 <option value="student">Students</option>
                 <option value="teacher">Teachers</option>
@@ -73,8 +81,8 @@ export default function AdminNotifications() {
             </div>
             
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Type</label>
-              <select name="type" value={formData.type} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Type</label>
+              <select name="type" value={formData.type} onChange={handleChange} className="form-input">
                 <option value="info">Info</option>
                 <option value="success">Success</option>
                 <option value="warning">Warning</option>
@@ -83,56 +91,93 @@ export default function AdminNotifications() {
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Title</label>
-              <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="E.g. Holiday Announcement" className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Title</label>
+              <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="E.g. Holiday Announcement" className="form-input" />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Message</label>
-              <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Type your message here..." rows="4" className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', resize: 'vertical' }}></textarea>
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Message</label>
+              <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Type your message here..." rows="4" className="form-input resize-y"></textarea>
             </div>
 
-            <button type="submit" disabled={sending} className="btn btn-primary" style={{ padding: '10px 20px', borderRadius: 8, background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+            <button type="submit" disabled={sending} className="btn btn-primary w-full justify-center mt-2">
               {sending ? 'Sending...' : 'Send Announcement'}
             </button>
           </form>
         </div>
+      </div>
 
+      <div className="flex-1 w-full min-w-0">
         {/* Recent Notifications List */}
-        <div className="card" style={{ padding: 24 }}>
-          <h2 style={{ marginBottom: 16, fontSize: 18, fontWeight: 600 }}>Recent System Notifications</h2>
+        <div className="glass-card p-6">
+          <div className="flex flex-col gap-3" style={{ marginBottom: 32 }}>
+            <h2 className="text-lg font-semibold text-gray-900 m-0 shrink-0">Recent System Notifications</h2>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['All', 'Unread', 'Info', 'Fee', 'Success'].map(f => (
+                <button 
+                  key={f} 
+                  onClick={() => setFilter(f)} 
+                  style={{ 
+                    padding: '6px 14px', borderRadius: 8, 
+                    border: `1px solid ${filter === f ? '#7c3aed' : '#e2e8f0'}`, 
+                    background: filter === f ? '#7c3aed15' : 'transparent', 
+                    color: filter === f ? '#7c3aed' : '#475569', 
+                    fontWeight: 600, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize' 
+                  }}
+                >
+                  {f === 'All' ? '📋 All' : f === 'Unread' ? `🔴 Unread (${unreadCount})` : `${typeIcons[f.toLowerCase()] || ''} ${f}`}
+                </button>
+              ))}
+            </div>
+          </div>
           
           {loading ? (
-            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>Loading...</div>
+            <div className="text-center p-8 text-dark-500">Loading...</div>
           ) : error ? (
-            <div style={{ padding: 16, background: '#fee2e2', color: '#b91c1c', borderRadius: 8 }}>{error}</div>
+            <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg">{error}</div>
           ) : notifications.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>No notifications found.</div>
+            <div className="text-center p-8 text-dark-500">No notifications found.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 600, overflowY: 'auto' }}>
-              {notifications.map(notif => (
-                <div key={notif.id} style={{ padding: 16, border: '1px solid var(--border-color)', borderRadius: 8, display: 'flex', gap: 16 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 20, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                    {notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '🚨' : 'ℹ️'}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{notif.title}</h4>
-                      <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-                        {new Date(notif.created_at).toLocaleString()}
+            <div className="flex flex-col gap-4">
+              {notifications.filter(notif => {
+                if (filter === 'All') return true;
+                if (filter === 'Unread') return !notif.is_read;
+                
+                const t = (notif.title || '').toLowerCase();
+                const type = (notif.type || '').toLowerCase();
+                
+                if (filter === 'Fee') return t.includes('fee') || t.includes('payment') || t.includes('invoice');
+                if (filter === 'Info') return type === 'info';
+                if (filter === 'Success') return type === 'success';
+                
+                return true;
+              }).map(notif => {
+                const d = new Date(notif.createdAt || notif.created_at);
+                const validDate = !isNaN(d) ? d : new Date();
+                const tColor = notif.type === 'success' ? '#10b981' : notif.type === 'warning' ? '#f59e0b' : notif.type === 'error' ? '#ef4444' : notif.type === 'fee' ? '#f97316' : '#f59e0b';
+
+                return (
+                  <div key={notif.id} style={{ padding: '16px 20px', border: '1px solid #e2e8f0', borderLeft: `4px solid ${tColor}`, borderRadius: 12, background: '#f8fafc', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>
+                        {notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '🚨' : notif.type === 'fee' ? '💰' : 'ℹ️'}
                       </span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                      {notif.message}
-                    </p>
-                    {notif.user && (
-                      <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-tertiary)' }}>
-                        Sent to: {notif.user.full_name} ({notif.user.role})
+                      <div style={{ flex: 1 }}>
+                        <h4 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', margin: 0, marginBottom: 6 }}>{notif.title}</h4>
+                        <p style={{ fontSize: 13.5, color: '#64748b', lineHeight: 1.5, margin: 0 }}>{notif.message}</p>
+                        <span style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 8, display: 'block' }}>
+                          {validDate.toLocaleTimeString('en-PK', { timeStyle: 'short' }).toLowerCase()}
+                        </span>
+                        {notif.user && (
+                          <div style={{ marginTop: 8, fontSize: 12, color: '#64748b' }}>
+                            Sent to: <span style={{ fontWeight: 600, color: '#334155' }}>{notif.user.full_name}</span> ({notif.user.role})
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -10,10 +10,20 @@ export default function ParentAttendance() {
     const fetch = async () => {
       try {
         const res = await api.get('/parent/dashboard');
-        setDashboard(res.data);
-        // Attendance from dashboard child data
-        if (res.data.child?.attendance) {
-          setAttendance(res.data.child.attendance);
+        const children = res.data.children || [];
+        if (children.length > 0) {
+          const firstChild = children[0];
+          setDashboard({
+            child: { ...firstChild.profile?.user, class: firstChild.profile?.class },
+            attendanceStats: firstChild.attendance,
+          });
+          
+          // Fetch actual attendance records for the child
+          const studentId = firstChild.profile?.user_id || firstChild.profile?.id;
+          const attRes = await api.get(`/parent/child-attendance?student_id=${studentId}`);
+          setAttendance(attRes.data.attendance || []);
+        } else {
+          setDashboard(null);
         }
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
@@ -56,24 +66,125 @@ export default function ParentAttendance() {
         ))}
       </div>
 
-      {/* Attendance Grid */}
-      <div className="card" style={{ padding: 20 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>Attendance Records</h3>
+      {/* Attendance Table */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Attendance Records</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Daily presence logs and verification history</p>
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', background: 'var(--bg-surface-2, #f1f5f9)', padding: '4px 12px', borderRadius: 999 }}>
+            {attendance.length} Total Records
+          </span>
+        </div>
+
         {attendance.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-tertiary)' }}>
-            <span style={{ fontSize: 40, display: 'block', marginBottom: 8 }}>📭</span>
-            <p>No attendance records available yet</p>
+          <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: 44, display: 'block', marginBottom: 10 }}>📭</span>
+            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>No attendance records available yet</p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Attendance records will appear here as they are marked.</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
-            {attendance.map((a, i) => (
-              <div key={i} style={{ padding: 12, borderRadius: 10, border: `1.5px solid ${statusColors[a.status]}30`, background: `${statusColors[a.status]}08`, textAlign: 'center' }}>
-                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 4 }}>{new Date(a.date).toLocaleDateString('en-PK', { day: 'numeric', month: 'short' })}</div>
-                <div style={{ fontSize: 22 }}>{statusEmoji[a.status]}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: statusColors[a.status], textTransform: 'capitalize', marginTop: 2 }}>{a.status}</div>
-                {a.verification_method === 'selfie' && <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>📸 Selfie Verified</div>}
-              </div>
-            ))}
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-surface-2, #f8fafc)', borderBottom: '1px solid var(--border-light)' }}>
+                  <th style={{ padding: '14px 20px', fontWeight: 700, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 700, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Day</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 700, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 700, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verification</th>
+                  <th style={{ padding: '14px 20px', fontWeight: 700, color: 'var(--text-secondary)', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attendance.map((a, i) => {
+                  const dateObj = new Date(a.date);
+                  const formattedDate = dateObj.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+                  const dayName = dateObj.toLocaleDateString('en-PK', { weekday: 'long' });
+                  const isSelfie = a.verification_method === 'selfie';
+
+                  const badgeStyles = {
+                    present: { bg: '#ecfdf5', text: '#059669', border: '#a7f3d0', icon: '✅', label: 'Present' },
+                    absent:  { bg: '#fef2f2', text: '#dc2626', border: '#fecaca', icon: '❌', label: 'Absent' },
+                    late:    { bg: '#fffbeb', text: '#d97706', border: '#fde68a', icon: '⏰', label: 'Late' },
+                    leave:   { bg: '#eef2ff', text: '#4f46e5', border: '#c7d2fe', icon: '🏠', label: 'Leave' },
+                  };
+                  const badge = badgeStyles[a.status] || { bg: '#f1f5f9', text: '#475569', border: '#cbd5e1', icon: 'ℹ️', label: a.status };
+
+                  return (
+                    <tr
+                      key={a.id || i}
+                      style={{
+                        borderBottom: '1px solid var(--border-light)',
+                        transition: 'background-color 0.15s ease'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--bg-surface-2, #f8fafc)'}
+                      onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <td style={{ padding: '14px 20px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {formattedDate}
+                      </td>
+                      <td style={{ padding: '14px 20px', color: 'var(--text-secondary)' }}>
+                        {dayName}
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '4px 12px',
+                          borderRadius: 999,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          background: badge.bg,
+                          color: badge.text,
+                          border: `1px solid ${badge.border}`
+                        }}>
+                          <span>{badge.icon}</span>
+                          <span style={{ textTransform: 'capitalize' }}>{badge.label}</span>
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}>
+                        {isSelfie ? (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '4px 10px',
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #dbeafe'
+                          }}>
+                            📸 Selfie Verified
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '4px 10px',
+                            borderRadius: 8,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            background: '#f8fafc',
+                            color: '#64748b',
+                            border: '1px solid #e2e8f0'
+                          }}>
+                            ✍️ Manual (Teacher)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '14px 20px', color: 'var(--text-tertiary)', fontSize: 12.5 }}>
+                        {a.remarks || (a.status === 'present' ? 'Regular Attendance' : a.status === 'late' ? 'Marked Late' : a.status === 'leave' ? 'Approved Leave' : 'Absent')}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

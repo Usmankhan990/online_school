@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
+import api from '../services/api';
 /* ═══════════════════════════════════════════════════
    ICON COMPONENTS (inline SVG for zero-dep icons)
    ═══════════════════════════════════════════════════ */
@@ -132,14 +132,28 @@ export default function DashboardLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchUnreadCount = () => {
+      api.get('/auth/notifications/unread-count')
+        .then(res => setUnreadCount(res.data.unread_count))
+        .catch(err => console.error('Failed to fetch unread count', err));
+    };
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const navRef = useRef(null);
 
@@ -206,11 +220,7 @@ export default function DashboardLayout({ children }) {
             );
           })}
 
-          <div className="sidebar-section" style={{ marginTop: 16 }}></div>
-          <button onClick={handleLogout} className="sidebar-link w-full" style={{ color: '#f87171', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', width: '100%', font: 'inherit' }}>
-            <span className="link-icon">{Icons.logout}</span>
-            <span>Logout</span>
-          </button>
+
         </nav>
 
         <div className="sidebar-user">
@@ -237,7 +247,15 @@ export default function DashboardLayout({ children }) {
           </div>
 
           <div className="topbar-actions">
-            <span className="text-xs font-semibold hidden md:block" style={{ color: 'var(--text-tertiary)', marginRight: 8 }}>
+            <span className="text-xs font-semibold hidden md:flex items-center justify-center" 
+                  style={{ 
+                    color: 'var(--text-secondary)', 
+                    marginRight: 8,
+                    background: 'var(--bg-surface-2)',
+                    border: '1px solid var(--border-light)',
+                    borderRadius: 'var(--radius-full)',
+                    padding: '6px 14px'
+                  }}>
               {rolePortal}
             </span>
             <button className="topbar-icon-btn" onClick={() => setDarkMode(!darkMode)} title="Toggle theme">
@@ -245,14 +263,72 @@ export default function DashboardLayout({ children }) {
             </button>
             <button className="topbar-icon-btn" onClick={() => navigate(location.pathname.split('/').slice(0, 2).join('/') + '/notifications')}>
               {Icons.notifications}
-              <span className="topbar-badge">3</span>
+              {unreadCount > 0 && <span className="topbar-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>}
             </button>
-            <div className="sidebar-avatar avatar-sm" style={{ 
-              background: 'linear-gradient(135deg, #1e3a5f, #10b981)', 
-              color: 'white', 
-              width: 36, height: 36, fontSize: 14, cursor: 'pointer' 
-            }} title={user?.full_name}>
-              {user?.full_name?.charAt(0) || 'U'}
+            <div className="relative" tabIndex={-1} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setProfileOpen(false) }}>
+              <div 
+                className="sidebar-avatar avatar-sm" 
+                onClick={() => setProfileOpen(!profileOpen)}
+                style={{ 
+                  background: 'linear-gradient(135deg, #1e3a5f, #10b981)', 
+                  color: 'white', 
+                  width: 36, height: 36, fontSize: 14, cursor: 'pointer' 
+                }} 
+                title={user?.full_name}
+              >
+                {user?.full_name?.charAt(0) || 'U'}
+              </div>
+
+              {profileOpen && (
+                <div 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '100%', 
+                    right: 0, 
+                    marginTop: 8, 
+                    width: 220, 
+                    background: '#ffffff', 
+                    borderRadius: 12, 
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)', 
+                    border: '1px solid #e2e8f0', 
+                    zIndex: 50, 
+                    overflow: 'hidden',
+                    fontFamily: 'system-ui, -apple-system, sans-serif'
+                  }}
+                >
+                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc' }}>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {user?.full_name}
+                    </p>
+                    <p style={{ margin: 0, marginTop: 4, fontSize: 13, color: '#64748b', fontWeight: 500 }}>
+                      {roleName}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={handleLogout}
+                    style={{ 
+                      width: '100%', 
+                      textAlign: 'left', 
+                      padding: '12px 16px', 
+                      fontSize: 14, 
+                      fontWeight: 600,
+                      color: '#ef4444', 
+                      background: 'transparent', 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <span style={{ width: 18, height: 18 }}>{Icons.logout}</span>
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

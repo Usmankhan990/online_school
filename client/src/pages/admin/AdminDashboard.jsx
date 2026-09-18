@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
+    <div className="animate-fade-in flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
       <div className="card premium-gradient" style={{ padding: '40px', border: 'none', color: 'white', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>

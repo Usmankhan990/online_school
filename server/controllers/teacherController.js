@@ -99,6 +99,7 @@ exports.createExam = async (req, res) => {
     const exam = await Exam.create({
       course_id, teacher_id: req.user.id, title, description, type,
       total_marks, passing_marks, duration_minutes, start_time, end_time,
+      is_published: true, // Auto publish so students can see and solve it
     });
 
     // Add questions
@@ -115,6 +116,34 @@ exports.createExam = async (req, res) => {
           order_index: i,
         });
       }
+    }
+
+    // Auto-notify all students enrolled in this course and their parents
+    const enrollments = await Enrollment.findAll({ where: { course_id, status: 'active' } });
+    const studentIds = enrollments.map(e => e.student_id);
+
+    // Notify students
+    for (const enrollment of enrollments) {
+      await Notification.create({
+        user_id: enrollment.student_id,
+        title: 'New Exam Added! 📝',
+        message: `"${exam.title}" is now available to attempt.`,
+        type: 'info',
+        link: '/student/exams',
+      });
+    }
+
+    // Notify parents
+    const studentProfiles = await StudentProfile.findAll({
+      where: { user_id: { [Op.in]: studentIds }, parent_id: { [Op.ne]: null } },
+    });
+    for (const sp of studentProfiles) {
+      await Notification.create({
+        user_id: sp.parent_id,
+        title: 'New Exam for Your Child 📝',
+        message: `A new exam "${exam.title}" has been added for your child.`,
+        type: 'info',
+      });
     }
 
     const fullExam = await Exam.findByPk(exam.id, {
@@ -250,16 +279,28 @@ exports.gradeSubmission = async (req, res) => {
 exports.markAttendance = async (req, res) => {
   try {
     const { class_id, date, records } = req.body;
-    // records = [{ user_id, status, remarks }]
+    // records = [{ student_id, status, remarks }]
     for (const record of records) {
-      await Attendance.findOrCreate({
-        where: { user_id: record.user_id, class_id, date, user_role: 'student' },
-        defaults: {
+      const uid = record.user_id || record.student_id;
+      if (!uid) continue;
+      
+      const existing = await Attendance.findOne({
+        where: { user_id: uid, class_id, date, user_role: 'student' }
+      });
+      
+      if (existing) {
+        await existing.update({ status: record.status, remarks: record.remarks });
+      } else {
+        await Attendance.create({
+          user_id: uid,
+          class_id,
+          date,
+          user_role: 'student',
           status: record.status,
           marked_by: req.user.id,
           remarks: record.remarks,
-        },
-      });
+        });
+      }
     }
     res.json({ message: 'Attendance marked successfully!' });
   } catch (err) {

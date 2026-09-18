@@ -28,58 +28,50 @@ export default function AdminExams() {
         <p>Monitor all exams across the school — upcoming, active, and completed.</p>
       </div>
 
-      <div className="card table-responsive">
-        <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>All Exams</h2>
+      <div className="glass-card table-responsive">
+        <h2 className="px-6 py-4 border-b border-gray-100 font-semibold text-gray-900">All Exams</h2>
         
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>Loading...</div>
+          <div className="text-center p-8 text-dark-500">Loading...</div>
         ) : error ? (
-          <div style={{ padding: 16, background: '#fee2e2', color: '#b91c1c', margin: 20, borderRadius: 8 }}>{error}</div>
+          <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg m-4">{error}</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-secondary)' }}>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Title</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Type</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Course</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Teacher</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Marks</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
+          <table className="table-dark">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Course</th>
+                <th>Teacher</th>
+                <th>Marks</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {exams.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-dark-500 py-8">No exams found.</td>
                 </tr>
-              </thead>
-              <tbody>
-                {exams.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)' }}>No exams found.</td>
+              ) : (
+                exams.map(exam => (
+                  <tr key={exam.id}>
+                    <td className="font-medium text-gray-900">{exam.title}</td>
+                    <td className="capitalize text-dark-300 text-sm">{exam.type}</td>
+                    <td className="text-dark-300 text-sm">
+                      {exam.course?.class?.grade_level || '-'} • {exam.course?.subject?.name || '-'}
+                    </td>
+                    <td className="text-dark-300 text-sm">{exam.teacher?.full_name}</td>
+                    <td className="text-dark-300 text-sm">{exam.total_marks}</td>
+                    <td>
+                      <span className={`badge ${exam.is_published ? 'badge-success' : 'badge-warning'}`}>
+                        {exam.is_published ? 'PUBLISHED' : 'DRAFT'}
+                      </span>
+                    </td>
                   </tr>
-                ) : (
-                  exams.map(exam => (
-                    <tr key={exam.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 20px', fontWeight: 500 }}>{exam.title}</td>
-                      <td style={{ padding: '12px 20px', textTransform: 'capitalize' }}>{exam.type}</td>
-                      <td style={{ padding: '12px 20px' }}>
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                          {exam.course?.class?.grade_level || '-'} • {exam.course?.subject?.name || '-'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 20px' }}>{exam.teacher?.full_name}</td>
-                      <td style={{ padding: '12px 20px' }}>{exam.total_marks}</td>
-                      <td style={{ padding: '12px 20px' }}>
-                        <span style={{
-                          padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-                          background: exam.is_published ? '#d1fae5' : '#f3f4f6',
-                          color: exam.is_published ? '#065f46' : '#4b5563'
-                        }}>
-                          {exam.is_published ? 'PUBLISHED' : 'DRAFT'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

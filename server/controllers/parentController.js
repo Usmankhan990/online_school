@@ -181,10 +181,16 @@ exports.getChildHomework = async (req, res) => {
 // Notifications
 exports.getNotifications = async (req, res) => {
   try {
+    const children = await StudentProfile.findAll({
+      where: { parent_id: req.user.id },
+      attributes: ['user_id'],
+    });
+    const targetUserIds = [req.user.id, ...children.map(c => c.user_id)];
+
     const notifications = await Notification.findAll({
-      where: { user_id: req.user.id },
+      where: { user_id: { [Op.in]: targetUserIds } },
       order: [['created_at', 'DESC']],
-      limit: 50,
+      limit: 100,
     });
     res.json({ notifications });
   } catch (err) {
@@ -194,7 +200,15 @@ exports.getNotifications = async (req, res) => {
 
 exports.markNotificationRead = async (req, res) => {
   try {
-    await Notification.update({ is_read: true }, { where: { id: req.params.id, user_id: req.user.id } });
+    const children = await StudentProfile.findAll({
+      where: { parent_id: req.user.id },
+      attributes: ['user_id'],
+    });
+    const targetUserIds = [req.user.id, ...children.map(c => c.user_id)];
+    await Notification.update(
+      { is_read: true },
+      { where: { id: req.params.id, user_id: { [Op.in]: targetUserIds } } }
+    );
     res.json({ message: 'Marked as read.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update.' });
@@ -203,7 +217,15 @@ exports.markNotificationRead = async (req, res) => {
 
 exports.markAllNotificationsRead = async (req, res) => {
   try {
-    await Notification.update({ is_read: true }, { where: { user_id: req.user.id, is_read: false } });
+    const children = await StudentProfile.findAll({
+      where: { parent_id: req.user.id },
+      attributes: ['user_id'],
+    });
+    const targetUserIds = [req.user.id, ...children.map(c => c.user_id)];
+    await Notification.update(
+      { is_read: true },
+      { where: { user_id: { [Op.in]: targetUserIds }, is_read: false } }
+    );
     res.json({ message: 'All marked as read.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update.' });

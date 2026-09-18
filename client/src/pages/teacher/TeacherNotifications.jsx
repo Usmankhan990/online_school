@@ -36,17 +36,27 @@ export default function TeacherNotifications() {
           <p style={{ fontSize: 16, fontWeight: 600 }}>No notifications</p></div>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
-          {notifications.map(n => (
-            <div key={n.id} className="card" style={{ padding: 16, display: 'flex', gap: 14, alignItems: 'flex-start', cursor: n.is_read ? 'default' : 'pointer', opacity: n.is_read ? 0.7 : 1, borderLeft: n.is_read ? 'none' : '3px solid #10b981' }} onClick={() => !n.is_read && markRead(n.id)}>
-              <span style={{ fontSize: 24 }}>{typeIcons[n.type] || '📢'}</span>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{n.title}</h4>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{n.message}</p>
-                <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 6 }}>{new Date(n.created_at).toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+          {notifications.map(notif => {
+            const d = new Date(notif.createdAt || notif.created_at);
+            const validDate = !isNaN(d) ? d : new Date();
+            const tColor = notif.type === 'success' ? '#10b981' : notif.type === 'warning' ? '#f59e0b' : notif.type === 'error' ? '#ef4444' : notif.type === 'fee' ? '#f97316' : '#f59e0b';
+            
+            return (
+              <div key={notif.id} onClick={() => !notif.is_read && markRead(notif.id)} style={{ padding: '16px 20px', border: '1px solid #e2e8f0', borderLeft: `4px solid ${tColor}`, borderRadius: 12, background: '#f8fafc', marginBottom: 12, cursor: !notif.is_read ? 'pointer' : 'default', opacity: notif.is_read ? 0.8 : 1 }}>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>{notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '🚨' : notif.type === 'fee' ? '💰' : typeIcons[notif.type] || 'ℹ️'}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', margin: 0 }}>{notif.title}</h4>
+                      {!notif.is_read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />}
+                    </div>
+                    <p style={{ fontSize: 13.5, color: '#64748b', lineHeight: 1.5, margin: 0 }}>{notif.message}</p>
+                    <span style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 8, display: 'block' }}>{validDate.toLocaleTimeString('en-PK', { timeStyle: 'short' }).toLowerCase()}</span>
+                  </div>
+                </div>
               </div>
-              {!n.is_read && <span className="badge badge-success" style={{ fontSize: 10 }}>New</span>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

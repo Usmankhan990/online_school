@@ -7,12 +7,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
+    hmr: { overlay: false },
     proxy: {
-      '/api': {
+      '/online_school/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
-      '/uploads': {
+      '/online_school/uploads': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },

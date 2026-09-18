@@ -10,8 +10,9 @@ export default function ParentResults() {
     const fetch = async () => {
       try {
         const res = await api.get('/parent/dashboard');
-        setDashboard(res.data);
-        setResults(res.data.child?.results || []);
+        const firstChild = (res.data.children || [])[0] || null;
+        setDashboard(firstChild);
+        setResults(firstChild?.results || []);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
@@ -22,7 +23,7 @@ export default function ParentResults() {
 
   if (loading) return <div className="flex flex-col gap-5 min-w-0">{[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 100, borderRadius: 14 }} />)}</div>;
 
-  const child = dashboard?.child;
+  const child = dashboard?.profile?.user;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

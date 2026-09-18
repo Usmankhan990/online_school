@@ -6,6 +6,9 @@
     "postinstall": "npm install --prefix server && npm install --prefix client",
     "build": "npm run build --prefix client",
     "start": "npm start --prefix server",
-    "dev": "npm run dev --prefix server & npm run dev --prefix client"
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
   }
 }

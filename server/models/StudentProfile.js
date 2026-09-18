@@ -32,6 +32,9 @@ const StudentProfile = sequelize.define('StudentProfile', {
   contact_number_2: {
     type: DataTypes.STRING(15),
   },
+  parent_email: {
+    type: DataTypes.STRING,
+  },
   class_id: {
     type: DataTypes.INTEGER,
     allowNull: false,

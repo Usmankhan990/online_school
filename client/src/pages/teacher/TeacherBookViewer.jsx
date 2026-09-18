@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import api, { FILE_BASE } from '../../services/api';
 const formatDate = (d) => {
   if (!d) return '';
@@ -17,6 +18,7 @@ const formatSize = (bytes) => {
 export default function BookViewer() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,7 +59,9 @@ export default function BookViewer() {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-tertiary)' }}>
-        <Link to="/teacher/books" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Library</Link>
+        <Link to={user?.role === 'student' ? "/student/books" : "/teacher/books"} style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>
+          {user?.role === 'student' ? 'My Textbooks' : 'Library'}
+        </Link>
         <span>/</span>
         <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{book.title}</span>
       </div>

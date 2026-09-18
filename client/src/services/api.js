@@ -24,7 +24,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (window.location.pathname !== '/online_school/login') {
+      const isPublic = ['/login', '/register', '/apply', '/about', '/features', '/contact', '/privacy', '/terms', '/'].some(p =>
+        window.location.pathname.endsWith(p) || window.location.pathname === p
+      );
+      if (!isPublic) {
         window.location.href = '/online_school/login';
       }
     }

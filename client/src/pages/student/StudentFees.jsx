@@ -1,39 +1,25 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import easypaisaLogo from '../../assets/easypaisa-logo.jpeg';
+import jazzcashLogo from '../../assets/jazzcash-logo.jpg';
+import bankTransferLogo from '../../assets/bank-transfer-logo.png';
 
 /* Visual Payment Method Logos */
 const JazzCashLogo = ({ size = 28 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
-    <rect width="40" height="40" rx="8" fill="#E30613" />
-    <circle cx="20" cy="20" r="13" fill="#FFC800" />
-    <circle cx="20" cy="20" r="10" fill="#E30613" />
-    <text x="20" y="24" textAnchor="middle" fill="#FFC800" fontSize="12" fontWeight="900" fontFamily="system-ui, -apple-system, sans-serif">JC</text>
-  </svg>
+  <img src={jazzcashLogo} alt="JazzCash" width={size} height={size} style={{ flexShrink: 0, borderRadius: 6, objectFit: 'cover' }} />
 );
 
 const EasyPaisaLogo = ({ size = 28 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
-    <rect width="40" height="40" rx="8" fill="#00A652" />
-    <path d="M12 20C12 15.58 15.58 12 20 12C24.42 12 28 15.58 28 20" stroke="white" strokeWidth="3" strokeLinecap="round" />
-    <path d="M20 20L25 25M25 20L20 25" stroke="#78D64B" strokeWidth="2.5" strokeLinecap="round" />
-    <circle cx="20" cy="20" r="4" fill="white" />
-  </svg>
+  <img src={easypaisaLogo} alt="easypaisa" width={size} height={size} style={{ flexShrink: 0, borderRadius: 6, objectFit: 'cover' }} />
 );
 
 const BankLogo = ({ size = 28 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
-    <rect width="40" height="40" rx="8" fill="#1E3A5F" />
-    <path d="M20 11L11 16V18H29V16L20 11Z" fill="#38BDF8" />
-    <rect x="13" y="19" width="2.5" height="7" fill="white" />
-    <rect x="18.75" y="19" width="2.5" height="7" fill="white" />
-    <rect x="24.5" y="19" width="2.5" height="7" fill="white" />
-    <rect x="11" y="27" width="18" height="2.5" rx="1" fill="#38BDF8" />
-  </svg>
+  <img src={bankTransferLogo} alt="Bank Transfer" width={size} height={size} style={{ flexShrink: 0, borderRadius: 6, objectFit: 'cover' }} />
 );
 
-const PAYMENT_INFO = {
+const DEFAULT_PAYMENT_INFO = {
   jazzcash: { name: 'JazzCash', Logo: JazzCashLogo, color: '#e30613', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
-  easypaisa: { name: 'EasyPaisa', Logo: EasyPaisaLogo, color: '#00a652', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
+  easypaisa: { name: 'easypaisa', Logo: EasyPaisaLogo, color: '#292735', account: '03XX-XXXXXXX', holder: 'Usman Online School' },
   bank_transfer: { name: 'Bank Transfer', Logo: BankLogo, color: '#1e3a5f', account: 'IBAN: PK00XXXX0000000000000', holder: 'Usman Online School', bank: 'HBL / Meezan Bank' },
 };
 
@@ -41,9 +27,10 @@ export default function StudentFees() {
   const [fees, setFees] = useState([]);
   const [totalPaid, setTotalPaid] = useState(0);
   const [totalDue, setTotalDue] = useState(0);
+  const [paymentInfo, setPaymentInfo] = useState(DEFAULT_PAYMENT_INFO);
   const [loading, setLoading] = useState(true);
   const [payModal, setPayModal] = useState(null);
-  const [payForm, setPayForm] = useState({ payment_method: '', transaction_id: '' });
+  const [payForm, setPayForm] = useState({ payment_method: '', transaction_id: '', payment_proof: null });
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -55,6 +42,14 @@ export default function StudentFees() {
       setFees(res.data.fees || []);
       setTotalPaid(res.data.totalPaid || 0);
       setTotalDue(res.data.totalDue || 0);
+      
+      if (res.data.settings) {
+        setPaymentInfo(prev => ({
+          jazzcash: { ...prev.jazzcash, account: res.data.settings.paymentJazzcashAcc || prev.jazzcash.account, holder: res.data.settings.paymentJazzcashName || prev.jazzcash.holder },
+          easypaisa: { ...prev.easypaisa, account: res.data.settings.paymentEasypaisaAcc || prev.easypaisa.account, holder: res.data.settings.paymentEasypaisaName || prev.easypaisa.holder },
+          bank_transfer: { ...prev.bank_transfer, account: res.data.settings.paymentBankAccount || prev.bank_transfer.account, holder: res.data.settings.paymentBankHolder || prev.bank_transfer.holder, bank: res.data.settings.paymentBankName || prev.bank_transfer.bank }
+        }));
+      }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -64,10 +59,20 @@ export default function StudentFees() {
     setSubmitting(true);
     setMsg('');
     try {
-      await api.post('/student/fees/pay', { fee_id: payModal.id, ...payForm });
+      const formData = new FormData();
+      formData.append('fee_id', payModal.id);
+      formData.append('payment_method', payForm.payment_method);
+      formData.append('transaction_id', payForm.transaction_id);
+      if (payForm.payment_proof) {
+        formData.append('payment_proof', payForm.payment_proof);
+      }
+
+      await api.post('/student/fees/pay', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setMsg('✅ Payment submitted! Awaiting admin verification.');
       setPayModal(null);
-      setPayForm({ payment_method: '', transaction_id: '' });
+      setPayForm({ payment_method: '', transaction_id: '', payment_proof: null });
       fetchFees();
     } catch (err) {
       setMsg('❌ ' + (err.response?.data?.error || 'Payment failed.'));
@@ -98,7 +103,7 @@ export default function StudentFees() {
       <div className="card" style={{ padding: 20 }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14 }}>💳 Payment Methods</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-          {Object.entries(PAYMENT_INFO).map(([key, info]) => (
+          {Object.entries(paymentInfo).map(([key, info]) => (
             <div key={key} style={{ padding: 16, borderRadius: 12, border: '1px solid var(--border-light)', background: 'var(--bg-body)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                 <info.Logo size={32} />
@@ -178,9 +183,13 @@ export default function StudentFees() {
                 <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Transaction ID / Reference *</label>
                 <input value={payForm.transaction_id} onChange={e => setPayForm(f => ({ ...f, transaction_id: e.target.value }))} placeholder="e.g., TXN123456789" required style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: 14 }} />
               </div>
-              {payForm.payment_method && PAYMENT_INFO[payForm.payment_method] && (
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Payment Slip / Screenshot *</label>
+                <input type="file" accept="image/*" onChange={e => setPayForm(f => ({ ...f, payment_proof: e.target.files[0] }))} required style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: 14 }} />
+              </div>
+              {payForm.payment_method && paymentInfo[payForm.payment_method] && (
                 <div style={{ padding: 12, borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 12, color: '#1e40af' }}>
-                  <strong>Send payment to:</strong> {PAYMENT_INFO[payForm.payment_method].account} — {PAYMENT_INFO[payForm.payment_method].holder}
+                  <strong>Send payment to:</strong> {paymentInfo[payForm.payment_method].account} — {paymentInfo[payForm.payment_method].holder}
                 </div>
               )}
               <button type="submit" disabled={submitting} style={{ padding: '12px', borderRadius: 10, border: 'none', fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', fontSize: 14, width: '100%', opacity: submitting ? 0.6 : 1 }}>

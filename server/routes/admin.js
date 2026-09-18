@@ -11,6 +11,7 @@ router.get('/dashboard', adminController.getDashboardStats);
 
 // Student Management
 router.get('/students', adminController.getAllStudents);
+router.put('/students/:id', adminController.updateStudent);
 router.get('/pending-students', adminController.getPendingStudents);
 router.put('/approve-student/:id', adminController.approveStudent);
 router.put('/reject-student/:id', adminController.rejectStudent);
@@ -18,12 +19,16 @@ router.put('/reject-student/:id', adminController.rejectStudent);
 // Teacher Management
 router.get('/teachers', adminController.getAllTeachers);
 router.post('/teachers', adminController.createTeacher);
+router.put('/teachers/:id', adminController.updateTeacher);
 
 // Parents Management
 router.get('/parents', adminController.getParents);
+router.post('/parents', adminController.createParent);
+router.put('/parents/:id', adminController.updateParent);
 
 // Delete any user
 router.delete('/users/:id', adminController.deleteUser);
+
 
 // Class & Subject management
 router.get('/classes', adminController.getClasses);

@@ -18,7 +18,18 @@ export default function ParentDashboard() {
     </div>
   );
 
-  const d = data || {};
+  const children = data?.children || [];
+  const firstChild = children.length > 0 ? children[0] : null;
+  const profile = firstChild?.profile?.user || {};
+  
+  const d = {
+    childName: profile.full_name,
+    attendancePercent: firstChild?.attendance?.percentage,
+    pendingHomework: firstChild?.recentSubmissions?.filter(s => s.status === 'pending').length || 0,
+    latestResult: firstChild?.results?.[0]?.exam?.title || '-',
+    feesDue: firstChild?.fees?.filter(f => f.status === 'unpaid').reduce((acc, f) => acc + (f.amount || 0), 0) || 0,
+    classInfo: firstChild?.profile?.class,
+  };
 
   const cards = [
     { label: 'Attendance', value: `${d.attendancePercent || 0}%`, icon: '✅', color: '#10b981', bg: '#ecfdf5', link: '/parent/attendance' },

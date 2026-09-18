@@ -20,8 +20,16 @@ const authenticate = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ error: 'User not found.' });
     }
-    if (user.status !== 'active') {
+    if (user.status !== 'active' && user.status !== 'trial') {
       return res.status(403).json({ error: `Account is ${user.status}. Contact admin.` });
+    }
+    
+    // Check trial expiration
+    if (user.status === 'trial') {
+      const trialDuration = 3 * 24 * 60 * 60 * 1000;
+      if (new Date() - new Date(user.createdAt) > trialDuration) {
+        return res.status(401).json({ error: 'Your 3-day free trial has expired. Contact admin.' });
+      }
     }
 
     req.user = user;

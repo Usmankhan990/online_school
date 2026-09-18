@@ -50,18 +50,26 @@ export default function AdminReports() {
           </div>
 
           <h2 style={{ fontSize: 18, margin: '24px 0 0' }}>Revenue (Last 12 Months)</h2>
-          <div className="card" style={{ padding: 24 }}>
+          <div className="card" style={{ padding: 20, overflow: 'auto' }}>
             {reports.revenue.length === 0 ? (
-              <div style={{ color: 'var(--text-secondary)' }}>No revenue data available.</div>
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-secondary)' }}>No revenue data available.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {reports.revenue.map(rev => (
-                  <div key={rev.month} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 8 }}>
-                    <span style={{ fontWeight: 600, fontSize: 15 }}>{rev.month}</span>
-                    <span style={{ fontWeight: 700, color: '#10b981', fontSize: 16 }}>Rs. {rev.total}</span>
-                  </div>
-                ))}
-              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 400 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-light)' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: 'var(--text-tertiary)' }}>Month</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: 13, fontWeight: 700, color: 'var(--text-tertiary)' }}>Revenue Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.revenue.map((rev, idx) => (
+                    <tr key={rev.month} style={{ borderBottom: idx === reports.revenue.length - 1 ? 'none' : '1px solid var(--border-light)' }}>
+                      <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{rev.month}</td>
+                      <td style={{ padding: '14px 16px', textAlign: 'right', fontSize: 15, fontWeight: 700, color: '#10b981' }}>Rs. {rev.total.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </>

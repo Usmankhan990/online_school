@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineEye, HiOutlineEyeOff, HiOutlineExclamationCircle } from 'react-icons/hi';
 
 const fallbackClasses = [
   { id: 1, display_name: 'KG / Pre-1' },
@@ -19,7 +19,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({
     full_name: '', email: '', password: '', confirm_password: '',
     father_name: '', mother_name: '', father_cnic: '',
-    contact_number_1: '', contact_number_2: '',
+    contact_number_1: '', contact_number_2: '', parent_email: '',
     class_id: '', medium: 'English', date_of_birth: '', address: '',
   });
   const [documents, setDocuments] = useState([]);
@@ -32,7 +32,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/admin/classes')
+    api.get('/classes')
       .then(res => setClasses(res.data.classes || fallbackClasses))
       .catch(() => setClasses(fallbackClasses));
   }, []);
@@ -58,18 +58,30 @@ export default function RegisterPage() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
+  const passwordRules = [
+    { label: 'Password must be at least 6 characters', valid: form.password.length >= 6 },
+    { label: 'Password must contain at least one uppercase letter (A-Z)', valid: /[A-Z]/.test(form.password) },
+    { label: 'Password must contain at least one lowercase letter (a-z)', valid: /[a-z]/.test(form.password) },
+    { label: 'Password must contain at least one number (0-9)', valid: /[0-9]/.test(form.password) },
+  ];
+  const firstUnmetRule = passwordRules.find(r => !r.valid);
+  const isPasswordValid = !firstUnmetRule;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
+    if (!isPasswordValid) {
+      return setError('Password must meet all 4 requirements: at least 6 characters, uppercase, lowercase, and a number.');
+    }
     if (form.password !== form.confirm_password) {
       return setError('Passwords do not match.');
     }
-    if (form.password.length < 6) {
-      return setError('Password must be at least 6 characters.');
-    }
     if (!/^\d{5}-\d{7}-\d{1}$/.test(form.father_cnic)) {
       return setError('Father CNIC format must be: 00000-0000000-0');
+    }
+    if (!form.parent_email || !form.parent_email.trim()) {
+      return setError('Parent email is required.');
     }
 
     setLoading(true);
@@ -159,7 +171,11 @@ export default function RegisterPage() {
                     className="form-input"
                     placeholder="Min 6 characters"
                     required
-                    style={{ paddingRight: 40 }}
+                    style={{
+                      paddingRight: 40,
+                      borderColor: form.password && !isPasswordValid ? '#ef4444' : undefined,
+                      boxShadow: form.password && !isPasswordValid ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
+                    }}
                   />
                   <button
                     type="button"
@@ -170,6 +186,12 @@ export default function RegisterPage() {
                     {showPassword ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
                   </button>
                 </div>
+                {form.password.length > 0 && !isPasswordValid && (
+                  <p className="form-error" style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#ef4444' }}>
+                    <HiOutlineExclamationCircle size={14} style={{ flexShrink: 0 }} />
+                    <span>{firstUnmetRule?.label}</span>
+                  </p>
+                )}
               </Field>
               <Field label="Confirm Password *">
                 <div style={{ position: 'relative' }}>
@@ -181,7 +203,11 @@ export default function RegisterPage() {
                     className="form-input"
                     placeholder="Confirm password"
                     required
-                    style={{ paddingRight: 40 }}
+                    style={{
+                      paddingRight: 40,
+                      borderColor: form.confirm_password && form.password !== form.confirm_password ? '#ef4444' : undefined,
+                      boxShadow: form.confirm_password && form.password !== form.confirm_password ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
+                    }}
                   />
                   <button
                     type="button"
@@ -192,6 +218,12 @@ export default function RegisterPage() {
                     {showConfirmPassword ? <HiOutlineEyeOff size={18} /> : <HiOutlineEye size={18} />}
                   </button>
                 </div>
+                {form.confirm_password.length > 0 && form.password !== form.confirm_password && (
+                  <p className="form-error" style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#ef4444' }}>
+                    <HiOutlineExclamationCircle size={14} style={{ flexShrink: 0 }} />
+                    <span>Passwords do not match</span>
+                  </p>
+                )}
               </Field>
               <Field label="Date of Birth">
                 <input name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} className="form-input" />
@@ -214,6 +246,9 @@ export default function RegisterPage() {
               </Field>
               <Field label="Contact Number 2">
                 <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} className="form-input" placeholder="Optional" />
+              </Field>
+              <Field label="Parent Email *">
+                <input name="parent_email" type="email" value={form.parent_email} onChange={handleChange} className="form-input" placeholder="parent@email.com" required />
               </Field>
             </FormSection>
 

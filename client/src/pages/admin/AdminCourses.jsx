@@ -22,58 +22,54 @@ export default function AdminCourses() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div className="page-header">
-        <h1>📚 Courses Overview</h1>
-        <p>View all courses created by teachers across all classes.</p>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">📚 Courses Overview</h1>
+          <p className="text-dark-400 text-sm mt-1">View all courses created by teachers across all classes.</p>
+        </div>
       </div>
 
-      <div className="card table-responsive">
-        <h2 style={{ padding: 20, borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: 16 }}>All Courses</h2>
-        
+      <div className="glass-card table-responsive">
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>Loading...</div>
+          <div className="text-center p-8 text-dark-500">Loading...</div>
         ) : error ? (
-          <div style={{ padding: 16, background: '#fee2e2', color: '#b91c1c', margin: 20, borderRadius: 8 }}>{error}</div>
+          <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg m-4">{error}</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--bg-secondary)' }}>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Title</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Teacher</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Class</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Subject</th>
-                  <th style={{ padding: '12px 20px', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
+          <table className="table-dark">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Teacher</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {courses.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center text-dark-500 py-8">No courses found.</td>
                 </tr>
-              </thead>
-              <tbody>
-                {courses.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)' }}>No courses found.</td>
+              ) : (
+                courses.map(course => (
+                  <tr key={course.id}>
+                    <td>
+                      <p className="text-gray-900 text-sm font-medium">{course.title}</p>
+                    </td>
+                    <td className="text-dark-300 text-sm">{course.teacher?.full_name}</td>
+                    <td className="text-dark-300 text-sm">{course.class?.grade_level} {course.class?.section && `(${course.class.section})`}</td>
+                    <td className="text-dark-300 text-sm">{course.subject?.name}</td>
+                    <td>
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${course.is_active ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                        {course.is_active ? 'ACTIVE' : 'INACTIVE'}
+                      </span>
+                    </td>
                   </tr>
-                ) : (
-                  courses.map(course => (
-                    <tr key={course.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '12px 20px', fontWeight: 500 }}>{course.title}</td>
-                      <td style={{ padding: '12px 20px' }}>{course.teacher?.full_name}</td>
-                      <td style={{ padding: '12px 20px' }}>{course.class?.grade_level} {course.class?.section && `(${course.class.section})`}</td>
-                      <td style={{ padding: '12px 20px' }}>{course.subject?.name}</td>
-                      <td style={{ padding: '12px 20px' }}>
-                        <span style={{
-                          padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-                          background: course.is_active ? '#d1fae5' : '#fee2e2',
-                          color: course.is_active ? '#065f46' : '#991b1b'
-                        }}>
-                          {course.is_active ? 'ACTIVE' : 'INACTIVE'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

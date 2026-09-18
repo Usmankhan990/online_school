@@ -82,12 +82,14 @@ exports.approveStudent = async (req, res) => {
       }
 
       // Auto-create parent account if not already linked
-      if (!profile.parent_id && profile.father_name) {
-        const parentEmail = `parent.${student.email}`;
-        const existingParent = await User.findOne({ where: { email: parentEmail } });
+      if (!profile.parent_id && (profile.parent_email || profile.father_name)) {
+        const parentEmail = profile.parent_email ? profile.parent_email.trim().toLowerCase() : `parent.${student.email}`;
+        let parentUser = await User.findOne({
+          where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), parentEmail),
+        });
         
-        if (!existingParent) {
-          const parentUser = await User.create({
+        if (!parentUser) {
+          parentUser = await User.create({
             email: parentEmail,
             password: profile.father_cnic?.replace(/-/g, '') || 'parent123456',
             role: 'parent',
@@ -101,17 +103,17 @@ exports.approveStudent = async (req, res) => {
             relation: 'Father',
             cnic: profile.father_cnic,
           });
-
-          await profile.update({ parent_id: parentUser.id });
-
-          // Notify parent
-          await Notification.create({
-            user_id: parentUser.id,
-            title: 'Welcome to Usman Online School! 👋',
-            message: `Your child ${student.full_name} has been admitted. Login with email: ${parentEmail} and password: your CNIC number (without dashes).`,
-            type: 'success',
-          });
         }
+
+        await profile.update({ parent_id: parentUser.id });
+
+        // Notify parent
+        await Notification.create({
+          user_id: parentUser.id,
+          title: 'Welcome to Usman Online School! 👋',
+          message: `Your child ${student.full_name} has been admitted. Login with email: ${parentEmail} and password: your CNIC number (without dashes).`,
+          type: 'success',
+        });
       }
 
       // Generate first month fee (PKR 1000)
@@ -188,6 +190,46 @@ exports.getAllStudents = async (req, res) => {
   }
 };
 
+// Update Student
+exports.updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { full_name, phone, status, father_name, mother_name, contact_number_1, contact_number_2, class_id, medium, address, roll_number } = req.body;
+
+    const student = await User.findOne({ where: { id, role: 'student' } });
+    if (!student) return res.status(404).json({ error: 'Student not found.' });
+
+    await student.update({ full_name, phone, status });
+
+    const profile = await StudentProfile.findOne({ where: { user_id: id } });
+    if (profile) {
+      await profile.update({ father_name, mother_name, contact_number_1, contact_number_2, class_id, medium, address, roll_number });
+    }
+
+    res.json({ message: 'Student updated successfully!' });
+  } catch (err) {
+    console.error('Update student error:', err);
+    res.status(500).json({ error: 'Failed to update student.' });
+  }
+};
+
+// Delete User (any role)
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    await user.destroy();
+    res.json({ message: 'User deleted successfully.' });
+  } catch (err) {
+    console.error('Delete user error:', err);
+    res.status(500).json({ error: 'Failed to delete user.' });
+  }
+};
+
+
+
 // Create Teacher
 exports.createTeacher = async (req, res) => {
   try {
@@ -208,6 +250,50 @@ exports.createTeacher = async (req, res) => {
   } catch (err) {
     console.error('Create teacher error:', err);
     res.status(500).json({ error: 'Failed to create teacher.' });
+  }
+};
+
+// Update Teacher
+exports.updateTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email, password, full_name, phone, qualification, specialization, experience_years, bio, salary } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user || user.role !== 'teacher') return res.status(404).json({ error: 'Teacher not found.' });
+
+    if (email && email !== user.email) {
+      const existing = await User.findOne({ where: { email } });
+      if (existing) return res.status(400).json({ error: 'Email already exists.' });
+    }
+
+    user.email = email || user.email;
+    user.full_name = full_name || user.full_name;
+    user.phone = phone !== undefined ? phone : user.phone;
+    
+    if (password) {
+      user.password = password; 
+    }
+    
+    await user.save();
+
+    let profile = await TeacherProfile.findOne({ where: { user_id: user.id } });
+    if (!profile) {
+      profile = await TeacherProfile.create({ user_id: user.id });
+    }
+
+    profile.qualification = qualification !== undefined ? qualification : profile.qualification;
+    profile.specialization = specialization !== undefined ? specialization : profile.specialization;
+    profile.experience_years = experience_years !== undefined ? experience_years : profile.experience_years;
+    profile.bio = bio !== undefined ? bio : profile.bio;
+    profile.salary = salary !== undefined ? salary : profile.salary;
+    
+    await profile.save();
+
+    res.json({ message: 'Teacher updated successfully!', teacher: user.toSafeJSON() });
+  } catch (err) {
+    console.error('Update teacher error:', err);
+    res.status(500).json({ error: 'Failed to update teacher.' });
   }
 };
 
@@ -615,6 +701,12 @@ exports.getAttendanceStats = async (req, res) => {
 // Get all system notifications (for admin overview)
 exports.getNotifications = async (req, res) => {
   try {
+    // Mark the admin's own unread notifications as read since they are viewing the notifications center
+    await Notification.update(
+      { is_read: true },
+      { where: { user_id: req.user.id, is_read: false } }
+    );
+
     const notifications = await Notification.findAll({
       order: [['created_at', 'DESC']],
       limit: 100,
@@ -686,13 +778,87 @@ exports.getParents = async (req, res) => {
     const parents = await User.findAll({
       where: { role: 'parent' },
       include: [
-        { model: ParentProfile, as: 'parent_profile' }
+        { model: ParentProfile, as: 'parentProfile' }
       ]
     });
-    res.json({ parents });
+    res.json({ parents: parents.map(p => p.toSafeJSON()) });
   } catch (err) {
     console.error('Get parents error:', err);
     res.status(500).json({ error: 'Failed to fetch parents.' });
+  }
+};
+
+exports.createParent = async (req, res) => {
+  try {
+    const { email, password, full_name, relation, cnic, occupation } = req.body;
+
+    const existing = await User.findOne({ where: { email } });
+    if (existing) return res.status(400).json({ error: 'Email already exists.' });
+
+    const user = await User.create({
+      email,
+      password,
+      full_name,
+      role: 'parent',
+      status: 'active'
+    });
+
+    await ParentProfile.create({
+      user_id: user.id,
+      relation,
+      cnic,
+      occupation
+    });
+
+    const parentWithProfile = await User.findOne({
+      where: { id: user.id },
+      include: [{ model: ParentProfile, as: 'parentProfile' }]
+    });
+
+    res.status(201).json({ message: 'Parent created successfully!', parent: parentWithProfile.toSafeJSON() });
+  } catch (err) {
+    console.error('Create parent error:', err);
+    res.status(500).json({ error: 'Failed to create parent.' });
+  }
+};
+
+exports.updateParent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email, full_name, relation, cnic, occupation, password } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user || user.role !== 'parent') return res.status(404).json({ error: 'Parent not found.' });
+
+    if (email && email !== user.email) {
+      const existing = await User.findOne({ where: { email } });
+      if (existing) return res.status(400).json({ error: 'Email already exists.' });
+    }
+
+    user.email = email || user.email;
+    user.full_name = full_name || user.full_name;
+    
+    if (password) {
+      user.password = password; 
+    }
+    
+    await user.save();
+
+    let profile = await ParentProfile.findOne({ where: { user_id: user.id } });
+    if (!profile) {
+      profile = await ParentProfile.create({ user_id: user.id });
+    }
+
+    profile.relation = relation !== undefined ? relation : profile.relation;
+    profile.cnic = cnic !== undefined ? cnic : profile.cnic;
+    profile.occupation = occupation !== undefined ? occupation : profile.occupation;
+    
+    await profile.save();
+
+    res.json({ message: 'Parent updated successfully!', parent: user.toSafeJSON() });
+  } catch (err) {
+    console.error('Update parent error:', err);
+    res.status(500).json({ error: 'Failed to update parent.' });
   }
 };
 

@@ -4,7 +4,7 @@ const classController = require('../controllers/classController');
 const { authenticate, requireRole } = require('../middleware/auth');
 
 // Public: list classes (for dropdowns, student registration)
-router.get('/', authenticate, classController.getAll);
+router.get('/', classController.getAll);
 router.get('/:id', authenticate, classController.getById);
 router.get('/:id/subjects', authenticate, classController.getSubjects);
 

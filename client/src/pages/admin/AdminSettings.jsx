@@ -60,53 +60,94 @@ export default function AdminSettings() {
         <p>Configure school settings, academic year, and system preferences.</p>
       </div>
 
-      <div className="card" style={{ padding: 24 }}>
-        <form onSubmit={handleSave} className="flex flex-col gap-5 min-w-0">
+      <div className="glass-card p-6 md:p-8 mb-8">
+        <form onSubmit={handleSave} className="flex flex-col gap-6 min-w-0">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>School Name</label>
-              <input type="text" name="schoolName" value={settings.schoolName} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">School Name</label>
+              <input type="text" name="schoolName" value={settings.schoolName} onChange={handleChange} className="form-input" />
             </div>
             
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Academic Year</label>
-              <input type="text" name="academicYear" value={settings.academicYear} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Academic Year</label>
+              <input type="text" name="academicYear" value={settings.academicYear} onChange={handleChange} className="form-input" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Contact Email</label>
-              <input type="email" name="contactEmail" value={settings.contactEmail} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Contact Email</label>
+              <input type="email" name="contactEmail" value={settings.contactEmail} onChange={handleChange} className="form-input" />
             </div>
             
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Contact Phone</label>
-              <input type="text" name="contactPhone" value={settings.contactPhone} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+              <label className="block mb-2 text-[15px] font-bold text-gray-900">Contact Phone</label>
+              <input type="text" name="contactPhone" value={settings.contactPhone} onChange={handleChange} className="form-input" />
             </div>
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: 6, fontSize: 13, color: 'var(--text-secondary)' }}>Address</label>
-            <input type="text" name="address" value={settings.address} onChange={handleChange} className="input" style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+            <label className="block mb-2 text-[15px] font-bold text-gray-900">Address</label>
+            <input type="text" name="address" value={settings.address} onChange={handleChange} className="form-input" />
           </div>
 
-          <div style={{ borderTop: '1px solid var(--border-color)', margin: '10px 0', padding: '10px 0' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-              <input type="checkbox" name="maintenanceMode" checked={settings.maintenanceMode === 'true'} onChange={(e) => setSettings({...settings, maintenanceMode: e.target.checked ? 'true' : 'false'})} style={{ width: 18, height: 18 }} />
+          {/* Payment Methods Section */}
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">💳 Payment Methods</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ marginBottom: 36 }}>
               <div>
-                <div style={{ fontWeight: 600 }}>Maintenance Mode</div>
-                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Enable this to prevent students and parents from logging in during system updates.</div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">JazzCash Account</label>
+                <input type="text" name="paymentJazzcashAcc" value={settings.paymentJazzcashAcc || ''} onChange={handleChange} placeholder="03XX-XXXXXXX" className="form-input" />
+              </div>
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">JazzCash Account Title</label>
+                <input type="text" name="paymentJazzcashName" value={settings.paymentJazzcashName || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ marginBottom: 36 }}>
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">EasyPaisa Account</label>
+                <input type="text" name="paymentEasypaisaAcc" value={settings.paymentEasypaisaAcc || ''} onChange={handleChange} placeholder="03XX-XXXXXXX" className="form-input" />
+              </div>
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">EasyPaisa Account Title</label>
+                <input type="text" name="paymentEasypaisaName" value={settings.paymentEasypaisaName || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">Bank Name</label>
+                <input type="text" name="paymentBankName" value={settings.paymentBankName || ''} onChange={handleChange} placeholder="e.g. HBL / Meezan Bank" className="form-input" />
+              </div>
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">Bank Account (IBAN)</label>
+                <input type="text" name="paymentBankAccount" value={settings.paymentBankAccount || ''} onChange={handleChange} placeholder="PK00XXXX..." className="form-input" />
+              </div>
+              <div>
+                <label className="block mb-2 text-[15px] font-bold text-gray-900">Bank Account Title</label>
+                <input type="text" name="paymentBankHolder" value={settings.paymentBankHolder || ''} onChange={handleChange} placeholder="Usman Online School" className="form-input" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-6 border-t border-gray-100">
+            <label className="flex items-center gap-4 cursor-pointer p-4 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-gray-50 transition-colors">
+              <input type="checkbox" name="maintenanceMode" checked={settings.maintenanceMode === 'true'} onChange={(e) => setSettings({...settings, maintenanceMode: e.target.checked ? 'true' : 'false'})} className="ml-4 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-600" />
+              <div>
+                <div className="text-[15px] font-bold text-gray-900">Maintenance Mode</div>
+                <div className="text-sm text-gray-500 mt-1">Enable this to prevent students and parents from logging in during system updates.</div>
               </div>
             </label>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: '10px 24px', borderRadius: 8, background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+          <div className="flex items-center gap-4 mt-2">
+            <button type="submit" disabled={saving} className="btn btn-primary px-8 py-2.5 shadow-sm">
               {saving ? 'Saving...' : 'Save Settings'}
             </button>
-            {message && <span style={{ fontSize: 14, fontWeight: 500, color: message.includes('✅') ? '#10b981' : '#ef4444' }}>{message}</span>}
+            {message && <span className={`text-sm font-medium ${message.includes('✅') ? 'text-emerald-600' : 'text-rose-600'}`}>{message}</span>}
           </div>
         </form>
       </div>
