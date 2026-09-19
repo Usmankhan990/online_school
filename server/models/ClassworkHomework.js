@@ -29,6 +29,12 @@ const ClassworkHomework = sequelize.define('ClassworkHomework', {
   file_path: {
     type: DataTypes.STRING,
   },
+  book_pages: {
+    type: DataTypes.STRING,
+  },
+  page_images: {
+    type: DataTypes.TEXT,
+  },
   due_date: {
     type: DataTypes.DATE,
   },

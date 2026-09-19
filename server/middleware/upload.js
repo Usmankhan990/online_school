@@ -13,11 +13,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
+  if (file.mimetype && file.mimetype.startsWith('image/')) {
+    return cb(null, true);
+  }
   const allowed = [
     'application/pdf',
     'image/jpeg',
     'image/jpg',
     'image/png',
+    'image/webp',
+    'image/gif',
+    'image/svg+xml',
+    'image/avif',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'video/mp4',
@@ -26,7 +33,7 @@ const fileFilter = (req, file, cb) => {
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('File type not allowed. Use PDF, JPG, PNG, DOC, or MP4.'), false);
+    cb(new Error('File type not allowed. Please upload a valid image (JPG, PNG, WebP) or document.'), false);
   }
 };
 

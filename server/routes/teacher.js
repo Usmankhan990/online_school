@@ -28,7 +28,7 @@ router.post('/exams/grade-answer', teacherController.gradeAnswer);
 
 // Homework
 router.get('/homework', teacherController.getMyHomework);
-router.post('/homework', upload.single('file'), teacherController.createHomework);
+router.post('/homework', upload.any(), teacherController.createHomework);
 
 // Submissions
 router.get('/submissions', teacherController.getSubmissions);
@@ -41,11 +41,14 @@ router.get('/results', teacherController.getMyResults);
 router.post('/attendance', teacherController.markAttendance);
 router.get('/attendance', teacherController.getAttendance);
 router.get('/class-students', teacherController.getClassStudents);
+router.post('/attendance/self', teacherController.markSelfAttendance);
+router.get('/attendance/self', teacherController.getMySelfAttendance);
 
 // Live Classes
 router.get('/live-classes', teacherController.getMyLiveClasses);
 router.post('/live-classes', teacherController.createLiveClass);
 router.put('/live-classes/:id', teacherController.updateLiveClass);
+router.delete('/live-classes/:id', teacherController.deleteLiveClass);
 
 // Notifications
 router.get('/notifications', teacherController.getNotifications);

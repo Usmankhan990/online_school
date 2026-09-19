@@ -23,7 +23,7 @@ const Exam = sequelize.define('Exam', {
     type: DataTypes.TEXT,
   },
   type: {
-    type: DataTypes.ENUM('quiz', 'midterm', 'final', 'assignment', 'paper'),
+    type: DataTypes.STRING,
     defaultValue: 'quiz',
   },
   total_marks: {

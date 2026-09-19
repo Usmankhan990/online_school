@@ -1,5 +1,7 @@
 const { Course, CourseMaterial, Class, Subject, Exam, ExamQuestion, ExamAttempt, ExamAnswer, ClassworkHomework, Submission, Attendance, LiveClass, User, StudentProfile, Enrollment, Notification } = require('../models');
 const { Op } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
 
 // ============= COURSES =============
 exports.getMyCourses = async (req, res) => {
@@ -228,17 +230,95 @@ exports.gradeAnswer = async (req, res) => {
 // ============= HOMEWORK =============
 exports.createHomework = async (req, res) => {
   try {
-    const { course_id, title, description, type, due_date, total_marks } = req.body;
+    const { course_id, title, description, type, due_date, total_marks, book_pages } = req.body;
     const course = await Course.findOne({ where: { id: course_id, teacher_id: req.user.id } });
     if (!course) return res.status(404).json({ error: 'Course not found.' });
 
+    let mainFile = null;
+    let pageImages = [];
+
+    if (req.files) {
+      if (Array.isArray(req.files)) {
+        req.files.forEach(f => {
+          if (f.fieldname === 'file') {
+            mainFile = f.filename;
+          } else {
+            pageImages.push(f.filename);
+          }
+        });
+      } else {
+        if (req.files.file && req.files.file[0]) {
+          mainFile = req.files.file[0].filename;
+        }
+        if (req.files.page_images && Array.isArray(req.files.page_images)) {
+          pageImages = req.files.page_images.map(f => f.filename);
+        }
+      }
+    } else if (req.file) {
+      mainFile = req.file.filename;
+    }
+
     const hw = await ClassworkHomework.create({
-      course_id, teacher_id: req.user.id, title, description,
-      type: type || 'homework', due_date, total_marks,
-      file_path: req.file ? req.file.filename : null,
+      course_id,
+      teacher_id: req.user.id,
+      title,
+      description,
+      type: type || 'homework',
+      due_date,
+      total_marks,
+      file_path: mainFile,
+      book_pages: book_pages ? book_pages.trim() : null,
+      page_images: pageImages.length > 0 ? JSON.stringify(pageImages) : null,
     });
+
+    // Auto-notify all students enrolled in this course or class
+    try {
+      const enrollments = await Enrollment.findAll({ where: { course_id, status: 'active' } });
+      let studentIds = enrollments.map(e => e.student_id);
+
+      if (course.class_id) {
+        const classProfiles = await StudentProfile.findAll({ where: { class_id: course.class_id } });
+        const classStudentIds = classProfiles.map(p => p.user_id);
+        studentIds = Array.from(new Set([...studentIds, ...classStudentIds]));
+      }
+
+      const pageDetail = book_pages ? ` (Book Pages: ${book_pages})` : '';
+
+      // Notify students
+      for (const sId of studentIds) {
+        await Notification.create({
+          user_id: sId,
+          title: 'New Homework Assigned! 📝',
+          message: `"${title}" has been assigned for ${course.title || 'your class'}.${pageDetail}`,
+          type: 'homework',
+          link: '/student/homework',
+        });
+      }
+
+      // Notify parents
+      if (studentIds.length > 0) {
+        const studentProfiles = await StudentProfile.findAll({
+          where: { user_id: { [Op.in]: studentIds }, parent_id: { [Op.ne]: null } },
+        });
+        for (const sp of studentProfiles) {
+          if (sp.parent_id) {
+            await Notification.create({
+              user_id: sp.parent_id,
+              title: 'New Homework for Your Child 📝',
+              message: `New homework "${title}" has been assigned for your child.${pageDetail}`,
+              type: 'homework',
+              link: '/parent/homework',
+            });
+          }
+        }
+      }
+    } catch (notifErr) {
+      console.error('Homework notification error (non-fatal):', notifErr);
+    }
+
     res.status(201).json({ homework: hw });
   } catch (err) {
+    console.error('Create homework error:', err);
     res.status(500).json({ error: 'Failed to create homework.' });
   }
 };
@@ -309,31 +389,90 @@ exports.markAttendance = async (req, res) => {
   }
 };
 
-// Mark attendance for self (teacher)
+// Mark attendance for self (teacher) via live selfie
 exports.markSelfAttendance = async (req, res) => {
   try {
-    const { date, status, selfie_path } = req.body;
-    const existing = await Attendance.findOne({
-      where: { user_id: req.user.id, date, user_role: 'teacher' }
-    });
+    const { selfie_data, status, date } = req.body;
+    const today = date || new Date().toISOString().split('T')[0];
 
-    if (existing) {
-      return res.status(400).json({ error: 'Attendance already marked for today.' });
+    let selfiePath = null;
+    if (selfie_data) {
+      const dir = path.join(__dirname, '..', 'uploads', 'attendance');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+      const base64Data = selfie_data.replace(/^data:image\/\w+;base64,/, '');
+      const filename = `teacher-selfie-${req.user.id}-${Date.now()}.jpg`;
+      fs.writeFileSync(path.join(dir, filename), base64Data, 'base64');
+      selfiePath = `/uploads/attendance/${filename}`;
     }
 
-    await Attendance.create({
-      user_id: req.user.id,
-      user_role: 'teacher',
-      date: date || new Date().toISOString().split('T')[0],
-      status: status || 'present',
-      verification_method: selfie_path ? 'selfie' : 'manual',
-      selfie_path,
+    const existing = await Attendance.findOne({
+      where: { user_id: req.user.id, date: today, user_role: 'teacher' }
     });
 
-    res.json({ message: 'Your attendance has been marked!' });
+    let attendance;
+    if (existing) {
+      await existing.update({
+        status: status || 'present',
+        verification_method: selfiePath ? 'selfie' : existing.verification_method,
+        selfie_path: selfiePath || existing.selfie_path,
+        remarks: 'Teacher live selfie attendance'
+      });
+      attendance = existing;
+    } else {
+      attendance = await Attendance.create({
+        user_id: req.user.id,
+        user_role: 'teacher',
+        date: today,
+        status: status || 'present',
+        verification_method: selfiePath ? 'selfie' : 'manual',
+        selfie_path: selfiePath,
+        remarks: 'Teacher live selfie attendance'
+      });
+    }
+
+    res.json({ message: 'Teacher attendance marked successfully via live selfie!', attendance });
   } catch (err) {
     console.error('Mark self attendance error:', err);
-    res.status(500).json({ error: 'Failed to mark self attendance.' });
+    res.status(500).json({ error: 'Failed to mark teacher attendance.' });
+  }
+};
+
+// Get teacher's own attendance history
+exports.getMySelfAttendance = async (req, res) => {
+  try {
+    const { month } = req.query;
+    const where = { user_id: req.user.id, user_role: 'teacher' };
+    if (month) {
+      const [year, m] = month.split('-').map(Number);
+      if (year && m) {
+        const lastDay = new Date(year, m, 0).getDate();
+        const startDate = `${month}-01`;
+        const endDate = `${month}-${String(lastDay).padStart(2, '0')}`;
+        where.date = { [Op.between]: [startDate, endDate] };
+      }
+    }
+    const attendance = await Attendance.findAll({
+      where,
+      order: [['date', 'DESC']]
+    });
+
+    const all = await Attendance.findAll({ where: { user_id: req.user.id, user_role: 'teacher' } });
+    const totalDays = all.length;
+    const presentDays = all.filter(a => a.status === 'present' || a.status === 'late').length;
+
+    res.json({
+      attendance,
+      stats: {
+        totalDays,
+        presentDays,
+        absentDays: totalDays - presentDays,
+        percentage: totalDays > 0 ? ((presentDays / totalDays) * 100).toFixed(1) : '100.0'
+      }
+    });
+  } catch (err) {
+    console.error('Get teacher self attendance error:', err);
+    res.status(500).json({ error: 'Failed to fetch teacher attendance.' });
   }
 };
 
@@ -431,7 +570,7 @@ exports.getMyLiveClasses = async (req, res) => {
 exports.updateLiveClass = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, recording_url, meeting_url, title, description, scheduled_at, duration_minutes } = req.body;
+    const { course_id, status, recording_url, meeting_url, title, description, scheduled_at, duration_minutes } = req.body;
     
     const liveClass = await LiveClass.findOne({
       where: { id, teacher_id: req.user.id }
@@ -439,14 +578,42 @@ exports.updateLiveClass = async (req, res) => {
     
     if (!liveClass) return res.status(404).json({ error: 'Live class not found or unauthorized.' });
     
-    await liveClass.update({
-      status, recording_url, meeting_url, title, description, scheduled_at, duration_minutes
+    const updateData = {};
+    if (course_id) updateData.course_id = course_id;
+    if (status) updateData.status = status;
+    if (recording_url !== undefined) updateData.recording_url = recording_url;
+    if (meeting_url !== undefined) updateData.meeting_url = meeting_url;
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (scheduled_at !== undefined) updateData.scheduled_at = scheduled_at;
+    if (duration_minutes !== undefined) updateData.duration_minutes = duration_minutes;
+
+    await liveClass.update(updateData);
+
+    const updated = await LiveClass.findByPk(liveClass.id, {
+      include: [{ model: Course, as: 'course', include: [{ model: Class, as: 'class' }, { model: Subject, as: 'subject' }] }],
     });
     
-    res.json({ message: 'Live class updated successfully!', liveClass });
+    res.json({ message: 'Live class updated successfully!', liveClass: updated });
   } catch (err) {
     console.error('Update live class error:', err);
     res.status(500).json({ error: 'Failed to update live class.' });
+  }
+};
+
+exports.deleteLiveClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const liveClass = await LiveClass.findOne({
+      where: { id, teacher_id: req.user.id }
+    });
+    if (!liveClass) return res.status(404).json({ error: 'Live class not found or unauthorized.' });
+    
+    await liveClass.destroy();
+    res.json({ message: 'Live class deleted successfully!' });
+  } catch (err) {
+    console.error('Delete live class error:', err);
+    res.status(500).json({ error: 'Failed to delete live class.' });
   }
 };
 
@@ -457,11 +624,20 @@ exports.getClassStudents = async (req, res) => {
     if (!class_id) return res.status(400).json({ error: 'class_id is required.' });
 
     const students = await StudentProfile.findAll({
-      where: { class_id },
-      include: [{ model: User, as: 'user', where: { status: 'active' }, attributes: ['id', 'full_name', 'email'] }],
+      where: { class_id: parseInt(class_id) },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'full_name', 'email', 'avatar', 'phone', 'status'],
+        },
+      ],
+      order: [['user_id', 'ASC']],
     });
-    res.json({ students });
+
+    res.json({ students: students.filter(s => s.user) });
   } catch (err) {
+    console.error('Get class students error:', err);
     res.status(500).json({ error: 'Failed to fetch students.' });
   }
 };

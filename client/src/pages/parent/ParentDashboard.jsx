@@ -48,18 +48,18 @@ export default function ParentDashboard() {
   ];
 
   return (
-    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
+    <div className="animate-fade-in flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
-      <div className="card" style={{ padding: '40px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: 'white', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
+      <div className="card premium-gradient shadow-glow" style={{ padding: '40px', border: 'none', color: 'white', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em' }}>
             Welcome, {user?.full_name?.split(' ')[0]}! 👨‍👩‍👧
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, maxWidth: 500 }}>
+          <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 16, maxWidth: 500 }}>
             {d.childName ? `Stay connected with ${d.childName}'s academic journey and school milestones.` : 'Monitor your child\'s academic progress and stay updated with school activities.'}
           </p>
         </div>
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 220, height: 220, background: 'rgba(255, 255, 255, 0.15)', borderRadius: '50%', filter: 'blur(50px)' }} />
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 240, height: 240, background: 'rgba(255, 255, 255, 0.1)', borderRadius: '50%', filter: 'blur(60px)' }} />
       </div>
 
       {/* Child Spotlight */}

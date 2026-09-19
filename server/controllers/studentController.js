@@ -170,15 +170,7 @@ exports.markSelfieAttendance = async (req, res) => {
     const today = new Date().toISOString().split('T')[0];
 
     const profile = await StudentProfile.findOne({ where: { user_id: req.user.id } });
-    if (!profile) return res.status(404).json({ error: 'Profile not found.' });
-
-    // Check if already marked today
-    const existing = await Attendance.findOne({
-      where: { user_id: req.user.id, user_role: 'student', class_id: profile.class_id, date: today },
-    });
-    if (existing) {
-      return res.status(400).json({ error: 'Attendance already marked for today.', attendance: existing });
-    }
+    if (!profile) return res.status(404).json({ error: 'Student profile not found.' });
 
     // Save selfie
     let selfiePath = null;
@@ -192,18 +184,34 @@ exports.markSelfieAttendance = async (req, res) => {
       selfiePath = `/uploads/attendance/${filename}`;
     }
 
-    const attendance = await Attendance.create({
-      user_id: req.user.id,
-      user_role: 'student',
-      class_id: profile.class_id,
-      date: today,
-      status: 'present',
-      verification_method: 'selfie',
-      selfie_path: selfiePath,
-      remarks: 'Auto-marked via selfie verification',
+    // Check if already marked today
+    const existing = await Attendance.findOne({
+      where: { user_id: req.user.id, user_role: 'student', date: today },
     });
 
-    res.status(201).json({ message: 'Attendance marked successfully!', attendance });
+    let attendance;
+    if (existing) {
+      await existing.update({
+        status: 'present',
+        verification_method: 'selfie',
+        selfie_path: selfiePath || existing.selfie_path,
+        remarks: 'Selfie verified attendance',
+      });
+      attendance = existing;
+    } else {
+      attendance = await Attendance.create({
+        user_id: req.user.id,
+        user_role: 'student',
+        class_id: profile.class_id,
+        date: today,
+        status: 'present',
+        verification_method: 'selfie',
+        selfie_path: selfiePath,
+        remarks: 'Auto-marked via selfie verification',
+      });
+    }
+
+    res.status(200).json({ message: 'Selfie attendance verified and marked successfully!', attendance });
   } catch (err) {
     console.error('Selfie attendance error:', err);
     res.status(500).json({ error: 'Failed to mark attendance.' });
@@ -415,7 +423,13 @@ exports.getMyAttendance = async (req, res) => {
     const { month } = req.query;
     const where = { user_id: req.user.id, user_role: 'student' };
     if (month) {
-      where.date = { [Op.like]: `${month}%` };
+      const [year, m] = month.split('-').map(Number);
+      if (year && m) {
+        const lastDay = new Date(year, m, 0).getDate();
+        const startDate = `${month}-01`;
+        const endDate = `${month}-${String(lastDay).padStart(2, '0')}`;
+        where.date = { [Op.between]: [startDate, endDate] };
+      }
     }
     const attendance = await Attendance.findAll({
       where,
@@ -437,6 +451,7 @@ exports.getMyAttendance = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('Get my attendance error:', err);
     res.status(500).json({ error: 'Failed to fetch attendance.' });
   }
 };
@@ -636,6 +651,7 @@ exports.getReportCard = async (req, res) => {
       }
       subjectMap[subjectName].exams.push({
         title: attempt.exam.title,
+        type: attempt.exam.type,
         obtained: attempt.total_obtained || 0,
         total: attempt.exam.total_marks || 0,
         percentage: attempt.percentage || 0,
@@ -655,10 +671,40 @@ exports.getReportCard = async (req, res) => {
     const grandMax = subjects.reduce((s, sub) => s + sub.totalMarks, 0);
     const overallPercentage = grandMax > 0 ? ((grandTotal / grandMax) * 100).toFixed(1) : 0;
 
+    // Student Attendance Analytics for Report Card
+    const attendanceRecords = await Attendance.findAll({
+      where: { user_id: req.user.id, user_role: 'student' },
+      order: [['date', 'DESC']],
+    });
+
+    const totalDays = attendanceRecords.length;
+    const presentDays = attendanceRecords.filter(a => a.status === 'present').length;
+    const lateDays = attendanceRecords.filter(a => a.status === 'late').length;
+    const absentDays = attendanceRecords.filter(a => a.status === 'absent').length;
+    const leaveDays = attendanceRecords.filter(a => a.status === 'leave').length;
+    const effectivePresent = presentDays + lateDays;
+    const attendancePercentage = totalDays > 0 ? ((effectivePresent / totalDays) * 100).toFixed(1) : '100.0';
+
+    const attendanceSummary = {
+      totalDays,
+      presentDays,
+      lateDays,
+      absentDays,
+      leaveDays,
+      percentage: attendancePercentage,
+      remark: parseFloat(attendancePercentage) >= 90
+        ? 'Excellent Attendance'
+        : parseFloat(attendancePercentage) >= 75
+        ? 'Good & Regular'
+        : 'Attendance Shortage',
+    };
+
     res.json({
       student: { name: profile.user?.full_name, class: profile.class?.display_name, rollNo: profile.roll_number },
       subjects,
       summary: { totalObtained: grandTotal, totalMarks: grandMax, percentage: overallPercentage, grade: getGrade(overallPercentage) },
+      attendance: attendanceSummary,
+      results: attempts,
     });
   } catch (err) {
     console.error('Report card error:', err);

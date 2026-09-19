@@ -119,7 +119,9 @@ export default function AdminDashboard() {
                           {s.status?.toUpperCase()}
                         </span>
                       </td>
-                      <td style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>{new Date(s.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                      <td style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                        {new Date(s.createdAt || s.created_at || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

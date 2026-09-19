@@ -14,6 +14,8 @@ import TermsPage from './pages/public/TermsPage';
 // ── Auth Pages ──
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 
 // ── Admin Pages ──
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -111,7 +113,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/apply" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/dashboard" element={<RoleRedirect />} />
 
           {/* ═══════ SUPER ADMIN PORTAL ═══════ */}

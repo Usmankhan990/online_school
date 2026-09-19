@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { HiOutlineUpload, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineEye, HiOutlineEyeOff, HiOutlineExclamationCircle } from 'react-icons/hi';
 import logoImg from '../../assets/logo.jpg';
+import LanguageToggle from '../../components/LanguageToggle';
 
 const fallbackClasses = [
   { id: 1, display_name: 'KG / Pre-1' },
@@ -19,6 +20,8 @@ const fallbackClasses = [
 export default function RegisterPage() {
   const [form, setForm] = useState({
     full_name: '', email: '', password: '', confirm_password: '',
+    gender: 'Male', student_phone: '',
+    guardian_relation: 'Father',
     father_name: '', mother_name: '', father_cnic: '',
     contact_number_1: '', contact_number_2: '', parent_email: '',
     class_id: '', medium: 'English', date_of_birth: '', address: '',
@@ -50,7 +53,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (['contact_number_1', 'contact_number_2'].includes(name)) {
+    if (['student_phone', 'contact_number_1', 'contact_number_2'].includes(name)) {
       const numbersOnly = value.replace(/[^0-9]/g, '').slice(0, 11);
       setForm(f => ({ ...f, [name]: numbersOnly }));
       return;
@@ -60,6 +63,15 @@ export default function RegisterPage() {
       const capitalized = value.replace(/(^|\s)([a-z\u00E0-\u00FC])/g, (m, p, c) => p + c.toUpperCase());
       setForm(f => ({ ...f, [name]: capitalized }));
       return;
+    }
+
+    if (name === 'date_of_birth' && value) {
+      const parts = value.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].slice(0, 4);
+        setForm(f => ({ ...f, [name]: parts.join('-') }));
+        return;
+      }
     }
 
     setForm(f => ({ ...f, [name]: value }));
@@ -85,7 +97,7 @@ export default function RegisterPage() {
       return setError('Passwords do not match.');
     }
     if (!/^\d{5}-\d{7}-\d{1}$/.test(form.father_cnic)) {
-      return setError('Father CNIC format must be: 00000-0000000-0');
+      return setError(`${form.guardian_relation || 'Parent'} CNIC format must be: 00000-0000000-0`);
     }
     if (!form.parent_email || !form.parent_email.trim()) {
       return setError('Parent email is required.');
@@ -155,7 +167,10 @@ export default function RegisterPage() {
               <p className="auth-eyebrow">Admission Form</p>
               <h2>Apply for Admission</h2>
             </div>
-            <Link to="/login" className="btn btn-secondary btn-sm">Sign In</Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <LanguageToggle style={{ border: '1px solid var(--border-color)', background: 'var(--bg-surface-2)' }} />
+              <Link to="/login" className="btn btn-secondary btn-sm">Sign In</Link>
+            </div>
           </div>
 
           {error && <div className="alert alert-danger">{error}</div>}
@@ -232,26 +247,50 @@ export default function RegisterPage() {
                   </p>
                 )}
               </Field>
-              <Field label="Date of Birth">
-                <input name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} className="form-input" />
+              <Field label="Date of Birth *">
+                <input
+                  name="date_of_birth"
+                  type="date"
+                  max="9999-12-31"
+                  min="1950-01-01"
+                  value={form.date_of_birth}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </Field>
+              <Field label="Gender *">
+                <select name="gender" value={form.gender} onChange={handleChange} className="form-select" required>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </Field>
+              <Field label="Student Contact No *">
+                <input name="student_phone" value={form.student_phone} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" />
               </Field>
             </FormSection>
 
             <FormSection title="Parent / Guardian Information" tone="accent">
+              <Field label="Parent / Guardian *">
+                <select name="guardian_relation" value={form.guardian_relation} onChange={handleChange} className="form-select" required>
+                  <option value="Father">Father</option>
+                  <option value="Mother">Mother</option>
+                </select>
+              </Field>
               <Field label="Father Name *">
                 <input name="father_name" value={form.father_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Father's full name" required />
               </Field>
               <Field label="Mother Name *">
                 <input name="mother_name" value={form.mother_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Mother's full name" required />
               </Field>
-              <Field label="Father CNIC *">
+              <Field label={`${form.guardian_relation || 'Father'} CNIC *`}>
                 <input name="father_cnic" value={form.father_cnic} onChange={handleChange} className="form-input" placeholder="00000-0000000-0" required />
                 <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>Fill this form as per CNIC</span>
               </Field>
               <Field label="Contact Number 1 *">
                 <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" required />
               </Field>
-              <Field label="Contact Number 2">
+              <Field label="Contact Number 2 *">
                 <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="Optional" />
               </Field>
               <Field label="Parent Email *">
@@ -272,7 +311,7 @@ export default function RegisterPage() {
                   <option value="Urdu">Urdu Medium</option>
                 </select>
               </Field>
-              <Field label="Address" wide>
+              <Field label="Address *" wide>
                 <input name="address" value={form.address} onChange={handleChange} className="form-input" placeholder="Home address" />
               </Field>
             </FormSection>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import logoImg from '../../assets/logo.jpg';
+import LanguageToggle from '../../components/LanguageToggle';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
@@ -57,6 +58,7 @@ function PublicNav() {
           ))}
         </div>
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: 12 }}>
+          <LanguageToggle style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)' }} />
           <Link
             to="/login"
             className="btn"
@@ -82,9 +84,12 @@ function PublicNav() {
           </Link>
           <Link to="/register" className="btn btn-accent">Apply Now</Link>
         </div>
-        <button className="md:hidden" onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}>
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageToggle style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)' }} />
+          <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}>
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+          </button>
+        </div>
       </div>
       {open && (
         <div className="md:hidden" style={{ padding: '12px 24px 20px', background: 'rgba(15,23,42,0.98)' }}>

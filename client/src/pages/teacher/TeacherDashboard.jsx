@@ -7,10 +7,34 @@ export default function TeacherDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
     api.get('/teacher/dashboard').then(r => setData(r.data)).catch(console.error).finally(() => setLoading(false));
   }, []);
+
+  const markRead = async (id) => {
+    try {
+      await api.put(`/teacher/notifications/${id}/read`);
+      setData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          notifications: (prev.notifications || []).map(x => x.id === id ? { ...x, is_read: true } : x)
+        };
+      });
+      window.dispatchEvent(new Event('notifications-updated'));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleNotificationClick = (notif) => {
+    if (!notif.is_read && notif.id) {
+      markRead(notif.id);
+    }
+    setExpandedId(prev => prev === notif.id ? null : notif.id);
+  };
 
   if (loading) return (
     <div className="flex flex-col gap-5 min-w-0">
@@ -116,20 +140,59 @@ export default function TeacherDashboard() {
         {/* Right Side: Feed / Activities */}
         <div className="flex flex-col gap-8 min-w-0">
           <div className="card-glass" style={{ padding: 28 }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 20 }}>🔔 Activity Feed</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>🔔 Activity Feed</h3>
+              <Link to="/teacher/notifications" style={{ fontSize: 13, color: 'var(--color-primary-500)', fontWeight: 700, textDecoration: 'none' }}>
+                View All
+              </Link>
+            </div>
             {(d.notifications || []).length === 0 ? (
               <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-tertiary)' }}>
                 <p style={{ fontSize: 40, marginBottom: 12 }}>🔕</p>
                 <p style={{ fontSize: 14 }}>All quiet for now!</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {(d.notifications || []).slice(0, 6).map((n, i) => (
-                  <div key={i} style={{ paddingBottom: 16, borderBottom: i !== 5 ? '1px solid var(--border-light)' : 'none' }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{n.title}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{n.message}</div>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(d.notifications || []).slice(0, 6).map((n, i) => {
+                  const notifId = n.id || `n-${i}`;
+                  const isExpanded = expandedId === notifId;
+                  return (
+                    <div 
+                      key={notifId}
+                      onClick={() => handleNotificationClick({ ...n, id: notifId })}
+                      style={{ 
+                        padding: '12px 14px', 
+                        borderRadius: 10,
+                        border: '1px solid var(--border-light)',
+                        background: isExpanded ? 'var(--bg-surface-2, #f8fafc)' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseOver={e => { if (!isExpanded) e.currentTarget.style.background = 'var(--bg-surface-2, #f8fafc)'; }}
+                      onMouseOut={e => { if (!isExpanded) e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{n.title}</div>
+                        {!n.is_read && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />}
+                      </div>
+                      <div 
+                        style={{ 
+                          fontSize: 13, 
+                          color: 'var(--text-secondary)', 
+                          lineHeight: 1.5,
+                          display: isExpanded ? 'block' : '-webkit-box',
+                          WebkitLineClamp: isExpanded ? 'unset' : 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: isExpanded ? 'visible' : 'hidden',
+                          wordBreak: 'break-word',
+                          whiteSpace: isExpanded ? 'pre-wrap' : 'normal'
+                        }}
+                      >
+                        {n.message}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

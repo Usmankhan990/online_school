@@ -16,10 +16,24 @@ router.get('/pending-students', adminController.getPendingStudents);
 router.put('/approve-student/:id', adminController.approveStudent);
 router.put('/reject-student/:id', adminController.rejectStudent);
 
+const upload = require('../middleware/upload');
+
+const handleTeacherUploads = (req, res, next) => {
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'cnic', maxCount: 1 },
+  ])(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'File upload failed' });
+    }
+    next();
+  });
+};
+
 // Teacher Management
 router.get('/teachers', adminController.getAllTeachers);
-router.post('/teachers', adminController.createTeacher);
-router.put('/teachers/:id', adminController.updateTeacher);
+router.post('/teachers', handleTeacherUploads, adminController.createTeacher);
+router.put('/teachers/:id', handleTeacherUploads, adminController.updateTeacher);
 
 // Parents Management
 router.get('/parents', adminController.getParents);
@@ -65,6 +79,8 @@ router.get('/attendance', adminController.getAttendanceStats);
 // Notifications Management
 router.get('/notifications', adminController.getNotifications);
 router.post('/notifications', adminController.sendNotification);
+router.put('/notifications/:id/read', adminController.markNotificationRead);
+router.put('/notifications/read-all', adminController.markAllNotificationsRead);
 
 // System Settings
 router.get('/settings', adminController.getSettings);

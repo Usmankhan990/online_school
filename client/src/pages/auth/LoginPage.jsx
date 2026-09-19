@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import logoImg from '../../assets/logo.jpg';
+import LanguageToggle from '../../components/LanguageToggle';
 
 const DEMO_CREDS = [
   { label: 'Admin', email: 'admin@usmanonlineschool.com', pass: 'Admin@123', icon: '🛡️', color: '#1e3a5f' },
@@ -47,7 +48,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 50 }}>
+        <LanguageToggle style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#1e3a5f', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }} />
+      </div>
       {/* Left Panel — Branding */}
       <div className="hidden lg:flex flex-col justify-center items-center relative overflow-hidden" style={{
         width: '45%', background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
@@ -92,15 +96,15 @@ export default function LoginPage() {
               <input className="form-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" required />
             </div>
             <div>
-              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                Password
-                <Link to="/forgot-password" style={{ color: '#1e3a5f', fontWeight: 500, textDecoration: 'none', fontSize: 12 }}>Forgot?</Link>
-              </label>
+              <label className="form-label">Password</label>
               <div style={{ position: 'relative' }}>
                 <input className="form-input" type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required style={{ paddingRight: 44 }} />
                 <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>
                   {showPass ? 'Hide' : 'Show'}
                 </button>
+              </div>
+              <div style={{ textAlign: 'right', marginTop: 6 }}>
+                <Link to="/forgot-password" style={{ color: '#1e3a5f', fontWeight: 500, textDecoration: 'none', fontSize: 12.5 }}>Forgot?</Link>
               </div>
             </div>
             <button type="submit" className="btn btn-primary btn-lg" disabled={loading} style={{ width: '100%', marginTop: 4 }}>

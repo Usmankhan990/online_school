@@ -109,7 +109,7 @@ export default function AdminParents() {
       </div>
 
       {showForm && (
-        <div className="glass-card p-6 animate-slide-up">
+        <div className="glass-card p-6 animate-slide-up" style={{ marginBottom: 14 }}>
           <h3 className="text-lg font-semibold text-gray-900 mb-4">{editingId ? 'Edit Parent' : 'Create New Parent'}</h3>
           <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input className="form-input" name="full_name" placeholder="Full Name *" value={form.full_name} onChange={handleChange} required />
@@ -151,7 +151,7 @@ export default function AdminParents() {
             <input className="form-input" name="cnic" placeholder="CNIC" value={form.cnic} onChange={handleChange} />
             <input className="form-input" name="occupation" placeholder="Occupation" value={form.occupation} onChange={handleChange} />
             
-            <div className="md:col-span-2 flex gap-3 mt-2">
+            <div className="md:col-span-2 flex justify-end gap-3" style={{ marginTop: 10, marginBottom: 2 }}>
               <button type="submit" className="btn btn-primary btn-sm">{editingId ? 'Update Parent' : 'Create Parent'}</button>
               <button type="button" onClick={resetForm} className="btn btn-secondary btn-sm">Cancel</button>
             </div>

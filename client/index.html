@@ -9,6 +9,10 @@
   <meta name="theme-color" content="#1e3a5f" />
   <link rel="icon" type="image/jpeg" href="/logo.jpg" />
   <title>Taleem Ghar — KG to 8th Punjab Board (PCTB 2026)</title>
+  <link rel="preconnect" href="https://translate.google.com" crossorigin />
+  <link rel="preconnect" href="https://translate.googleapis.com" crossorigin />
+  <link rel="dns-prefetch" href="https://translate.google.com" />
+  <link rel="dns-prefetch" href="https://translate.googleapis.com" />
 </head>
 <body>
   <div id="root">
@@ -22,6 +26,17 @@
       </div>
     </div>
   </div>
+  <div id="google_translate_element" style="display:none"></div>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,ur',
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

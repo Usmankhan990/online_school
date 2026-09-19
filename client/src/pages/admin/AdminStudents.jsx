@@ -83,7 +83,7 @@ export default function AdminStudents() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3" style={{ marginBottom: 16 }}>
         <h1 className="text-2xl font-bold text-gray-900">All Students</h1>
         <div className="flex gap-2">
           {['active', 'trial', 'pending', 'rejected'].map(s => (

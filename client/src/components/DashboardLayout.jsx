@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import api from '../services/api';
+import api, { FILE_BASE } from '../services/api';
 import logoImg from '../assets/logo.jpg';
+import LanguageToggle from './LanguageToggle';
 /* ═══════════════════════════════════════════════════
    ICON COMPONENTS (inline SVG for zero-dep icons)
    ═══════════════════════════════════════════════════ */
@@ -129,15 +131,143 @@ const NAV_CONFIG = {
 };
 
 export default function DashboardLayout({ children }) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    current_password: '',
+    new_password: '',
+  });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [currentPassStatus, setCurrentPassStatus] = useState('idle'); // 'idle' | 'valid' | 'invalid'
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
+  const fileInputRef = useRef(null);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return null;
+    if (avatar.startsWith('blob:') || avatar.startsWith('http')) return avatar;
+    return `${FILE_BASE}/uploads/${avatar}`;
+  };
+
+  useEffect(() => {
+    if (editProfileOpen && user) {
+      setEditForm({
+        full_name: user.full_name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        current_password: '',
+        new_password: '',
+      });
+      setAvatarFile(null);
+      setAvatarPreview(getAvatarUrl(user.avatar));
+      setProfileMsg({ type: '', text: '' });
+      setShowCurrentPass(false);
+      setShowNewPass(false);
+      setCurrentPassStatus('idle');
+    }
+  }, [editProfileOpen, user]);
+
+  useEffect(() => {
+    if (!editForm.current_password) {
+      setCurrentPassStatus('idle');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.post('/auth/verify-password', { current_password: editForm.current_password });
+        if (res.data?.valid) {
+          setCurrentPassStatus('valid');
+        } else {
+          setCurrentPassStatus('invalid');
+        }
+      } catch (err) {
+        setCurrentPassStatus('invalid');
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [editForm.current_password]);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCropImageSrc(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleCropComplete = (croppedFile, previewUrl) => {
+    setAvatarFile(croppedFile);
+    setAvatarPreview(previewUrl);
+    setCropImageSrc(null);
+  };
+
+  const newPassMinLength = editForm.new_password.length >= 8;
+  const newPassUpper = /[A-Z]/.test(editForm.new_password);
+  const newPassLower = /[a-z]/.test(editForm.new_password);
+  const newPassNumber = /\d/.test(editForm.new_password);
+  const newPassSpecial = /[^A-Za-z0-9]/.test(editForm.new_password);
+  const isNewPassValid = newPassUpper && newPassLower && newPassNumber && newPassSpecial && newPassMinLength;
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (editForm.new_password) {
+      if (!editForm.current_password || currentPassStatus !== 'valid') {
+        setProfileMsg({ type: 'error', text: 'Please enter your correct current password.' });
+        return;
+      }
+      if (!isNewPassValid) {
+        setProfileMsg({ type: 'error', text: 'New password does not meet all security requirements.' });
+        return;
+      }
+    }
+    setSavingProfile(true);
+    setProfileMsg({ type: '', text: '' });
+
+    try {
+      const formData = new FormData();
+      formData.append('full_name', editForm.full_name);
+      formData.append('email', editForm.email);
+      if (editForm.phone) formData.append('phone', editForm.phone);
+      if (editForm.current_password) formData.append('current_password', editForm.current_password);
+      if (editForm.new_password) formData.append('new_password', editForm.new_password);
+      if (avatarFile) formData.append('avatar', avatarFile);
+
+      const res = await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (updateUser) {
+        updateUser(res.data.user);
+      }
+      setProfileMsg({ type: 'success', text: res.data.message || 'Profile updated successfully!' });
+      setTimeout(() => {
+        setEditProfileOpen(false);
+      }, 700);
+    } catch (err) {
+      setProfileMsg({ type: 'error', text: err.response?.data?.error || 'Failed to update profile.' });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
@@ -152,8 +282,12 @@ export default function DashboardLayout({ children }) {
         .catch(err => console.error('Failed to fetch unread count', err));
     };
     fetchUnreadCount();
+    window.addEventListener('notifications-updated', fetchUnreadCount);
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('notifications-updated', fetchUnreadCount);
+      clearInterval(interval);
+    };
   }, [user]);
 
   const navRef = useRef(null);
@@ -225,7 +359,18 @@ export default function DashboardLayout({ children }) {
         </nav>
 
         <div className="sidebar-user">
-          <div className="sidebar-avatar">{user?.full_name?.charAt(0) || 'U'}</div>
+          <div className="sidebar-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+            {user?.avatar ? (
+              <img 
+                src={getAvatarUrl(user.avatar)} 
+                alt={user.full_name} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+              />
+            ) : (
+              user?.full_name?.charAt(0) || 'U'
+            )}
+          </div>
           <div className="sidebar-user-info">
             <h4>{user?.full_name || 'User'}</h4>
             <p>{roleName}</p>
@@ -259,6 +404,7 @@ export default function DashboardLayout({ children }) {
                   }}>
               {rolePortal}
             </span>
+            <LanguageToggle />
             <button className="topbar-icon-btn" onClick={() => setDarkMode(!darkMode)} title="Toggle theme">
               {darkMode ? Icons.sun : Icons.moon}
             </button>
@@ -273,11 +419,21 @@ export default function DashboardLayout({ children }) {
                 style={{ 
                   background: 'linear-gradient(135deg, #1e3a5f, #10b981)', 
                   color: 'white', 
-                  width: 36, height: 36, fontSize: 14, cursor: 'pointer' 
+                  width: 36, height: 36, fontSize: 14, cursor: 'pointer',
+                  overflow: 'hidden', padding: 0
                 }} 
                 title={user?.full_name}
               >
-                {user?.full_name?.charAt(0) || 'U'}
+                {user?.avatar ? (
+                  <img 
+                    src={getAvatarUrl(user.avatar)} 
+                    alt={user.full_name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                  />
+                ) : (
+                  user?.full_name?.charAt(0) || 'U'
+                )}
               </div>
 
               {profileOpen && (
@@ -297,42 +453,514 @@ export default function DashboardLayout({ children }) {
                     fontFamily: 'system-ui, -apple-system, sans-serif'
                   }}
                 >
-                  <div style={{ padding: '14px 16px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc' }}>
-                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {user?.full_name}
-                    </p>
-                    <p style={{ margin: 0, marginTop: 4, fontSize: 13, color: '#64748b', fontWeight: 500 }}>
-                      {roleName}
-                    </p>
+                  <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div 
+                      style={{ 
+                        background: '#334155', 
+                        color: 'white', 
+                        width: 34, 
+                        height: 34, 
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 13, 
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        overflow: 'hidden',
+                        padding: 0
+                      }}
+                    >
+                      {user?.avatar ? (
+                        <img 
+                          src={getAvatarUrl(user.avatar)} 
+                          alt={user.full_name} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }} 
+                        />
+                      ) : (
+                        user?.full_name?.charAt(0) || 'U'
+                      )}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user?.full_name}
+                      </p>
+                      <p style={{ margin: 0, marginTop: 2, fontSize: 11.5, color: '#64748b', fontWeight: 500 }}>
+                        {roleName}
+                      </p>
+                    </div>
                   </div>
-                  <button 
-                    onClick={handleLogout}
-                    style={{ 
-                      width: '100%', 
-                      textAlign: 'left', 
-                      padding: '12px 16px', 
-                      fontSize: 14, 
-                      fontWeight: 600,
-                      color: '#ef4444', 
-                      background: 'transparent', 
-                      border: 'none', 
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
-                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <span style={{ width: 18, height: 18 }}>{Icons.logout}</span>
-                    Sign out
-                  </button>
+
+                  <div style={{ padding: '8px 10px' }}>
+                    <button 
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setProfileOpen(false);
+                        setEditProfileOpen(true);
+                      }}
+                      style={{ 
+                        width: '100%', 
+                        textAlign: 'left', 
+                        padding: '8px 12px', 
+                        fontSize: 13, 
+                        fontWeight: 600,
+                        color: '#ffffff', 
+                        background: '#0f172a', 
+                        borderRadius: 8,
+                        border: 'none', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        marginBottom: 6,
+                        transition: 'opacity 0.2s'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span>👤</span>
+                        <span>Edit Profile</span>
+                      </span>
+                      <span style={{ fontSize: 12, opacity: 0.8 }}>⚙️</span>
+                    </button>
+
+                    <button 
+                      onClick={handleLogout}
+                      style={{ 
+                        width: '100%', 
+                        textAlign: 'left', 
+                        padding: '8px 12px', 
+                        fontSize: 13, 
+                        fontWeight: 600,
+                        color: '#ef4444', 
+                        background: 'transparent', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        borderRadius: 8,
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center' }}>{Icons.logout}</span>
+                      Sign out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           </div>
         </header>
+
+        {/* Edit Profile Modal */}
+        {editProfileOpen && createPortal(
+          <div 
+            style={{ 
+              position: 'fixed', 
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(15, 23, 42, 0.65)', 
+              backdropFilter: 'blur(4px)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              zIndex: 99999, 
+              padding: '20px',
+              boxSizing: 'border-box'
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setEditProfileOpen(false); }}
+          >
+            <div 
+              className="hide-scrollbar"
+              style={{ 
+                background: '#ffffff', 
+                borderRadius: 20, 
+                padding: '32px 36px', 
+                maxWidth: 680, 
+                width: '100%', 
+                maxHeight: 'calc(100vh - 40px)',
+                overflowY: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+                border: '1px solid #e2e8f0',
+                boxSizing: 'border-box',
+                fontFamily: 'system-ui, -apple-system, sans-serif'
+              }}
+            >
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' }}>Edit Profile</h2>
+                <button 
+                  type="button" 
+                  onClick={() => setEditProfileOpen(false)} 
+                  style={{ 
+                    background: '#f1f5f9', 
+                    border: 'none', 
+                    width: 32, 
+                    height: 32, 
+                    borderRadius: '50%', 
+                    fontSize: 14, 
+                    cursor: 'pointer', 
+                    color: '#64748b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {profileMsg.text && (
+                <div 
+                  style={{ 
+                    padding: '10px 14px', 
+                    borderRadius: 10, 
+                    marginBottom: 20, 
+                    fontSize: 13, 
+                    fontWeight: 600,
+                    background: profileMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                    color: profileMsg.type === 'success' ? '#059669' : '#dc2626',
+                    border: `1px solid ${profileMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`
+                  }}
+                >
+                  {profileMsg.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveProfile}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '28px 36px', alignItems: 'flex-start' }}>
+                  
+                  {/* Left Column: Avatar, Contact & Role */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    
+                    {/* Avatar with Camera Button */}
+                    <div style={{ position: 'relative', width: 110, height: 110, margin: '4px 0 20px 4px' }}>
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        style={{ 
+                          width: 110, 
+                          height: 110, 
+                          borderRadius: '50%', 
+                          background: 'linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #c084fc 100%)', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          fontSize: 40,
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 20px -4px rgba(99, 102, 241, 0.25)'
+                        }}
+                      >
+                        {avatarPreview ? (
+                          <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span>👤</span>
+                        )}
+                      </div>
+
+                      {/* Camera icon badge */}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Change Photo"
+                        style={{
+                          position: 'absolute',
+                          bottom: 2,
+                          right: 2,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          background: '#0f172a',
+                          border: '2.5px solid #ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#ffffff',
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                        }}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                          <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                      </button>
+                      <input 
+                        ref={fileInputRef} 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleAvatarChange} 
+                        style={{ display: 'none' }} 
+                      />
+                    </div>
+
+                    {/* Contact & Role Section */}
+                    <div style={{ marginTop: 6 }}>
+                      <h3 style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', margin: '0 0 14px 0' }}>Contact & Role</h3>
+                      
+                      <div style={{ marginBottom: 14 }}>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>Phone Number</label>
+                        <input 
+                          type="text" 
+                          value={editForm.phone} 
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} 
+                          placeholder="Phone Number"
+                          style={{ 
+                            width: '100%', 
+                            padding: '10px 14px', 
+                            background: '#f8fafc', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: 10, 
+                            fontSize: 13.5, 
+                            color: '#0f172a',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                          }} 
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>Role / Designation</label>
+                        <div style={{ position: 'relative' }}>
+                          <select 
+                            disabled 
+                            value={user?.role || 'student'} 
+                            style={{ 
+                              width: '100%', 
+                              padding: '10px 32px 10px 14px', 
+                              background: '#f8fafc', 
+                              border: '1px solid #e2e8f0', 
+                              borderRadius: 10, 
+                              fontSize: 13.5, 
+                              color: '#0f172a', 
+                              fontWeight: 500,
+                              appearance: 'none',
+                              cursor: 'not-allowed',
+                              boxSizing: 'border-box'
+                            }}
+                          >
+                            <option value="super_admin">Super Admin</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                          </select>
+                          <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b', fontSize: 10 }}>▼</span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Right Column: Personal Info & Security */}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    
+                    {/* Personal Info */}
+                    <div>
+                      <h3 style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', margin: '0 0 14px 0' }}>Personal Info</h3>
+                      
+                      <div style={{ marginBottom: 14 }}>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>Full Name</label>
+                        <input 
+                          type="text" 
+                          value={editForm.full_name} 
+                          onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} 
+                          required 
+                          placeholder="Full Name"
+                          style={{ 
+                            width: '100%', 
+                            padding: '10px 14px', 
+                            background: '#f8fafc', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: 10, 
+                            fontSize: 13.5, 
+                            color: '#0f172a',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                          }} 
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>Email Address</label>
+                        <input 
+                          type="email" 
+                          value={editForm.email} 
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} 
+                          required 
+                          placeholder="Email Address"
+                          style={{ 
+                            width: '100%', 
+                            padding: '10px 14px', 
+                            background: '#f8fafc', 
+                            border: '1px solid #e2e8f0', 
+                            borderRadius: 10, 
+                            fontSize: 13.5, 
+                            color: '#0f172a',
+                            boxSizing: 'border-box',
+                            outline: 'none'
+                          }} 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Security */}
+                    <div style={{ marginTop: 20 }}>
+                      <h3 style={{ fontSize: 14.5, fontWeight: 800, color: '#0f172a', margin: '0 0 14px 0' }}>Security</h3>
+                      
+                      <div style={{ marginBottom: 14 }}>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>Current Password</label>
+                        <div style={{ position: 'relative' }}>
+                          <input 
+                            type={showCurrentPass ? 'text' : 'password'} 
+                            value={editForm.current_password} 
+                            onChange={(e) => setEditForm({ ...editForm, current_password: e.target.value })} 
+                            style={{ 
+                              width: '100%', 
+                              padding: '10px 38px 10px 14px', 
+                              background: '#f8fafc', 
+                              border: `1px solid ${editForm.current_password ? (currentPassStatus === 'invalid' ? '#dc3545' : currentPassStatus === 'valid' ? '#10b981' : '#e2e8f0') : '#e2e8f0'}`, 
+                              borderRadius: 10, 
+                              fontSize: 13.5, 
+                              color: '#0f172a',
+                              boxSizing: 'border-box',
+                              outline: 'none'
+                            }} 
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowCurrentPass(!showCurrentPass)} 
+                            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex', alignItems: 'center', padding: 4 }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </button>
+                        </div>
+                        {editForm.current_password.length > 0 && currentPassStatus === 'invalid' && (
+                          <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>
+                            Wrong password.
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 600, color: '#475569' }}>New Password</label>
+                        <div style={{ position: 'relative' }}>
+                          <input 
+                            type={showNewPass ? 'text' : 'password'} 
+                            value={editForm.new_password} 
+                            onChange={(e) => setEditForm({ ...editForm, new_password: e.target.value })} 
+                            style={{ 
+                              width: '100%', 
+                              padding: '10px 38px 10px 14px', 
+                              background: '#f8fafc', 
+                              border: `1px solid ${editForm.new_password ? (isNewPassValid ? '#10b981' : '#e2e8f0') : '#e2e8f0'}`, 
+                              borderRadius: 10, 
+                              fontSize: 13.5, 
+                              color: '#0f172a',
+                              boxSizing: 'border-box',
+                              outline: 'none'
+                            }} 
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowNewPass(!showNewPass)} 
+                            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex', alignItems: 'center', padding: 4 }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                          </button>
+                        </div>
+
+                        {editForm.new_password.length > 0 && !isNewPassValid && (
+                          <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>
+                            {!newPassUpper ? 'Password must contain at least one uppercase letter.' :
+                             !newPassLower ? 'Password must contain at least one lowercase letter.' :
+                             !newPassNumber ? 'Password must contain at least one number.' :
+                             !newPassSpecial ? 'Password must contain at least one special character.' :
+                             'Password must be at least 8 characters.'}
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 32, paddingTop: 18, borderTop: '1px solid #f1f5f9' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setEditProfileOpen(false)} 
+                    style={{ 
+                      padding: '10px 24px', 
+                      borderRadius: 10, 
+                      background: '#f1f5f9', 
+                      color: '#334155', 
+                      fontWeight: 600, 
+                      fontSize: 13.5, 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={savingProfile} 
+                    style={{ 
+                      padding: '10px 26px', 
+                      borderRadius: 10, 
+                      background: '#0f172a', 
+                      color: '#ffffff', 
+                      fontWeight: 600, 
+                      fontSize: 13.5, 
+                      border: 'none', 
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)',
+                      transition: 'opacity 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    {savingProfile ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        {/* Circular Avatar Crop & Zoom Modal */}
+        {cropImageSrc && (
+          <AvatarCropModal 
+            imageSrc={cropImageSrc} 
+            onClose={() => setCropImageSrc(null)} 
+            onCropComplete={handleCropComplete} 
+          />
+        )}
 
         {/* Page content */}
         <main className="page-content flex-1">
@@ -340,5 +968,252 @@ export default function DashboardLayout({ children }) {
         </main>
       </div>
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   CIRCULAR AVATAR CROP & ZOOM MODAL COMPONENT
+   ═══════════════════════════════════════════════════ */
+function AvatarCropModal({ imageSrc, onClose, onCropComplete }) {
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imgRef = useRef(null);
+  const cropSize = 260; // diameter of circular frame in px
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  // Touch support for mobile/tablets
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    setPosition({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y,
+    });
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    setScale((prev) => Math.min(3, Math.max(1, prev - e.deltaY * 0.0015)));
+  };
+
+  const handleCrop = () => {
+    if (!imgRef.current) return;
+    const img = imgRef.current;
+    const canvas = document.createElement('canvas');
+    const outSize = 400; // Output 400x400 HD Avatar
+    canvas.width = outSize;
+    canvas.height = outSize;
+    const ctx = canvas.getContext('2d');
+
+    // Circular clip
+    ctx.beginPath();
+    ctx.arc(outSize / 2, outSize / 2, outSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    // Map displayed position to 400x400 canvas
+    const ratio = outSize / cropSize;
+    const baseScale = Math.max(cropSize / img.naturalWidth, cropSize / img.naturalHeight);
+    const renderWidth = img.naturalWidth * baseScale * scale;
+    const renderHeight = img.naturalHeight * baseScale * scale;
+
+    const drawX = (cropSize / 2 - renderWidth / 2 + position.x) * ratio;
+    const drawY = (cropSize / 2 - renderHeight / 2 + position.y) * ratio;
+    const drawW = renderWidth * ratio;
+    const drawH = renderHeight * ratio;
+
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const file = new File([blob], 'cropped-avatar.jpg', { type: 'image/jpeg' });
+        onCropComplete(file, URL.createObjectURL(blob));
+      }
+    }, 'image/jpeg', 0.95);
+  };
+
+  return createPortal(
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        background: 'rgba(15, 23, 42, 0.85)',
+        backdropFilter: 'blur(6px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 100001,
+        padding: 20,
+        boxSizing: 'border-box'
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div 
+        style={{
+          background: '#ffffff',
+          borderRadius: 20,
+          padding: '24px 28px',
+          maxWidth: 420,
+          width: '100%',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          textAlign: 'center'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: '#0f172a' }}>Crop & Adjust Photo</h3>
+          <button 
+            type="button" 
+            onClick={onClose}
+            style={{
+              background: '#f1f5f9',
+              border: 'none',
+              width: 30,
+              height: 30,
+              borderRadius: '50%',
+              fontSize: 13,
+              cursor: 'pointer',
+              color: '#64748b'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <p style={{ margin: '0 0 16px 0', fontSize: 13, color: '#64748b' }}>
+          Drag to reposition and use slider or mouse wheel to zoom in/out inside the round frame.
+        </p>
+
+        {/* Circular Crop Area */}
+        <div 
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{
+            position: 'relative',
+            width: cropSize,
+            height: cropSize,
+            margin: '0 auto',
+            overflow: 'hidden',
+            borderRadius: '50%',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+            boxShadow: '0 0 0 4px #0f172a, 0 10px 25px rgba(0,0,0,0.2)',
+            background: '#0f172a',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <img 
+            ref={imgRef}
+            src={imageSrc} 
+            alt="To crop"
+            draggable={false}
+            style={{
+              position: 'absolute',
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transformOrigin: 'center center',
+              maxWidth: 'none',
+              maxHeight: 'none',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              pointerEvents: 'none'
+            }}
+          />
+        </div>
+
+        {/* Zoom Controls */}
+        <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 12, padding: '0 10px' }}>
+          <span style={{ fontSize: 14, color: '#64748b', userSelect: 'none' }}>🔍-</span>
+          <input 
+            type="range" 
+            min="1" 
+            max="3" 
+            step="0.02" 
+            value={scale} 
+            onChange={(e) => setScale(parseFloat(e.target.value))}
+            style={{ flex: 1, accentColor: '#0f172a', cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: 14, color: '#64748b', userSelect: 'none' }}>🔍+</span>
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 24, paddingTop: 14, borderTop: '1px solid #f1f5f9' }}>
+          <button 
+            type="button" 
+            onClick={onClose}
+            style={{
+              padding: '9px 18px',
+              borderRadius: 10,
+              background: '#f1f5f9',
+              color: '#334155',
+              fontWeight: 600,
+              fontSize: 13,
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            onClick={handleCrop}
+            style={{
+              padding: '9px 22px',
+              borderRadius: 10,
+              background: '#0f172a',
+              color: '#ffffff',
+              fontWeight: 600,
+              fontSize: 13,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(15,23,42,0.2)'
+            }}
+          >
+            Apply & Set
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }

@@ -136,10 +136,11 @@ export default function TeacherExams() {
               </select>
               <input className="form-input" placeholder="Exam Title *" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
               <select className="form-input" value={form.type} onChange={e => setForm({...form, type: e.target.value})}>
-                <option value="quiz">Quiz</option>
-                <option value="midterm">Midterm</option>
-                <option value="final">Final</option>
-                <option value="paper">Paper</option>
+                <option value="quiz">📝 Daily Test / Quiz</option>
+                <option value="first_term">🥇 1st Term Exam</option>
+                <option value="second_term">🥈 2nd Term Exam</option>
+                <option value="final_exam">🏆 Final Exam</option>
+                <option value="paper">📄 Practice Paper</option>
               </select>
               <div style={{ position: 'relative' }}>
                 <input className="form-input" type="number" placeholder="Total Marks" value={form.total_marks} onChange={e => setForm({...form, total_marks: parseInt(e.target.value)})} style={{ paddingRight: 60 }} />

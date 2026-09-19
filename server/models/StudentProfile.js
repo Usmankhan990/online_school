@@ -47,6 +47,14 @@ const StudentProfile = sequelize.define('StudentProfile', {
   date_of_birth: {
     type: DataTypes.DATEONLY,
   },
+  gender: {
+    type: DataTypes.ENUM('Male', 'Female', 'Other'),
+    defaultValue: 'Male',
+  },
+  guardian_relation: {
+    type: DataTypes.ENUM('Father', 'Mother'),
+    defaultValue: 'Father',
+  },
   address: {
     type: DataTypes.TEXT,
   },

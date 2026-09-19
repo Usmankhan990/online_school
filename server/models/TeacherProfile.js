@@ -32,6 +32,27 @@ const TeacherProfile = sequelize.define('TeacherProfile', {
   salary: {
     type: DataTypes.DECIMAL(10, 2),
   },
+  easypaisa_number: {
+    type: DataTypes.STRING,
+  },
+  account_title: {
+    type: DataTypes.STRING,
+  },
+  account_holder_name: {
+    type: DataTypes.STRING,
+  },
+  photo: {
+    type: DataTypes.STRING,
+  },
+  city: {
+    type: DataTypes.STRING,
+  },
+  cnic_file: {
+    type: DataTypes.STRING,
+  },
+  address: {
+    type: DataTypes.TEXT,
+  },
 }, {
   tableName: 'teacher_profiles',
 });

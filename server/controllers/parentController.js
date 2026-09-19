@@ -25,7 +25,17 @@ exports.getParentDashboard = async (req, res) => {
         where: { user_id: child.user_id, user_role: 'student' },
       });
       const totalDays = attendanceRecords.length;
-      const presentDays = attendanceRecords.filter(a => a.status === 'present' || a.status === 'late').length;
+      const presentDays = attendanceRecords.filter(a => a.status === 'present').length;
+      const lateDays = attendanceRecords.filter(a => a.status === 'late').length;
+      const absentDays = attendanceRecords.filter(a => a.status === 'absent').length;
+      const leaveDays = attendanceRecords.filter(a => a.status === 'leave').length;
+      const effectivePresent = presentDays + lateDays;
+      const percentage = totalDays > 0 ? ((effectivePresent / totalDays) * 100).toFixed(1) : '100.0';
+      const remark = parseFloat(percentage) >= 90
+        ? 'Excellent Attendance'
+        : parseFloat(percentage) >= 75
+        ? 'Good & Regular'
+        : 'Attendance Shortage';
 
       // Fees
       const fees = await Fee.findAll({
@@ -61,7 +71,11 @@ exports.getParentDashboard = async (req, res) => {
         attendance: {
           totalDays,
           presentDays,
-          percentage: totalDays > 0 ? ((presentDays / totalDays) * 100).toFixed(1) : 100,
+          lateDays,
+          absentDays,
+          leaveDays,
+          percentage,
+          remark,
         },
         fees,
         results,
@@ -88,7 +102,15 @@ exports.getChildAttendance = async (req, res) => {
     if (!child) return res.status(403).json({ error: 'Access denied.' });
 
     const where = { user_id: student_id, user_role: 'student' };
-    if (month) where.date = { [Op.like]: `${month}%` };
+    if (month) {
+      const [year, m] = month.split('-').map(Number);
+      if (year && m) {
+        const lastDay = new Date(year, m, 0).getDate();
+        const startDate = `${month}-01`;
+        const endDate = `${month}-${String(lastDay).padStart(2, '0')}`;
+        where.date = { [Op.between]: [startDate, endDate] };
+      }
+    }
 
     const attendance = await Attendance.findAll({ where, order: [['date', 'DESC']] });
     res.json({ attendance });
@@ -189,6 +211,7 @@ exports.getNotifications = async (req, res) => {
 
     const notifications = await Notification.findAll({
       where: { user_id: { [Op.in]: targetUserIds } },
+      include: [{ model: User, as: 'user', attributes: ['id', 'full_name', 'role'] }],
       order: [['created_at', 'DESC']],
       limit: 100,
     });

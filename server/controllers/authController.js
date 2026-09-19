@@ -16,6 +16,7 @@ exports.registerStudent = async (req, res) => {
   try {
     const {
       email, password, full_name, phone,
+      gender, guardian_relation,
       father_name, mother_name, father_cnic,
       contact_number_1, contact_number_2, parent_email,
       class_id, medium, date_of_birth, address,
@@ -28,7 +29,7 @@ exports.registerStudent = async (req, res) => {
     // Validate CNIC format
     const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
     if (!cnicRegex.test(father_cnic)) {
-      return res.status(400).json({ error: 'Father CNIC format must be: 00000-0000000-0' });
+      return res.status(400).json({ error: `${guardian_relation || 'Parent'} CNIC format must be: 00000-0000000-0` });
     }
 
     const normalizedEmail = email ? email.trim().toLowerCase() : '';
@@ -47,13 +48,16 @@ exports.registerStudent = async (req, res) => {
       return res.status(400).json({ error: 'Invalid class selected.' });
     }
 
+    const studentContact = (contact_number_1 || phone || '').trim();
+
     // Create user with pending status
     const user = await User.create({
       email: normalizedEmail,
       password,
       role: 'student',
       full_name: full_name?.trim(),
-      phone: contact_number_1?.trim(),
+      phone: studentContact,
+      gender: gender || 'Male',
       status: 'pending',
     });
 
@@ -80,13 +84,15 @@ exports.registerStudent = async (req, res) => {
       father_name,
       mother_name,
       father_cnic,
-      contact_number_1,
+      contact_number_1: studentContact,
       contact_number_2,
       parent_email: parent_email ? parent_email.trim().toLowerCase() : null,
       parent_id: parentUser ? parentUser.id : null,
       class_id,
       medium: medium || 'English',
       date_of_birth,
+      gender: gender || 'Male',
+      guardian_relation: guardian_relation || 'Father',
       address,
       roll_number: rollNumber,
     });
@@ -250,11 +256,23 @@ exports.login = async (req, res) => {
     // Update last login
     await user.update({ last_login: new Date() });
 
+    const studentProfile = await StudentProfile.findOne({ where: { user_id: user.id } });
+    const parentProfile = await ParentProfile.findOne({ where: { user_id: user.id } });
+    const teacherProfile = await TeacherProfile.findOne({ where: { user_id: user.id } });
+
+    const userJson = user.toSafeJSON();
+    if (!userJson.phone) {
+      userJson.phone = studentProfile?.contact_number_1 || parentProfile?.phone || teacherProfile?.phone || '';
+      if (userJson.phone) {
+        await User.update({ phone: userJson.phone }, { where: { id: user.id } });
+      }
+    }
+
     const token = generateToken(user);
 
     res.json({
       token,
-      user: user.toSafeJSON(),
+      user: userJson,
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -273,9 +291,78 @@ exports.getProfile = async (req, res) => {
       ],
     });
 
-    res.json({ user: user.toSafeJSON() });
+    const userJson = user.toSafeJSON();
+    if (!userJson.phone) {
+      userJson.phone = user.studentProfile?.contact_number_1 || user.parentProfile?.phone || user.teacherProfile?.phone || '';
+      if (userJson.phone) {
+        await User.update({ phone: userJson.phone }, { where: { id: user.id } });
+      }
+    }
+
+    res.json({ user: userJson });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch profile.' });
+  }
+};
+
+// Update current user profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { full_name, email, phone, current_password, new_password } = req.body;
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Verify current password if changing password
+    if (new_password && new_password.trim()) {
+      if (!current_password) {
+        return res.status(400).json({ error: 'Current password is required to set a new password.' });
+      }
+      const isMatch = await user.comparePassword(current_password);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Current password does not match.' });
+      }
+      if (new_password.trim().length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+      }
+      user.password = new_password.trim();
+    }
+
+    if (full_name && full_name.trim()) {
+      user.full_name = full_name.trim();
+    }
+
+    if (phone !== undefined) {
+      user.phone = phone.trim();
+    }
+
+    if (email && email.trim()) {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail !== user.email) {
+        const existing = await User.findOne({
+          where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
+        });
+        if (existing && existing.id !== user.id) {
+          return res.status(400).json({ error: 'Email is already in use by another account.' });
+        }
+        user.email = normalizedEmail;
+      }
+    }
+
+    if (req.file) {
+      user.avatar = req.file.filename;
+    }
+
+    await user.save();
+
+    res.json({
+      message: 'Profile updated successfully!',
+      user: user.toSafeJSON(),
+    });
+  } catch (err) {
+    console.error('Update profile error:', err);
+    res.status(500).json({ error: err.message || 'Failed to update profile.' });
   }
 };
 
@@ -334,5 +421,161 @@ exports.getUnreadNotificationsCount = async (req, res) => {
   } catch (err) {
     console.error('Fetch unread notifications count error:', err);
     res.status(500).json({ error: 'Failed to fetch unread notifications count.' });
+  }
+};
+
+// Forgot Password - Request Reset Link
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Please enter your registered email address.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email address.' });
+    }
+
+    if (user.status === 'suspended' || user.status === 'rejected') {
+      return res.status(403).json({ error: 'Your account is currently inactive. Please contact administration.' });
+    }
+
+    // Generate 1-hour secure reset token
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email, type: 'pwd_reset' },
+      process.env.JWT_SECRET || 'usman_online_school_jwt_secret_2026_very_secure',
+      { expiresIn: '1h' }
+    );
+
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
+
+    try {
+      await Notification.create({
+        user_id: user.id,
+        title: 'Password Reset Requested',
+        message: 'A password reset request was initiated for your account.',
+        type: 'system',
+      });
+    } catch (notifErr) {
+      // ignore
+    }
+
+    res.json({
+      message: 'Password reset link generated successfully.',
+      reset_url: `/reset-password?token=${resetToken}`,
+      reset_token: resetToken,
+      email: user.email,
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Failed to process password reset request.' });
+  }
+};
+
+// Verify Reset Token
+exports.verifyResetToken = async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      return res.status(400).json({ error: 'Reset token is required.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'usman_online_school_jwt_secret_2026_very_secure');
+    } catch (jwtErr) {
+      return res.status(400).json({ error: 'Password reset link has expired or is invalid.' });
+    }
+
+    if (decoded.type !== 'pwd_reset') {
+      return res.status(400).json({ error: 'Invalid reset token type.' });
+    }
+
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    res.json({
+      valid: true,
+      email: user.email,
+      name: user.full_name,
+    });
+  } catch (err) {
+    console.error('Verify reset token error:', err);
+    res.status(500).json({ error: 'Failed to verify token.' });
+  }
+};
+
+// Reset Password - Set New Password
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, new_password } = req.body;
+    if (!token) {
+      return res.status(400).json({ error: 'Reset token is required.' });
+    }
+    if (!new_password || new_password.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'usman_online_school_jwt_secret_2026_very_secure');
+    } catch (jwtErr) {
+      return res.status(400).json({ error: 'Password reset link has expired or is invalid.' });
+    }
+
+    if (decoded.type !== 'pwd_reset') {
+      return res.status(400).json({ error: 'Invalid reset token type.' });
+    }
+
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User account no longer exists.' });
+    }
+
+    user.password = new_password;
+    await user.save();
+
+    try {
+      await Notification.create({
+        user_id: user.id,
+        title: 'Password Changed Successfully',
+        message: 'Your account password has been reset. You can now sign in with your new password.',
+        type: 'system',
+      });
+    } catch (notifErr) {
+      // ignore
+    }
+
+    res.json({
+      message: 'Password reset successfully! You can now log in with your new password.',
+      success: true,
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Failed to reset password.' });
+  }
+};
+
+// Verify current password live
+exports.verifyCurrentPassword = async (req, res) => {
+  try {
+    const { current_password } = req.body;
+    if (!current_password) {
+      return res.json({ valid: false });
+    }
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const isMatch = await user.comparePassword(current_password);
+    return res.json({ valid: isMatch });
+  } catch (err) {
+    return res.json({ valid: false });
   }
 };

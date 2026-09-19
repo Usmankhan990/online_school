@@ -14,6 +14,7 @@ export default function StudentNotifications() {
     try {
       await api.put(`/student/notifications/${id}/read`);
       setNotifications(n => n.map(x => x.id === id ? { ...x, is_read: true } : x));
+      window.dispatchEvent(new Event('notifications-updated'));
     } catch (err) { console.error(err); }
   };
 
@@ -21,11 +22,21 @@ export default function StudentNotifications() {
     try {
       await api.put('/student/notifications/read-all');
       setNotifications(n => n.map(x => ({ ...x, is_read: true })));
+      window.dispatchEvent(new Event('notifications-updated'));
     } catch (err) { console.error(err); }
   };
 
   const typeIcons = { info: '📢', success: '✅', warning: '⚠️', error: '❌', approval: '🎫', result: '📊', fee: '💰', homework: '📝' };
   const typeColors = { info: '#3b82f6', success: '#10b981', warning: '#f59e0b', error: '#ef4444', approval: '#8b5cf6', result: '#6366f1', fee: '#f97316', homework: '#ec4899' };
+
+  const [expandedId, setExpandedId] = useState(null);
+
+  const handleNotificationClick = (notif) => {
+    if (!notif.is_read) {
+      markRead(notif.id);
+    }
+    setExpandedId(prev => prev === notif.id ? null : notif.id);
+  };
 
   const filtered = notifications.filter(n => {
     if (filter === 'unread') return !n.is_read;
@@ -67,22 +78,55 @@ export default function StudentNotifications() {
           const d = new Date(notif.createdAt || notif.created_at);
           const validDate = !isNaN(d) ? d : new Date();
           const tColor = notif.type === 'success' ? '#10b981' : notif.type === 'warning' ? '#f59e0b' : notif.type === 'error' ? '#ef4444' : notif.type === 'fee' ? '#f97316' : '#f59e0b';
+          const isExpanded = expandedId === notif.id;
 
           return (
-          <div key={notif.id} onClick={() => !notif.is_read && markRead(notif.id)} style={{ padding: '16px 20px', border: '1px solid #e2e8f0', borderLeft: `4px solid ${tColor}`, borderRadius: 12, background: '#f8fafc', marginBottom: 12, cursor: !notif.is_read ? 'pointer' : 'default', opacity: notif.is_read ? 0.8 : 1 }}>
+          <div 
+            key={notif.id} 
+            onClick={() => handleNotificationClick(notif)} 
+            style={{ 
+              padding: '16px 20px', 
+              border: '1px solid var(--border-light)', 
+              borderLeft: `4px solid ${tColor}`, 
+              borderRadius: 12, 
+              background: 'var(--bg-card)', 
+              marginBottom: 12, 
+              cursor: 'pointer', 
+              opacity: notif.is_read ? 0.85 : 1, 
+              transition: 'all 0.2s ease',
+              boxShadow: isExpanded ? '0 4px 12px rgba(0,0,0,0.08)' : 'none'
+            }}
+          >
             <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
               <span style={{ fontSize: 24, flexShrink: 0, marginTop: 2 }}>
                 {notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '🚨' : notif.type === 'fee' ? '💰' : typeIcons[notif.type] || 'ℹ️'}
               </span>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <h4 style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', margin: 0 }}>{notif.title}</h4>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{notif.title}</h4>
                   {!notif.is_read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }} />}
                 </div>
-                <p style={{ fontSize: 13.5, color: '#64748b', lineHeight: 1.5, margin: 0 }}>{notif.message}</p>
-                <span style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 8, display: 'block' }}>
-                  {validDate.toLocaleTimeString('en-PK', { timeStyle: 'short' }).toLowerCase()}
-                </span>
+                <p 
+                  style={{ 
+                    fontSize: 13.5, 
+                    color: 'var(--text-secondary)', 
+                    lineHeight: 1.55, 
+                    margin: 0,
+                    display: isExpanded ? 'block' : '-webkit-box',
+                    WebkitLineClamp: isExpanded ? 'unset' : 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: isExpanded ? 'visible' : 'hidden',
+                    wordBreak: 'break-word',
+                    whiteSpace: isExpanded ? 'pre-wrap' : 'normal'
+                  }}
+                >
+                  {notif.message}
+                </p>
+                <div style={{ marginTop: 8 }}>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)', display: 'block' }}>
+                    {validDate.toLocaleTimeString('en-PK', { timeStyle: 'short' }).toLowerCase()}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

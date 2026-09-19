@@ -233,17 +233,39 @@ exports.deleteUser = async (req, res) => {
 // Create Teacher
 exports.createTeacher = async (req, res) => {
   try {
-    const { email, password, full_name, phone, qualification, specialization, experience_years, bio, salary } = req.body;
+    const { 
+      email, password, full_name, phone, gender, qualification, specialization, 
+      experience_years, bio, salary, easypaisa_number, account_title, account_holder_name,
+      city, address 
+    } = req.body;
 
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email already exists.' });
 
+    const photoFilename = req.files?.photo?.[0]?.filename || req.file?.filename || req.body.photo || null;
+    const cnicFilename = req.files?.cnic?.[0]?.filename || req.body.cnic_file || null;
+
     const user = await User.create({
-      email, password, role: 'teacher', full_name, phone, status: 'active',
+      email, password, role: 'teacher', full_name, phone, gender: gender || null, status: 'active',
+      avatar: photoFilename || null,
     });
 
+    const expYears = (experience_years !== undefined && experience_years !== '' && !isNaN(experience_years)) ? parseInt(experience_years, 10) : 0;
+
     await TeacherProfile.create({
-      user_id: user.id, qualification, specialization, experience_years, bio, salary,
+      user_id: user.id, 
+      qualification, 
+      specialization, 
+      experience_years: expYears, 
+      bio, 
+      salary,
+      easypaisa_number: easypaisa_number || null,
+      account_title: account_title || null,
+      account_holder_name: account_holder_name || null,
+      photo: photoFilename || null,
+      city: city || null,
+      cnic_file: cnicFilename || null,
+      address: address || null,
     });
 
     res.status(201).json({ message: 'Teacher created!', teacher: user.toSafeJSON() });
@@ -257,7 +279,11 @@ exports.createTeacher = async (req, res) => {
 exports.updateTeacher = async (req, res) => {
   try {
     const { id } = req.params;
-    const { email, password, full_name, phone, qualification, specialization, experience_years, bio, salary } = req.body;
+    const { 
+      email, password, full_name, phone, gender, qualification, specialization, 
+      experience_years, bio, salary, easypaisa_number, account_title, account_holder_name,
+      city, address 
+    } = req.body;
 
     const user = await User.findByPk(id);
     if (!user || user.role !== 'teacher') return res.status(404).json({ error: 'Teacher not found.' });
@@ -267,9 +293,18 @@ exports.updateTeacher = async (req, res) => {
       if (existing) return res.status(400).json({ error: 'Email already exists.' });
     }
 
+    const photoFilename = req.files?.photo?.[0]?.filename || (req.file ? req.file.filename : null);
+    const cnicFilename = req.files?.cnic?.[0]?.filename || null;
+
     user.email = email || user.email;
     user.full_name = full_name || user.full_name;
     user.phone = phone !== undefined ? phone : user.phone;
+    if (gender !== undefined) {
+      user.gender = gender;
+    }
+    if (photoFilename) {
+      user.avatar = photoFilename;
+    }
     
     if (password) {
       user.password = password; 
@@ -284,9 +319,18 @@ exports.updateTeacher = async (req, res) => {
 
     profile.qualification = qualification !== undefined ? qualification : profile.qualification;
     profile.specialization = specialization !== undefined ? specialization : profile.specialization;
-    profile.experience_years = experience_years !== undefined ? experience_years : profile.experience_years;
+    if (experience_years !== undefined) {
+      profile.experience_years = (experience_years !== '' && !isNaN(experience_years)) ? parseInt(experience_years, 10) : 0;
+    }
     profile.bio = bio !== undefined ? bio : profile.bio;
     profile.salary = salary !== undefined ? salary : profile.salary;
+    if (easypaisa_number !== undefined) profile.easypaisa_number = easypaisa_number;
+    if (account_title !== undefined) profile.account_title = account_title;
+    if (account_holder_name !== undefined) profile.account_holder_name = account_holder_name;
+    if (city !== undefined) profile.city = city;
+    if (address !== undefined) profile.address = address;
+    if (photoFilename) profile.photo = photoFilename;
+    if (cnicFilename) profile.cnic_file = cnicFilename;
     
     await profile.save();
 
@@ -671,25 +715,45 @@ exports.getResultsStats = async (req, res) => {
 // ==================== ATTENDANCE OVERVIEW ====================
 exports.getAttendanceStats = async (req, res) => {
   try {
-    const { date } = req.query; // optional date filter
-    const targetDate = date || new Date().toISOString().split('T')[0];
+    const { date, role, month } = req.query;
+    const where = {};
+    if (role && role !== 'all') {
+      where.user_role = role;
+    }
+    if (date) {
+      where.date = date;
+    } else if (month) {
+      const [year, m] = month.split('-').map(Number);
+      if (year && m) {
+        const lastDay = new Date(year, m, 0).getDate();
+        const startDate = `${month}-01`;
+        const endDate = `${month}-${String(lastDay).padStart(2, '0')}`;
+        where.date = { [Op.between]: [startDate, endDate] };
+      }
+    } else {
+      where.date = new Date().toISOString().split('T')[0];
+    }
 
     const attendanceRecords = await Attendance.findAll({
-      where: { date: targetDate },
+      where,
       include: [
-        { model: User, as: 'user', attributes: ['id', 'full_name', 'role'] },
-        { model: Class, as: 'class', attributes: ['id', 'grade_level', 'section'] }
-      ]
+        { model: User, as: 'user', attributes: ['id', 'full_name', 'email', 'role', 'avatar', 'phone'] },
+        { model: Class, as: 'class', attributes: ['id', 'name', 'display_name', 'grade_level', 'section'] }
+      ],
+      order: [['date', 'DESC'], ['createdAt', 'DESC']]
     });
 
     const summary = {
+      total: attendanceRecords.length,
       present: attendanceRecords.filter(a => a.status === 'present').length,
       absent: attendanceRecords.filter(a => a.status === 'absent').length,
       late: attendanceRecords.filter(a => a.status === 'late').length,
-      leave: attendanceRecords.filter(a => a.status === 'leave').length
+      leave: attendanceRecords.filter(a => a.status === 'leave').length,
+      teachersCount: attendanceRecords.filter(a => a.user_role === 'teacher').length,
+      studentsCount: attendanceRecords.filter(a => a.user_role === 'student').length,
     };
 
-    res.json({ date: targetDate, summary, records: attendanceRecords });
+    res.json({ date: date || new Date().toISOString().split('T')[0], summary, records: attendanceRecords });
   } catch (err) {
     console.error('Attendance stats error:', err);
     res.status(500).json({ error: 'Failed to fetch attendance stats.' });
@@ -698,24 +762,46 @@ exports.getAttendanceStats = async (req, res) => {
 
 // ==================== NOTIFICATIONS MANAGEMENT ====================
 
-// Get all system notifications (for admin overview)
+// Get admin notifications
 exports.getNotifications = async (req, res) => {
   try {
-    // Mark the admin's own unread notifications as read since they are viewing the notifications center
-    await Notification.update(
-      { is_read: true },
-      { where: { user_id: req.user.id, is_read: false } }
-    );
-
     const notifications = await Notification.findAll({
+      where: { user_id: req.user.id },
       order: [['created_at', 'DESC']],
       limit: 100,
-      include: [{ model: User, as: 'user', attributes: ['id', 'full_name', 'email', 'role'] }]
     });
     res.json({ notifications });
   } catch (err) {
     console.error('Fetch notifications error:', err);
     res.status(500).json({ error: 'Failed to fetch notifications.' });
+  }
+};
+
+// Mark single notification as read
+exports.markNotificationRead = async (req, res) => {
+  try {
+    await Notification.update(
+      { is_read: true },
+      { where: { id: req.params.id, user_id: req.user.id } }
+    );
+    res.json({ message: 'Marked as read.' });
+  } catch (err) {
+    console.error('Mark notification read error:', err);
+    res.status(500).json({ error: 'Failed to update notification.' });
+  }
+};
+
+// Mark all notifications as read
+exports.markAllNotificationsRead = async (req, res) => {
+  try {
+    await Notification.update(
+      { is_read: true },
+      { where: { user_id: req.user.id, is_read: false } }
+    );
+    res.json({ message: 'All notifications marked as read.' });
+  } catch (err) {
+    console.error('Mark all notifications read error:', err);
+    res.status(500).json({ error: 'Failed to update notifications.' });
   }
 };
 

@@ -50,10 +50,23 @@ export default function TeacherSubmissions() {
                   <td><span className="badge" style={{ background: `${statusColors[s.status]}15`, color: statusColors[s.status] }}>{s.status}</span></td>
                   <td style={{ fontWeight: 700 }}>{s.marks_obtained != null ? `${s.marks_obtained}/${s.homework?.total_marks || '-'}` : '-'}</td>
                   <td>
-                    {s.file_path && <a href={`${FILE_BASE}/uploads/${s.file_path}`} target="_blank" className="btn btn-sm btn-secondary" style={{ marginRight: 4 }}>📎</a>}
-                    {s.status !== 'graded' ? (
-                      <button onClick={() => { setGrading(s.id); setGradeForm({ marks_obtained: '', feedback: '' }); }} className="btn btn-sm btn-accent">Grade</button>
-                    ) : <span style={{ fontSize: 12, color: '#10b981' }}>✅</span>}
+                    {s.file_path && (
+                      <a href={`${FILE_BASE}/uploads/${s.file_path}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary" style={{ marginRight: 6 }}>
+                        📎 File
+                      </a>
+                    )}
+                    <button
+                      onClick={() => {
+                        setGrading(s);
+                        setGradeForm({
+                          marks_obtained: s.marks_obtained != null ? s.marks_obtained : '',
+                          feedback: s.feedback || ''
+                        });
+                      }}
+                      className="btn btn-sm btn-accent"
+                    >
+                      {s.status === 'graded' ? '✏️ Edit Grade' : '📝 Grade'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -61,20 +74,91 @@ export default function TeacherSubmissions() {
           </table>
         </div>
       )}
+
       {grading && (
         <div className="modal-overlay" onClick={() => setGrading(null)}>
-          <div className="modal-panel" onClick={e => e.stopPropagation()}>
-            <div className="modal-header"><h2>Grade Submission</h2>
-              <button className="btn btn-icon btn-ghost" onClick={() => setGrading(null)}>✕</button></div>
+          <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 600 }}>
+            <div className="modal-header">
+              <div>
+                <h2 style={{ fontSize: 18, fontWeight: 800 }}>Grade Submission</h2>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                  Student: <strong>{grading.student?.full_name}</strong> • {grading.homework?.title}
+                </p>
+              </div>
+              <button className="btn btn-icon btn-ghost" onClick={() => setGrading(null)}>✕</button>
+            </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div><label className="form-label">Marks Obtained *</label>
-                <input type="number" className="form-input" value={gradeForm.marks_obtained} onChange={e => setGradeForm(f => ({ ...f, marks_obtained: e.target.value }))} min={0} /></div>
-              <div><label className="form-label">Feedback</label>
-                <textarea className="form-input" rows={3} value={gradeForm.feedback} onChange={e => setGradeForm(f => ({ ...f, feedback: e.target.value }))} placeholder="Teacher remarks..." /></div>
+              {/* Student Written Response */}
+              <div>
+                <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>Student Written Solution:</label>
+                <div style={{ padding: 12, background: 'var(--bg-surface-2)', borderRadius: 8, border: '1px solid var(--border-light)', fontSize: 13, minHeight: 48, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
+                  {grading.answer_text || grading.content || <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No written text provided.</span>}
+                </div>
+              </div>
+
+              {/* Student Attached File / Picture */}
+              {grading.file_path && (
+                <div>
+                  <label className="form-label" style={{ fontSize: 12, fontWeight: 700 }}>Student Attached Solution (Photo / PDF):</label>
+                  <div style={{ padding: 12, background: 'var(--bg-surface-2)', borderRadius: 8, border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
+                        📎 {grading.file_path.split('/').pop()}
+                      </span>
+                      <a
+                        href={`${FILE_BASE}/uploads/${grading.file_path}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-sm btn-primary"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        Open / View Full
+                      </a>
+                    </div>
+                    {/\.(jpe?g|png|webp|gif)$/i.test(grading.file_path) && (
+                      <div style={{ maxHeight: 200, overflow: 'hidden', borderRadius: 6, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={`${FILE_BASE}/uploads/${grading.file_path}`}
+                          alt="Student Work"
+                          style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Grading Input */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 4 }}>
+                <div>
+                  <label className="form-label">Marks Obtained * (Out of {grading.homework?.total_marks || 10})</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={gradeForm.marks_obtained}
+                    onChange={e => setGradeForm(f => ({ ...f, marks_obtained: e.target.value }))}
+                    min={0}
+                    max={grading.homework?.total_marks || 100}
+                    placeholder="e.g. 9"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="form-label">Teacher Remarks / Feedback</label>
+                <textarea
+                  className="form-input"
+                  rows={2}
+                  value={gradeForm.feedback}
+                  onChange={e => setGradeForm(f => ({ ...f, feedback: e.target.value }))}
+                  placeholder="e.g. Excellent work, well explained!"
+                />
+              </div>
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setGrading(null)}>Cancel</button>
-              <button className="btn btn-accent" onClick={() => handleGrade(grading)}>✅ Save Grade</button>
+              <button className="btn btn-accent" onClick={() => handleGrade(grading.id)}>✅ Save Grade</button>
             </div>
           </div>
         </div>
