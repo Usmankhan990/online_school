@@ -22,6 +22,7 @@ router.post('/homework/submit', upload.single('file'), studentController.submitH
 
 // Exams
 router.get('/exams-list', studentController.getMyExamsList);
+router.get('/exams/:exam_id/review', studentController.getExamReview);
 router.post('/exams/:exam_id/start', studentController.startExam);
 router.post('/exams/save-answer', upload.single('file'), studentController.saveAnswer);
 router.post('/exams/:attempt_id/submit', studentController.submitExam);

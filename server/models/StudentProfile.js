@@ -39,6 +39,11 @@ const StudentProfile = sequelize.define('StudentProfile', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  section: {
+    type: DataTypes.STRING(10),
+    defaultValue: 'A',
+    allowNull: true,
+  },
   medium: {
     type: DataTypes.ENUM('English', 'Urdu'),
     allowNull: false,

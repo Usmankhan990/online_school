@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useSearch } from '../../contexts/SearchContext';
 import api, { FILE_BASE } from '../../services/api';
 
 export default function StudentCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedModule, setExpandedModule] = useState(null);
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -16,6 +18,16 @@ export default function StudentCourses() {
   }, []);
 
   const typeIcons = { video: '🎥', reading: '📄', interactive: '🎮', quiz: '📝', pdf: '📄', notes: '📝' };
+
+  const q = (searchQuery || '').trim().toLowerCase();
+  const filteredCourses = courses.filter(c => {
+    if (!q) return true;
+    const title = (c.title || '').toLowerCase();
+    const sub = (c.subject?.name || '').toLowerCase();
+    const cls = (c.class?.display_name || '').toLowerCase();
+    const teacher = (c.teacher?.full_name || '').toLowerCase();
+    return title.includes(q) || sub.includes(q) || cls.includes(q) || teacher.includes(q);
+  });
 
   if (loading) return <div className="animate-fade-in" className="flex flex-col gap-5 min-w-0">{[1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 160, borderRadius: 18 }} />)}</div>;
 
@@ -28,15 +40,19 @@ export default function StudentCourses() {
         </p>
       </div>
 
-      {courses.length === 0 ? (
+      {filteredCourses.length === 0 ? (
         <div className="card-glass" style={{ padding: 64, textAlign: 'center', color: 'var(--text-tertiary)' }}>
           <span style={{ fontSize: 64, display: 'block', marginBottom: 20 }}>📚</span>
-          <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>No Courses Enrolled</p>
-          <p style={{ fontSize: 14, marginTop: 8 }}>Your academic curriculum will appear here once finalized by the administration.</p>
+          <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
+            {q ? `No courses matching "${searchQuery}"` : 'No Courses Enrolled'}
+          </p>
+          <p style={{ fontSize: 14, marginTop: 8 }}>
+            {q ? 'Try searching with a different subject or course name.' : 'Your academic curriculum will appear here once finalized by the administration.'}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-8 min-w-0">
-          {courses.map(c => (
+          {filteredCourses.map(c => (
             <div key={c.id} className="card-glass shadow-glow overflow-hidden" style={{ border: '1px solid var(--border-light)' }}>
               {/* Course Header */}
               <div className="premium-gradient" style={{ padding: '32px 40px', color: 'white' }}>

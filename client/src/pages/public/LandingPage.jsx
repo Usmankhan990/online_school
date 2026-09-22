@@ -1,14 +1,27 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logoImg from '../../assets/logo.jpg';
 import LanguageToggle from '../../components/LanguageToggle';
 
+export const scrollToSection = (id, e) => {
+  const targetId = (id || '').replace(/^#/, '');
+  if (!targetId) return;
+  const el = document.getElementById(targetId);
+  if (el) {
+    if (e && e.preventDefault) e.preventDefault();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.replaceState(null, '', `#${targetId}`);
+  } else {
+    window.location.href = `/#${targetId}`;
+  }
+};
+
 const NAV_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Features', href: '/features' },
-  { label: 'Admissions', href: '/register' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Home', id: 'hero', href: '/#hero' },
+  { label: 'About', id: 'about', href: '/#about' },
+  { label: 'Features', id: 'features', href: '/#features' },
+  { label: 'Admissions', id: 'admissions', href: '/#admissions' },
+  { label: 'Contact', id: 'contact', href: '/#contact' },
 ];
 
 const FEATURES = [
@@ -40,21 +53,27 @@ const FAQ = [
 function PublicNav() {
   const [open, setOpen] = useState(false);
   return (
-    <nav style={{ background: 'rgba(30, 58, 95, 0.95)', backdropFilter: 'blur(20px)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 70 }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+    <nav style={{ background: 'rgba(30, 58, 95, 0.96)', backdropFilter: 'blur(20px)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 70 }}>
+        <a href="/#hero" onClick={(e) => scrollToSection('hero', e)} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', cursor: 'pointer' }}>
           <img src={logoImg} alt="Taleem Ghar" style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'cover', background: '#ffffff', padding: 1 }} />
           <div>
             <div style={{ color: 'white', fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>Taleem Ghar</div>
-            <div style={{ color: 'rgba(203,213,225,0.7)', fontSize: 11 }}>KG to 8th Punjab Board</div>
+            <div style={{ color: 'rgba(203,213,225,0.75)', fontSize: 11 }}>KG to 8th Punjab Board</div>
           </div>
-        </Link>
-        <div className="hidden md:flex" style={{ alignItems: 'center', gap: 32 }}>
+        </a>
+        <div className="hidden md:flex" style={{ alignItems: 'center', gap: 28 }}>
           {NAV_LINKS.map(l => (
-            <Link key={l.href} to={l.href} style={{ color: 'rgba(203,213,225,0.9)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s' }}
-              onMouseOver={e => e.target.style.color = 'white'} onMouseOut={e => e.target.style.color = 'rgba(203,213,225,0.9)'}>
+            <a
+              key={l.id}
+              href={l.href}
+              onClick={(e) => scrollToSection(l.id, e)}
+              style={{ color: 'rgba(203,213,225,0.9)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s', cursor: 'pointer' }}
+              onMouseOver={e => e.target.style.color = 'white'}
+              onMouseOut={e => e.target.style.color = 'rgba(203,213,225,0.9)'}
+            >
               {l.label}
-            </Link>
+            </a>
           ))}
         </div>
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: 12 }}>
@@ -86,15 +105,25 @@ function PublicNav() {
         </div>
         <div className="md:hidden flex items-center gap-2">
           <LanguageToggle style={{ color: 'white', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.08)' }} />
-          <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}>
+          <button onClick={() => setOpen(!open)} aria-label="Toggle Menu" style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: 8 }}>
             <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
           </button>
         </div>
       </div>
       {open && (
-        <div className="md:hidden" style={{ padding: '12px 24px 20px', background: 'rgba(15,23,42,0.98)' }}>
+        <div className="md:hidden" style={{ padding: '12px clamp(16px, 4vw, 24px) 20px', background: 'rgba(15,23,42,0.98)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {NAV_LINKS.map(l => (
-            <Link key={l.href} to={l.href} onClick={() => setOpen(false)} style={{ display: 'block', color: '#cbd5e1', textDecoration: 'none', padding: '10px 0', fontSize: 15 }}>{l.label}</Link>
+            <a
+              key={l.id}
+              href={l.href}
+              onClick={(e) => {
+                setOpen(false);
+                scrollToSection(l.id, e);
+              }}
+              style={{ display: 'block', color: '#cbd5e1', textDecoration: 'none', padding: '10px 0', fontSize: 15, cursor: 'pointer' }}
+            >
+              {l.label}
+            </a>
           ))}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
             <Link to="/login" className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }}>Sign In</Link>
@@ -109,7 +138,7 @@ function PublicNav() {
 function Footer() {
   return (
     <footer style={{ background: '#0f172a', color: '#94a3b8', borderTop: '1px solid #1e293b' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 24px 24px' }}>
+      <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '48px clamp(16px, 3vw, 32px) 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32, marginBottom: 32 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -120,9 +149,30 @@ function Footer() {
           </div>
           <div>
             <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>Quick Links</h4>
-            {['About', 'Features', 'Admissions', 'Contact'].map(l => (
-              <Link key={l} to={`/${l.toLowerCase()}`} style={{ display: 'block', color: '#94a3b8', textDecoration: 'none', fontSize: 13, padding: '4px 0', transition: 'color 0.2s' }}
-                onMouseOver={e => e.target.style.color='#10b981'} onMouseOut={e => e.target.style.color='#94a3b8'}>{l}</Link>
+            {[
+              { label: 'About', id: 'about' },
+              { label: 'Features', id: 'features' },
+              { label: 'Admissions', id: 'admissions' },
+              { label: 'Contact', id: 'contact' },
+            ].map(l => (
+              <a
+                key={l.label}
+                href={`/#${l.id}`}
+                onClick={(e) => scrollToSection(l.id, e)}
+                style={{
+                  display: 'block',
+                  color: '#94a3b8',
+                  textDecoration: 'none',
+                  fontSize: 13,
+                  padding: '4px 0',
+                  transition: 'color 0.2s',
+                  cursor: 'pointer'
+                }}
+                onMouseOver={e => e.target.style.color='#10b981'}
+                onMouseOut={e => e.target.style.color='#94a3b8'}
+              >
+                {l.label}
+              </a>
             ))}
           </div>
           <div>
@@ -152,38 +202,55 @@ export { PublicNav, Footer };
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
 
+  useEffect(() => {
+    if (window.location.hash) {
+      const targetId = window.location.hash.replace(/^#/, '');
+      const el = document.getElementById(targetId);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+      }
+    }
+  }, []);
+
   return (
-    <div style={{ background: '#f8fafc' }}>
+    <div style={{ background: '#f8fafc', width: '100%', overflowX: 'hidden' }}>
       <PublicNav />
 
       {/* ── HERO ── */}
-      <section className="gradient-bg-hero" style={{ paddingTop: 120, paddingBottom: 80, position: 'relative', overflow: 'hidden' }}>
+      <section id="hero" className="gradient-bg-hero" style={{ paddingTop: 'clamp(96px, 12vh, 130px)', paddingBottom: 'clamp(48px, 8vh, 80px)', position: 'relative', overflow: 'hidden', width: '100%' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)', position: 'relative', zIndex: 1 }}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="animate-slide-up">
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(16,185,129,0.15)', borderRadius: 999, padding: '6px 16px', marginBottom: 20, border: '1px solid rgba(16,185,129,0.2)' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', animation: 'pulse-soft 2s infinite' }}></span>
                 <span style={{ color: '#34d399', fontSize: 13, fontWeight: 600 }}>Admissions Open — Session 2026</span>
               </div>
-              <h1 style={{ color: 'white', fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 900, lineHeight: 1.1, marginBottom: 20 }}>
+              <h1 style={{ color: 'white', fontSize: 'clamp(30px, 5.5vw, 54px)', fontWeight: 900, lineHeight: 1.15, marginBottom: 20 }}>
                 Pakistan's Premier<br />
                 <span style={{ background: 'linear-gradient(135deg, #10b981, #34d399)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Online School</span>
               </h1>
-              <p style={{ color: '#94a3b8', fontSize: 18, lineHeight: 1.6, marginBottom: 32, maxWidth: 520 }}>
+              <p style={{ color: '#94a3b8', fontSize: 'clamp(15px, 1.8vw, 18px)', lineHeight: 1.6, marginBottom: 32, maxWidth: 540 }}>
                 Complete KG to 8th grade education following Punjab Board (PCTB 2026). Digital books, live classes, exams, results — all in one place.
               </p>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 <Link to="/register" className="btn btn-accent btn-lg" style={{ fontSize: 16 }}>
                   Apply for Admission →
                 </Link>
-                <Link to="/features" className="btn btn-lg" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', fontSize: 16 }}>
+                <a
+                  href="/#features"
+                  onClick={(e) => scrollToSection('features', e)}
+                  className="btn btn-lg"
+                  style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.15)', fontSize: 16, cursor: 'pointer', textDecoration: 'none' }}
+                >
                   Explore Features
-                </Link>
+                </a>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }} className="hidden lg:flex">
-              <div style={{ width: 420, height: 320, borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', padding: 24, gap: 12 }}>
+              <div style={{ width: '100%', maxWidth: 440, height: 320, borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', flexDirection: 'column', padding: 24, gap: 12 }}>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ef4444' }} />
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fbbf24' }} />
@@ -205,7 +272,7 @@ export default function LandingPage() {
                     }}
                   />
                   <span style={{ color: '#ffffff', fontSize: 15, fontWeight: 700 }}>Taleem Ghar Portal</span>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                     {['📚 Books', '📝 Exams', '📊 Results'].map(t => (
                       <span key={t} style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', fontSize: 12, padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(16,185,129,0.15)' }}>{t}</span>
                     ))}
@@ -216,7 +283,7 @@ export default function LandingPage() {
           </div>
 
           {/* Stats bar */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginTop: 60 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, marginTop: 'clamp(36px, 6vw, 60px)' }}>
             {STATS.map(s => (
               <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '20px 16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div style={{ color: '#10b981', fontSize: 28, fontWeight: 800 }}>{s.value}</div>
@@ -228,10 +295,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px' }}>
+      <section id="features" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <span style={{ color: '#10b981', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Platform Features</span>
-          <h2 style={{ color: '#0f172a', fontSize: 36, fontWeight: 800, marginTop: 8 }}>Everything a School Needs, Online</h2>
+          <h2 style={{ color: '#0f172a', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 8 }}>Everything a School Needs, Online</h2>
           <p style={{ color: '#64748b', fontSize: 16, marginTop: 8, maxWidth: 600, margin: '8px auto 0' }}>From admission to report cards — a complete digital school experience for students, teachers, and parents.</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
@@ -245,12 +312,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section style={{ background: '#f1f5f9', padding: '80px 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      {/* ── HOW IT WORKS / ADMISSIONS ── */}
+      <section id="admissions" style={{ background: '#f1f5f9', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
+        <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span style={{ color: '#10b981', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Get Started</span>
-            <h2 style={{ color: '#0f172a', fontSize: 36, fontWeight: 800, marginTop: 8 }}>How It Works</h2>
+            <h2 style={{ color: '#0f172a', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 8 }}>How It Works</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
             {[
@@ -268,11 +335,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4 PORTALS ── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '80px 24px' }}>
+      {/* ── 4 PORTALS / ABOUT ── */}
+      <section id="about" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <span style={{ color: '#10b981', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Role-Based Access</span>
-          <h2 style={{ color: '#0f172a', fontSize: 36, fontWeight: 800, marginTop: 8 }}>4 Dedicated Portals</h2>
+          <h2 style={{ color: '#0f172a', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 8 }}>4 Dedicated Portals</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
           {[
@@ -290,11 +357,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section style={{ background: '#f1f5f9', padding: '80px 24px' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+      {/* ── FAQ & CONTACT ── */}
+      <section id="contact" style={{ background: '#f1f5f9', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
+        <div style={{ maxWidth: 760, width: '100%', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ color: '#0f172a', fontSize: 36, fontWeight: 800 }}>Frequently Asked Questions</h2>
+            <span style={{ color: '#10b981', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Help & Contact</span>
+            <h2 style={{ color: '#0f172a', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 8 }}>Frequently Asked Questions</h2>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {FAQ.map((f, i) => (
@@ -313,9 +381,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="gradient-bg-hero" style={{ padding: '80px 24px', textAlign: 'center' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <h2 style={{ color: 'white', fontSize: 36, fontWeight: 800, marginBottom: 16 }}>Ready to Start Learning?</h2>
+      <section className="gradient-bg-hero" style={{ padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', textAlign: 'center', width: '100%' }}>
+        <div style={{ maxWidth: 640, width: '100%', margin: '0 auto' }}>
+          <h2 style={{ color: 'white', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginBottom: 16 }}>Ready to Start Learning?</h2>
           <p style={{ color: '#94a3b8', fontSize: 16, marginBottom: 32, lineHeight: 1.6 }}>
             Join Taleem Ghar today. Admissions are open for session 2026.
           </p>

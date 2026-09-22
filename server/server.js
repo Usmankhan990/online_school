@@ -34,6 +34,7 @@ app.use('/api/parent', require('./routes/parent'));
 app.use('/api/books', require('./routes/books'));
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/subjects', require('./routes/subjects'));
+app.use('/api/timetable', require('./routes/timetable'));
 
 // Health check
 app.get('/api/health', (req, res) => {

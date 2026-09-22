@@ -37,11 +37,65 @@ export default function StudentDashboard() {
     { label: 'Report Card', path: '/student/report-card', icon: '🎓', desc: 'Download' },
   ];
 
+  const getStudentAutoSection = (profile) => {
+    if (profile?.section && profile.section.trim()) {
+      return profile.section.trim().toUpperCase();
+    }
+    const rollStr = String(profile?.roll_number || profile?.user_id || profile?.id || '1');
+    const matches = rollStr.match(/\d+/g);
+    if (!matches || matches.length === 0) return 'A';
+    const num = parseInt(matches[matches.length - 1], 10);
+    if (isNaN(num) || num <= 0) return 'A';
+    const idx = num - 1;
+    const charCode = 65 + Math.floor(idx / 15);
+    return String.fromCharCode(Math.min(charCode, 90));
+  };
+
+  const studentProfile = d.profile || user?.studentProfile;
+  const classNameText = studentProfile?.class?.display_name || 
+    (studentProfile?.class?.grade_level !== undefined 
+      ? (studentProfile.class.grade_level === 0 ? 'Class KG' : `Class ${studentProfile.class.grade_level}`) 
+      : (studentProfile?.class?.name || 'Class'));
+  const studentSection = getStudentAutoSection(studentProfile);
+
   return (
-    <div className="animate-fade-in" className="flex flex-col gap-8 min-w-0">
+    <div className="animate-fade-in flex flex-col gap-8 min-w-0">
       {/* Welcome Banner */}
       <div className="card premium-gradient shadow-glow" style={{ padding: '40px', border: 'none', color: 'white', position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-xl)' }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
+          {/* Class & Section Badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '6px 14px',
+            background: 'rgba(255, 255, 255, 0.18)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            borderRadius: '999px',
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: '0.02em',
+            marginBottom: 12,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+          }}>
+            <span style={{ fontSize: 15 }}>🏫</span>
+            <span>{classNameText}</span>
+            <span style={{ opacity: 0.5 }}>•</span>
+            <span style={{ background: 'rgba(255, 255, 255, 0.25)', padding: '2px 8px', borderRadius: 6, fontWeight: 800 }}>
+              Section {studentSection}
+            </span>
+            {studentProfile?.roll_number && (
+              <>
+                <span style={{ opacity: 0.5 }}>•</span>
+                <span style={{ opacity: 0.9, fontSize: 12, fontWeight: 600 }}>
+                  Roll #{studentProfile.roll_number}
+                </span>
+              </>
+            )}
+          </div>
+
           <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8, letterSpacing: '-0.02em' }}>
             Hello, {user?.full_name?.split(' ')[0]}! 🌟
           </h1>

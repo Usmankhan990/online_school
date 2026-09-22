@@ -247,7 +247,51 @@ export default function StudentHomework() {
                 />
                 <div>
                   <label className="form-label" style={{ fontSize: 12 }}>Attach Solution File or Photo (Optional)</label>
-                  <input type="file" className="form-input" style={{ padding: 8 }} onChange={e => setFile(e.target.files[0])} />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="file"
+                      id={`student-hw-file-${hw.id}`}
+                      className="form-input"
+                      style={{ display: 'none' }}
+                      onChange={e => setFile(e.target.files?.[0] || null)}
+                    />
+                    <label
+                      htmlFor={`student-hw-file-${hw.id}`}
+                      className="form-input"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        padding: '8px 12px',
+                        background: 'var(--bg-surface-2, #f8fafc)',
+                        color: file ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                        userSelect: 'none'
+                      }}
+                    >
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                        {file ? `📄 ${file.name}` : '📁 Choose File or Photo...'}
+                      </span>
+                      {file ? (
+                        <span
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setFile(null);
+                            const el = document.getElementById(`student-hw-file-${hw.id}`);
+                            if (el) el.value = '';
+                          }}
+                          style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold', marginLeft: 8, fontSize: '14px' }}
+                          title="Remove file"
+                        >
+                          ✕
+                        </span>
+                      ) : (
+                        <span className="btn btn-secondary btn-sm" style={{ padding: '2px 8px', fontSize: '11px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                          Browse
+                        </span>
+                      )}
+                    </label>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                   <button className="btn btn-secondary btn-sm" onClick={() => setSubmitting(null)}>Cancel</button>

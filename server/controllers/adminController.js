@@ -172,13 +172,17 @@ exports.rejectStudent = async (req, res) => {
 };
 
 // Get all students
+// Get all students
 exports.getAllStudents = async (req, res) => {
   try {
     const { status, class_id } = req.query;
     const where = { role: 'student' };
     if (status) where.status = status;
 
-    const include = [{ model: StudentProfile, as: 'studentProfile', include: [{ model: Class, as: 'class' }] }];
+    const include = [
+      { model: StudentProfile, as: 'studentProfile', include: [{ model: Class, as: 'class' }] },
+      { model: Document, as: 'documents' },
+    ];
     if (class_id) {
       include[0].where = { class_id };
     }
@@ -194,16 +198,45 @@ exports.getAllStudents = async (req, res) => {
 exports.updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { full_name, phone, status, father_name, mother_name, contact_number_1, contact_number_2, class_id, medium, address, roll_number } = req.body;
+    const {
+      full_name, phone, status, gender,
+      father_name, mother_name, father_cnic,
+      contact_number_1, contact_number_2, parent_email,
+      class_id, section, medium, date_of_birth, guardian_relation,
+      address, roll_number
+    } = req.body;
 
     const student = await User.findOne({ where: { id, role: 'student' } });
     if (!student) return res.status(404).json({ error: 'Student not found.' });
 
-    await student.update({ full_name, phone, status });
+    const updatedPhone = phone !== undefined ? phone : (contact_number_1 !== undefined ? contact_number_1 : student.phone);
+    const updatedContact1 = contact_number_1 !== undefined ? contact_number_1 : (phone !== undefined ? phone : updatedPhone);
+
+    await student.update({
+      full_name: full_name !== undefined ? full_name : student.full_name,
+      phone: updatedPhone,
+      gender: gender !== undefined ? gender : (student.gender || 'Male'),
+      status: status !== undefined ? status : student.status
+    });
 
     const profile = await StudentProfile.findOne({ where: { user_id: id } });
     if (profile) {
-      await profile.update({ father_name, mother_name, contact_number_1, contact_number_2, class_id, medium, address, roll_number });
+      await profile.update({
+        father_name: father_name !== undefined ? father_name : profile.father_name,
+        mother_name: mother_name !== undefined ? mother_name : profile.mother_name,
+        father_cnic: father_cnic !== undefined ? father_cnic : profile.father_cnic,
+        contact_number_1: updatedContact1,
+        contact_number_2: contact_number_2 !== undefined ? contact_number_2 : profile.contact_number_2,
+        parent_email: parent_email !== undefined ? parent_email : profile.parent_email,
+        class_id: class_id !== undefined ? class_id : profile.class_id,
+        section: section !== undefined ? section : profile.section,
+        medium: medium !== undefined ? medium : profile.medium,
+        date_of_birth: date_of_birth !== undefined ? date_of_birth : profile.date_of_birth,
+        gender: gender !== undefined ? gender : profile.gender,
+        guardian_relation: guardian_relation !== undefined ? guardian_relation : profile.guardian_relation,
+        address: address !== undefined ? address : profile.address,
+        roll_number: roll_number !== undefined ? roll_number : profile.roll_number,
+      });
     }
 
     res.json({ message: 'Student updated successfully!' });
@@ -243,7 +276,10 @@ exports.createTeacher = async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Email already exists.' });
 
     const photoFilename = req.files?.photo?.[0]?.filename || req.file?.filename || req.body.photo || null;
-    const cnicFilename = req.files?.cnic?.[0]?.filename || req.body.cnic_file || null;
+    const cnicFilesList = req.files?.cnic || [];
+    const cnicFilename = cnicFilesList.length > 0 
+      ? cnicFilesList.map(f => f.filename).join(',') 
+      : (req.body.cnic_file || null);
 
     const user = await User.create({
       email, password, role: 'teacher', full_name, phone, gender: gender || null, status: 'active',
@@ -294,7 +330,10 @@ exports.updateTeacher = async (req, res) => {
     }
 
     const photoFilename = req.files?.photo?.[0]?.filename || (req.file ? req.file.filename : null);
-    const cnicFilename = req.files?.cnic?.[0]?.filename || null;
+    const cnicFilesList = req.files?.cnic || [];
+    const cnicFilename = cnicFilesList.length > 0 
+      ? cnicFilesList.map(f => f.filename).join(',') 
+      : null;
 
     user.email = email || user.email;
     user.full_name = full_name || user.full_name;
@@ -878,6 +917,13 @@ exports.createParent = async (req, res) => {
   try {
     const { email, password, full_name, relation, cnic, occupation } = req.body;
 
+    if (cnic) {
+      const cnicDigits = cnic.replace(/\D/g, '');
+      if (cnicDigits.length !== 13) {
+        return res.status(400).json({ error: 'CNIC must be exactly 13 digits.' });
+      }
+    }
+
     const existing = await User.findOne({ where: { email } });
     if (existing) return res.status(400).json({ error: 'Email already exists.' });
 
@@ -912,6 +958,13 @@ exports.updateParent = async (req, res) => {
   try {
     const { id } = req.params;
     const { email, full_name, relation, cnic, occupation, password } = req.body;
+
+    if (cnic) {
+      const cnicDigits = cnic.replace(/\D/g, '');
+      if (cnicDigits.length !== 13) {
+        return res.status(400).json({ error: 'CNIC must be exactly 13 digits.' });
+      }
+    }
 
     const user = await User.findByPk(id);
     if (!user || user.role !== 'parent') return res.status(404).json({ error: 'Parent not found.' });

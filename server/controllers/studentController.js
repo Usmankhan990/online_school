@@ -1,16 +1,53 @@
-const { User, StudentProfile, Course, CourseMaterial, Enrollment, Exam, ExamQuestion, ExamAttempt, ExamAnswer, ClassworkHomework, Submission, Attendance, Fee, Book, LiveClass, Timetable, Class, Subject, Notification } = require('../models');
+const { User, StudentProfile, Course, CourseMaterial, Enrollment, Exam, ExamQuestion, ExamAttempt, ExamAnswer, ClassworkHomework, Submission, Attendance, Fee, Book, LiveClass, Timetable, Class, Subject, ClassSubject, Notification } = require('../models');
 const { Op } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
 
+// Helper to auto-enroll student in all active courses of their class (assigned subjects only)
+const ensureStudentEnrollments = async (userId) => {
+  try {
+    const profile = await StudentProfile.findOne({
+      where: { user_id: userId },
+      include: [{ model: Class, as: 'class' }],
+    });
+    if (!profile || !profile.class_id) return { profile, courseIds: [] };
+
+    const classSubjects = await ClassSubject.findAll({
+      where: { class_id: profile.class_id },
+      attributes: ['subject_id'],
+    });
+    const allowedSubjectIds = classSubjects.map(cs => cs.subject_id);
+
+    const courseWhere = { class_id: profile.class_id };
+    if (allowedSubjectIds.length > 0) {
+      courseWhere.subject_id = { [Op.in]: allowedSubjectIds };
+    }
+
+    const classCourses = await Course.findAll({ where: courseWhere });
+    if (!classCourses || classCourses.length === 0) return { profile, courseIds: [] };
+
+    for (const course of classCourses) {
+      await Enrollment.findOrCreate({
+        where: { student_id: userId, course_id: course.id },
+        defaults: { status: 'active' },
+      });
+    }
+    return { profile, courseIds: classCourses.map(c => c.id) };
+  } catch (err) {
+    console.error('Error ensuring student enrollments:', err);
+    return { profile: null, courseIds: [] };
+  }
+};
+
 // Student Dashboard
 exports.getStudentDashboard = async (req, res) => {
   try {
-    const profile = await StudentProfile.findOne({
+    const { profile, courseIds } = await ensureStudentEnrollments(req.user.id);
+    const resolvedProfile = profile || await StudentProfile.findOne({
       where: { user_id: req.user.id },
       include: [{ model: Class, as: 'class' }],
     });
-    if (!profile) return res.status(404).json({ error: 'Profile not found.' });
+    if (!resolvedProfile) return res.status(404).json({ error: 'Profile not found.' });
 
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
@@ -24,9 +61,14 @@ exports.getStudentDashboard = async (req, res) => {
       }],
     });
 
+    const activeCourseIds = Array.from(new Set([
+      ...enrollments.map(e => e.course_id),
+      ...(courseIds || [])
+    ]));
+
     const pendingHomework = await ClassworkHomework.findAll({
       where: {
-        course_id: { [Op.in]: enrollments.map(e => e.course_id) },
+        course_id: { [Op.in]: activeCourseIds },
         is_published: true,
       },
       include: [
@@ -39,7 +81,7 @@ exports.getStudentDashboard = async (req, res) => {
 
     const upcomingExams = await Exam.findAll({
       where: {
-        course_id: { [Op.in]: enrollments.map(e => e.course_id) },
+        course_id: { [Op.in]: activeCourseIds },
         is_published: true,
       },
       include: [{ model: Course, as: 'course', include: [{ model: Subject, as: 'subject' }] }],
@@ -81,7 +123,7 @@ exports.getStudentDashboard = async (req, res) => {
     // Upcoming live classes
     const upcomingLiveClasses = await LiveClass.count({
       where: {
-        course_id: { [Op.in]: enrollments.map(e => e.course_id) },
+        course_id: { [Op.in]: activeCourseIds },
         status: 'scheduled',
         scheduled_at: { [Op.gte]: new Date() },
       },
@@ -91,13 +133,13 @@ exports.getStudentDashboard = async (req, res) => {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const todayDay = dayNames[new Date().getDay()];
     const todaySchedule = await Timetable.findAll({
-      where: { class_id: profile.class_id, day_of_week: todayDay },
+      where: { class_id: resolvedProfile.class_id, day_of_week: todayDay },
       include: [{ model: Subject, as: 'subject' }],
       order: [['start_time', 'ASC']],
     });
 
     res.json({
-      profile,
+      profile: resolvedProfile,
       enrollments,
       enrolledCourses: enrollments.length,
       pendingHomework: pendingHomework.filter(h => !h.submissions || h.submissions.length === 0).length,
@@ -119,6 +161,7 @@ exports.getStudentDashboard = async (req, res) => {
 // Get my courses
 exports.getMyCourses = async (req, res) => {
   try {
+    await ensureStudentEnrollments(req.user.id);
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
       include: [{
@@ -126,18 +169,18 @@ exports.getMyCourses = async (req, res) => {
         include: [
           { model: Class, as: 'class' },
           { model: Subject, as: 'subject' },
-          { model: User, as: 'teacher', attributes: ['full_name'] },
+          { model: User, as: 'teacher', attributes: ['id', 'full_name', 'email'] },
           { model: CourseMaterial, as: 'materials' },
         ],
       }],
     });
-    res.json({ courses: enrollments.map(e => e.course) });
+    res.json({ courses: enrollments.map(e => e.course).filter(Boolean) });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch courses.' });
   }
 };
 
-// Get books for my class
+// Get books for my class (strictly assigned subjects only)
 exports.getMyBooks = async (req, res) => {
   try {
     const profile = await StudentProfile.findOne({
@@ -148,8 +191,24 @@ exports.getMyBooks = async (req, res) => {
       return res.json({ books: [], studentClass: null });
     }
 
+    // Find assigned subjects for this class
+    const classSubjects = await ClassSubject.findAll({
+      where: { class_id: profile.class_id },
+      attributes: ['subject_id'],
+    });
+    const allowedSubjectIds = classSubjects.map(cs => cs.subject_id);
+
+    // If no subjects assigned to class, student sees no books
+    if (!allowedSubjectIds || allowedSubjectIds.length === 0) {
+      return res.json({ books: [], studentClass: profile.class });
+    }
+
     const books = await Book.findAll({
-      where: { class_id: profile.class_id, is_active: true },
+      where: {
+        class_id: profile.class_id,
+        subject_id: { [Op.in]: allowedSubjectIds },
+        is_active: true,
+      },
       include: [
         { model: Class, as: 'class' },
         { model: Subject, as: 'subject' },
@@ -221,12 +280,17 @@ exports.markSelfieAttendance = async (req, res) => {
 // ============= LIVE CLASSES =============
 exports.getMyLiveClasses = async (req, res) => {
   try {
+    const { courseIds } = await ensureStudentEnrollments(req.user.id);
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
     });
+    const activeCourseIds = Array.from(new Set([
+      ...enrollments.map(e => e.course_id),
+      ...(courseIds || [])
+    ]));
 
     const liveClasses = await LiveClass.findAll({
-      where: { course_id: { [Op.in]: enrollments.map(e => e.course_id) } },
+      where: { course_id: { [Op.in]: activeCourseIds } },
       include: [{
         model: Course, as: 'course',
         include: [
@@ -252,6 +316,10 @@ exports.payFee = async (req, res) => {
     const fee = await Fee.findOne({ where: { id: fee_id, student_id: req.user.id } });
     if (!fee) return res.status(404).json({ error: 'Fee record not found.' });
     if (fee.status === 'paid') return res.status(400).json({ error: 'Fee already paid.' });
+
+    if (!transaction_id || transaction_id.trim().length < 6) {
+      return res.status(400).json({ error: 'Transaction ID must be at least 6 characters.' });
+    }
 
     // Save payment proof if uploaded
     let proofPath = null;
@@ -316,6 +384,43 @@ exports.startExam = async (req, res) => {
     res.json({ exam, attempt });
   } catch (err) {
     res.status(500).json({ error: 'Failed to start exam.' });
+  }
+};
+
+// Get Exam Review with student answers and correct answers for preview
+exports.getExamReview = async (req, res) => {
+  try {
+    const { exam_id } = req.params;
+    const attempt = await ExamAttempt.findOne({
+      where: { exam_id, student_id: req.user.id },
+      include: [
+        {
+          model: Exam,
+          as: 'exam',
+          include: [
+            { model: Course, as: 'course', include: [{ model: Subject, as: 'subject' }, { model: Class, as: 'class' }] },
+            { model: ExamQuestion, as: 'questions' },
+          ],
+        },
+        {
+          model: ExamAnswer,
+          as: 'answers',
+        },
+      ],
+    });
+
+    if (!attempt) {
+      return res.status(404).json({ error: 'Exam attempt not found.' });
+    }
+
+    if (attempt.exam && attempt.exam.questions) {
+      attempt.exam.questions.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+    }
+
+    res.json({ attempt });
+  } catch (err) {
+    console.error('Get exam review error:', err);
+    res.status(500).json({ error: 'Failed to fetch exam review.' });
   }
 };
 
@@ -537,13 +642,17 @@ exports.markAllNotificationsRead = async (req, res) => {
 // ============= MY HOMEWORK =============
 exports.getMyHomework = async (req, res) => {
   try {
+    const { courseIds } = await ensureStudentEnrollments(req.user.id);
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
     });
-    const courseIds = enrollments.map(e => e.course_id);
+    const activeCourseIds = Array.from(new Set([
+      ...enrollments.map(e => e.course_id),
+      ...(courseIds || [])
+    ]));
 
     const homework = await ClassworkHomework.findAll({
-      where: { course_id: { [Op.in]: courseIds }, is_published: true },
+      where: { course_id: { [Op.in]: activeCourseIds }, is_published: true },
       include: [
         { model: Course, as: 'course', include: [{ model: Subject, as: 'subject' }, { model: Class, as: 'class' }] },
         { model: Submission, as: 'submissions', where: { student_id: req.user.id }, required: false },
@@ -605,13 +714,17 @@ exports.submitHomework = async (req, res) => {
 // ============= MY EXAMS LIST =============
 exports.getMyExamsList = async (req, res) => {
   try {
+    const { courseIds } = await ensureStudentEnrollments(req.user.id);
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
     });
-    const courseIds = enrollments.map(e => e.course_id);
+    const activeCourseIds = Array.from(new Set([
+      ...enrollments.map(e => e.course_id),
+      ...(courseIds || [])
+    ]));
 
     const exams = await Exam.findAll({
-      where: { course_id: { [Op.in]: courseIds }, is_published: true },
+      where: { course_id: { [Op.in]: activeCourseIds }, is_published: true },
       include: [
         { model: Course, as: 'course', include: [{ model: Subject, as: 'subject' }, { model: Class, as: 'class' }] },
         { model: ExamAttempt, as: 'attempts', where: { student_id: req.user.id }, required: false },
@@ -724,6 +837,7 @@ function getGrade(p) {
 // ============= MY COURSES DETAILED =============
 exports.getMyCoursesDetailed = async (req, res) => {
   try {
+    await ensureStudentEnrollments(req.user.id);
     const { Module, Lesson } = require('../models');
     const enrollments = await Enrollment.findAll({
       where: { student_id: req.user.id, status: 'active' },
@@ -732,17 +846,33 @@ exports.getMyCoursesDetailed = async (req, res) => {
         include: [
           { model: Class, as: 'class' },
           { model: Subject, as: 'subject' },
-          { model: User, as: 'teacher', attributes: ['full_name'] },
-          { model: CourseMaterial, as: 'materials', required: false, order: [['order_index', 'ASC']] },
+          { model: User, as: 'teacher', attributes: ['id', 'full_name', 'email'] },
+          { model: CourseMaterial, as: 'materials', required: false },
           { 
             model: Module, as: 'modules', 
-            include: [{ model: Lesson, as: 'lessons', order: [['order_index', 'ASC']] }],
-            order: [['order_index', 'ASC']]
+            include: [{ model: Lesson, as: 'lessons' }],
           }
         ],
       }],
     });
-    res.json({ courses: enrollments.map(e => e.course) });
+
+    const courses = enrollments.map(e => e.course).filter(Boolean).map(c => {
+      const courseJson = c.toJSON ? c.toJSON() : c;
+      if (courseJson.materials) {
+        courseJson.materials.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+      }
+      if (courseJson.modules) {
+        courseJson.modules.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+        courseJson.modules.forEach(m => {
+          if (m.lessons) {
+            m.lessons.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+          }
+        });
+      }
+      return courseJson;
+    });
+
+    res.json({ courses });
   } catch (err) {
     console.error('Fetch detailed courses error:', err);
     res.status(500).json({ error: 'Failed to fetch courses.' });

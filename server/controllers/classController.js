@@ -62,13 +62,18 @@ exports.create = async (req, res) => {
       return res.status(400).json({ error: 'Name, display name, and grade level are required.' });
     }
 
+    const parsedGrade = parseInt(grade_level);
+    if (isNaN(parsedGrade) || parsedGrade < 0 || parsedGrade > 8) {
+      return res.status(400).json({ error: 'Grade level must be between 0 (KG) and 8.' });
+    }
+
     const existing = await Class.findOne({ where: { name } });
     if (existing) return res.status(400).json({ error: 'A class with this name already exists.' });
 
     const cls = await Class.create({
       name,
       display_name,
-      grade_level: parseInt(grade_level),
+      grade_level: parsedGrade,
       section: section || 'A',
       description: description || '',
       sort_order: sort_order || 0,
@@ -88,6 +93,13 @@ exports.update = async (req, res) => {
     if (!cls) return res.status(404).json({ error: 'Class not found.' });
 
     const { name, display_name, grade_level, section, description, sort_order, is_active } = req.body;
+
+    if (grade_level !== undefined) {
+      const parsedGrade = parseInt(grade_level);
+      if (isNaN(parsedGrade) || parsedGrade < 0 || parsedGrade > 8) {
+        return res.status(400).json({ error: 'Grade level must be between 0 (KG) and 8.' });
+      }
+    }
 
     // Check unique name if changing
     if (name && name !== cls.name) {

@@ -58,6 +58,17 @@ export default function AdminParents() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'cnic') {
+      const digits = value.replace(/\D/g, '').slice(0, 13);
+      let formatted = digits;
+      if (digits.length > 5 && digits.length <= 12) {
+        formatted = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+      } else if (digits.length > 12) {
+        formatted = `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
+      }
+      setForm(f => ({ ...f, cnic: formatted }));
+      return;
+    }
     if (['full_name', 'relation', 'occupation'].includes(name)) {
       const capitalized = value.replace(/(^|\s)([a-z\u00E0-\u00FC])/g, (m, p, c) => p + c.toUpperCase());
       setForm(f => ({ ...f, [name]: capitalized }));
@@ -65,6 +76,9 @@ export default function AdminParents() {
     }
     setForm(f => ({ ...f, [name]: value }));
   };
+
+  const cnicDigits = form.cnic.replace(/\D/g, '');
+  const isCnicValid = cnicDigits.length === 13;
 
   const hasMinLength = form.password.length >= 8;
   const hasUpper = /[A-Z]/.test(form.password);
@@ -81,6 +95,10 @@ export default function AdminParents() {
     }
     if (editingId && form.password && !isPasswordValid) {
       alert('Password does not meet all requirements.');
+      return;
+    }
+    if (form.cnic && !isCnicValid) {
+      alert('CNIC must be 13 digits (e.g., 34101-1234567-1).');
       return;
     }
     try {
@@ -103,9 +121,11 @@ export default function AdminParents() {
           <h1 className="text-2xl font-bold text-gray-900">👨‍👩‍👧‍👦 Parents Management</h1>
           <p className="text-dark-400 text-sm mt-1">View and manage registered parents.</p>
         </div>
-        <button onClick={() => { if(showForm) resetForm(); else setShowForm(true); }} className="btn btn-primary btn-sm flex items-center gap-2">
-          <HiOutlinePlus className="w-4 h-4" /> Add Parent
-        </button>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm flex items-center gap-2">
+            <HiOutlinePlus className="w-4 h-4" /> Add Parent
+          </button>
+        )}
       </div>
 
       {showForm && (
@@ -148,7 +168,25 @@ export default function AdminParents() {
             </div>
 
             <input className="form-input" name="relation" placeholder="Relation (e.g., Father)" value={form.relation} onChange={handleChange} />
-            <input className="form-input" name="cnic" placeholder="CNIC" value={form.cnic} onChange={handleChange} />
+            
+            <div>
+              <input 
+                className="form-input" 
+                name="cnic" 
+                placeholder="CNIC (13 Digits) *" 
+                value={form.cnic} 
+                onChange={handleChange} 
+                maxLength={15}
+                required
+                style={{ width: '100%' }}
+              />
+              {form.cnic.length > 0 && !isCnicValid && (
+                <div style={{ color: '#dc3545', fontSize: 12, marginTop: 4 }}>
+                  CNIC must be exactly 13 digits ({cnicDigits.length}/13 entered).
+                </div>
+              )}
+            </div>
+
             <input className="form-input" name="occupation" placeholder="Occupation" value={form.occupation} onChange={handleChange} />
             
             <div className="md:col-span-2 flex justify-end gap-3" style={{ marginTop: 10, marginBottom: 2 }}>
@@ -159,62 +197,64 @@ export default function AdminParents() {
         </div>
       )}
 
-      <div className="glass-card table-responsive">
-        {loading ? (
-          <div className="text-center p-8 text-dark-500">Loading...</div>
-        ) : error ? (
-          <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg m-4">{error}</div>
-        ) : (
-          <table className="table-dark">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Relation</th>
-                <th>CNIC</th>
-                <th>Occupation</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {parents.length === 0 ? (
+      {!showForm && (
+        <div className="glass-card table-responsive">
+          {loading ? (
+            <div className="text-center p-8 text-dark-500">Loading...</div>
+          ) : error ? (
+            <div className="p-4 bg-rose-500/10 text-rose-500 rounded-lg m-4">{error}</div>
+          ) : (
+            <table className="table-dark">
+              <thead>
                 <tr>
-                  <td colSpan="6" className="text-center text-dark-500 py-8">No parents found.</td>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Relation</th>
+                  <th>CNIC</th>
+                  <th>Occupation</th>
+                  <th>Action</th>
                 </tr>
-              ) : (
-                parents.map(parent => (
-                  <tr key={parent.id}>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm font-semibold">
-                          {parent.full_name?.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-gray-900 text-sm font-medium">{parent.full_name}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-dark-300 text-sm">{parent.email}</td>
-                    <td className="text-dark-300 text-sm">{parent.parentProfile?.relation || '-'}</td>
-                    <td className="text-dark-300 text-sm">{parent.parentProfile?.cnic || '-'}</td>
-                    <td className="text-dark-300 text-sm">{parent.parentProfile?.occupation || '-'}</td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleEdit(parent)} className="p-2 rounded-lg text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit Parent">
-                          <HiOutlinePencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(parent.id)} className="p-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors" title="Delete Parent">
-                          <HiOutlineTrash className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+              </thead>
+              <tbody>
+                {parents.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center text-dark-500 py-8">No parents found.</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+                ) : (
+                  parents.map(parent => (
+                    <tr key={parent.id}>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm font-semibold">
+                            {parent.full_name?.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-gray-900 text-sm font-medium">{parent.full_name}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-dark-300 text-sm">{parent.email}</td>
+                      <td className="text-dark-300 text-sm">{parent.parentProfile?.relation || '-'}</td>
+                      <td className="text-dark-300 text-sm">{parent.parentProfile?.cnic || '-'}</td>
+                      <td className="text-dark-300 text-sm">{parent.parentProfile?.occupation || '-'}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => handleEdit(parent)} className="p-2 rounded-lg text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit Parent">
+                            <HiOutlinePencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(parent.id)} className="p-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors" title="Delete Parent">
+                            <HiOutlineTrash className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 }

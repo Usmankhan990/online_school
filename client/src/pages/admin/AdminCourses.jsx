@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useSearch } from '../../contexts/SearchContext';
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { searchQuery } = useSearch();
 
   useEffect(() => {
     fetchCourses();
@@ -20,6 +22,16 @@ export default function AdminCourses() {
       setLoading(false);
     }
   };
+
+  const q = (searchQuery || '').trim().toLowerCase();
+  const filteredCourses = courses.filter(c => {
+    if (!q) return true;
+    const title = (c.title || '').toLowerCase();
+    const teacher = (c.teacher?.full_name || '').toLowerCase();
+    const cls = `${c.class?.grade_level || ''} ${c.class?.section || ''}`.toLowerCase();
+    const subject = (c.subject?.name || '').toLowerCase();
+    return title.includes(q) || teacher.includes(q) || cls.includes(q) || subject.includes(q);
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -47,12 +59,14 @@ export default function AdminCourses() {
               </tr>
             </thead>
             <tbody>
-              {courses.length === 0 ? (
+              {filteredCourses.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center text-dark-500 py-8">No courses found.</td>
+                  <td colSpan="5" className="text-center text-dark-500 py-8">
+                    {q ? `No courses matching "${searchQuery}"` : 'No courses found.'}
+                  </td>
                 </tr>
               ) : (
-                courses.map(course => (
+                filteredCourses.map(course => (
                   <tr key={course.id}>
                     <td>
                       <p className="text-gray-900 text-sm font-medium">{course.title}</p>

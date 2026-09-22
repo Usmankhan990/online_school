@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSearch } from '../contexts/SearchContext';
 import api, { FILE_BASE } from '../services/api';
 import logoImg from '../assets/logo.jpg';
 import LanguageToggle from './LanguageToggle';
@@ -44,6 +45,7 @@ const Icons = {
   sun: <Icon d="M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M4.93 19.07l1.41-1.41 M17.66 6.34l1.41-1.41 M12 17a5 5 0 100-10 5 5 0 000 10z" />,
   moon: <Icon d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />,
   close: <Icon d="M18 6L6 18 M6 6l12 12" />,
+  timetable: <Icon d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z M9 15h2 M13 15h2 M9 18h2 M13 18h2" />,
 };
 
 /* Navigation config by role */
@@ -59,6 +61,7 @@ const NAV_CONFIG = {
     { label: 'Classes', path: '/admin/classes', icon: 'classes' },
     { label: 'Subjects', path: '/admin/subjects', icon: 'subjects' },
     { section: 'Academics' },
+    { label: 'Time Table', path: '/admin/timetable', icon: 'timetable' },
     { label: 'Courses', path: '/admin/courses', icon: 'courses' },
     { label: 'Books', path: '/admin/books', icon: 'books' },
     { label: 'Exams', path: '/admin/exams', icon: 'exams' },
@@ -79,6 +82,7 @@ const NAV_CONFIG = {
     { label: 'My Courses', path: '/teacher/courses', icon: 'courses' },
     { label: 'Materials', path: '/teacher/materials', icon: 'materials' },
     { section: 'Academics' },
+    { label: 'Time Table', path: '/teacher/timetable', icon: 'timetable' },
     { label: 'Live Classes', path: '/teacher/live-classes', icon: 'live' },
     { label: 'Homework', path: '/teacher/homework', icon: 'homework' },
     { label: 'Submissions', path: '/teacher/submissions', icon: 'submissions' },
@@ -97,6 +101,7 @@ const NAV_CONFIG = {
     { label: 'Dashboard', path: '/student', icon: 'dashboard' },
     { label: 'My Courses', path: '/student/courses', icon: 'courses' },
     { section: 'Learning' },
+    { label: 'Time Table', path: '/student/timetable', icon: 'timetable' },
     { label: 'Live Classes', path: '/student/live-classes', icon: 'live' },
     { label: 'Study Materials', path: '/student/materials', icon: 'materials' },
     { label: 'Homework', path: '/student/homework', icon: 'homework' },
@@ -118,6 +123,7 @@ const NAV_CONFIG = {
     { label: 'Dashboard', path: '/parent', icon: 'dashboard' },
     { label: 'Child Overview', path: '/parent/child-overview', icon: 'child' },
     { section: 'Academics' },
+    { label: 'Time Table', path: '/parent/timetable', icon: 'timetable' },
     { label: 'Attendance', path: '/parent/attendance', icon: 'attendance' },
     { label: 'Homework', path: '/parent/homework', icon: 'homework' },
     { label: 'Results', path: '/parent/results', icon: 'results' },
@@ -134,7 +140,12 @@ export default function DashboardLayout({ children }) {
   const { user, logout, updateUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth > 768;
+    }
+    return true;
+  });
   const [profileOpen, setProfileOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -157,6 +168,8 @@ export default function DashboardLayout({ children }) {
     return localStorage.getItem('theme') === 'dark';
   });
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const { searchQuery, setSearchQuery } = useSearch();
 
   const getAvatarUrl = (avatar) => {
     if (!avatar) return null;
@@ -315,6 +328,7 @@ export default function DashboardLayout({ children }) {
     navigate('/login');
   };
 
+
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg-body)' }}>
       {/* Mobile overlay */}
@@ -379,16 +393,37 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <div className="main-content flex flex-col flex-1 min-w-0">
+      <div className={`main-content flex flex-col flex-1 min-w-0 ${sidebarOpen ? 'sidebar-open' : ''}`}>
         {/* Top bar */}
         <header className="topbar">
           <div className="flex items-center gap-4">
-            <button className="topbar-icon-btn md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <button 
+              type="button"
+              className="topbar-icon-btn" 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              aria-label="Toggle sidebar"
+            >
               {Icons.menu}
             </button>
-            <div className="topbar-search hidden sm:flex">
+            <div className="topbar-search hidden sm:flex relative" style={{ position: 'relative' }}>
               <span style={{ color: 'var(--text-tertiary)' }}>{Icons.search}</span>
-              <input placeholder="Search anything..." />
+              <input 
+                placeholder="Search anything..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ width: '100%' }}
+              />
+              {searchQuery && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 13, padding: '0 4px', display: 'flex', alignItems: 'center' }}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 
 export default function TeacherLiveClasses() {
@@ -18,6 +18,19 @@ export default function TeacherLiveClasses() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
+  const dateTimerRef = useRef(null);
+
+  const handleDateTimeChange = (e) => {
+    const val = e.target.value;
+    const target = e.target;
+    setForm(f => ({ ...f, scheduled_at: val }));
+    if (dateTimerRef.current) clearTimeout(dateTimerRef.current);
+    if (val && val.length >= 16) {
+      dateTimerRef.current = setTimeout(() => {
+        try { target.blur(); } catch {}
+      }, 400);
+    }
+  };
 
   useEffect(() => { fetchData(); }, []);
 
@@ -86,8 +99,18 @@ export default function TeacherLiveClasses() {
     }
   };
 
+  const isTimeTooSoon = (dateStr) => {
+    if (!dateStr) return false;
+    const selected = new Date(dateStr).getTime();
+    return selected < (Date.now() + 5 * 60 * 1000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isTimeTooSoon(form.scheduled_at)) {
+      setMsg('❌ Please increase your time by at least 5 minutes from now.');
+      return;
+    }
     setSubmitting(true);
     setMsg('');
     try {
@@ -208,10 +231,24 @@ export default function TeacherLiveClasses() {
                 <input
                   type="datetime-local"
                   value={form.scheduled_at}
-                  onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
+                  onChange={handleDateTimeChange}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
                   required
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: 14 }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: isTimeTooSoon(form.scheduled_at) ? '1.5px solid #ef4444' : '1px solid var(--border-light)',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-primary)',
+                    fontSize: 14
+                  }}
                 />
+                {isTimeTooSoon(form.scheduled_at) && (
+                  <span style={{ fontSize: 11, color: '#ef4444', marginTop: 4, display: 'block', fontWeight: 600 }}>
+                    ⚠️ Please increase your time by at least 5 minutes from now.
+                  </span>
+                )}
               </div>
 
               <div>

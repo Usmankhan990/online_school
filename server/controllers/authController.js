@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { sequelize, User, StudentProfile, TeacherProfile, ParentProfile, Class, Document, Notification } = require('../models');
+const { sequelize, User, StudentProfile, TeacherProfile, ParentProfile, Class, Document, Notification, Course, Enrollment } = require('../models');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
@@ -189,6 +189,19 @@ exports.registerTrialStudent = async (req, res) => {
       roll_number: rollNumber,
     });
 
+    // Auto-enroll trial student in all existing courses of their class
+    try {
+      const classCourses = await Course.findAll({ where: { class_id } });
+      for (const course of classCourses) {
+        await Enrollment.findOrCreate({
+          where: { student_id: user.id, course_id: course.id },
+          defaults: { status: 'active' },
+        });
+      }
+    } catch (enrollErr) {
+      console.error('Auto-enroll error in trial register:', enrollErr);
+    }
+
     const fullUser = await User.findByPk(user.id, {
       include: [
         { model: StudentProfile, as: 'studentProfile', include: [{ model: Class, as: 'class' }] },
@@ -255,6 +268,21 @@ exports.login = async (req, res) => {
 
     // Update last login
     await user.update({ last_login: new Date() });
+
+    // If student, ensure auto-enrollment in all active class courses
+    if (user.role === 'student' && user.studentProfile?.class_id) {
+      try {
+        const classCourses = await Course.findAll({ where: { class_id: user.studentProfile.class_id } });
+        for (const course of classCourses) {
+          await Enrollment.findOrCreate({
+            where: { student_id: user.id, course_id: course.id },
+            defaults: { status: 'active' },
+          });
+        }
+      } catch (enrollErr) {
+        console.error('Auto-enroll error on login:', enrollErr);
+      }
+    }
 
     const studentProfile = await StudentProfile.findOne({ where: { user_id: user.id } });
     const parentProfile = await ParentProfile.findOne({ where: { user_id: user.id } });

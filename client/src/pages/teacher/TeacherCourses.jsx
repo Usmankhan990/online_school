@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useSearch } from '../../contexts/SearchContext';
 import { HiOutlinePlus, HiOutlineBookOpen } from 'react-icons/hi';
 
 export default function TeacherCourses() {
@@ -9,6 +10,7 @@ export default function TeacherCourses() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ class_id: '', subject_id: '', title: '', description: '' });
   const [loading, setLoading] = useState(true);
+  const { searchQuery } = useSearch();
 
   const fetchCourses = () => {
     api.get('/teacher/courses').then(res => setCourses(res.data.courses)).catch(console.error).finally(() => setLoading(false));
@@ -46,6 +48,15 @@ export default function TeacherCourses() {
     }
   };
 
+  const q = (searchQuery || '').trim().toLowerCase();
+  const filteredCourses = courses.filter(course => {
+    if (!q) return true;
+    const title = (course.title || '').toLowerCase();
+    const cls = (course.class?.display_name || '').toLowerCase();
+    const subject = (course.subject?.name || '').toLowerCase();
+    return title.includes(q) || cls.includes(q) || subject.includes(q);
+  });
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -68,13 +79,13 @@ export default function TeacherCourses() {
             </select>
             <select className="form-input" value={form.subject_id} onChange={e => setForm({...form, subject_id: e.target.value})} required disabled={!form.class_id || subjects.length === 0}>
               <option value="">{subjects.length > 0 ? 'Select Subject' : (form.class_id ? 'No subjects in class' : 'Select Class First')}</option>
-              {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
             </select>
-            <input className="form-input md:col-span-2" placeholder="Course Title *" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
-            <textarea className="form-input md:col-span-2 h-20 resize-none" placeholder="Description" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
-            <div className="md:col-span-2 flex gap-3 mt-2">
-              <button type="submit" className="btn btn-primary btn-sm">Create Course</button>
+            <input className="form-input md:col-span-2" placeholder="Course Title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
+            <textarea className="form-input md:col-span-2" placeholder="Description" value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
+            <div className="md:col-span-2 flex justify-end gap-2">
               <button type="button" onClick={() => setShowForm(false)} className="btn btn-secondary btn-sm">Cancel</button>
+              <button type="submit" className="btn btn-primary btn-sm">Create Course</button>
             </div>
           </form>
         </div>
@@ -92,15 +103,15 @@ export default function TeacherCourses() {
             </tr>
           </thead>
           <tbody>
-            {courses.length === 0 && !loading ? (
+            {filteredCourses.length === 0 && !loading ? (
               <tr>
                 <td colSpan="5" className="text-center p-8 text-dark-400">
                   <HiOutlineBookOpen className="w-8 h-8 text-dark-600 mx-auto mb-2" />
-                  No courses yet. Click "Add Course" to start!
+                  {q ? `No courses matching "${searchQuery}"` : 'No courses yet. Click "Add Course" to start!'}
                 </td>
               </tr>
             ) : (
-              courses.map(course => (
+              filteredCourses.map(course => (
                 <tr key={course.id}>
                   <td>
                     <div className="flex items-center gap-3">

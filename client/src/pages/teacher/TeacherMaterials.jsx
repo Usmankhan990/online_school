@@ -1,6 +1,34 @@
 import { useState, useEffect } from 'react';
 import api, { FILE_BASE } from '../../services/api';
 
+const TYPE_CONFIGS = {
+  pdf: {
+    accept: '.pdf,application/pdf',
+    validExts: ['pdf'],
+    errorMsg: 'Please select a valid PDF (.pdf) file only.'
+  },
+  video: {
+    accept: '.mp4,.mkv,.webm,.avi,.mov,.m4v,video/*',
+    validExts: ['mp4', 'mkv', 'webm', 'avi', 'mov', 'm4v', '3gp'],
+    errorMsg: 'Please select a valid Video file (.mp4, .webm, .mkv, .mov) only.'
+  },
+  notes: {
+    accept: '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp',
+    validExts: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'],
+    errorMsg: 'Please select a valid Notes file (.pdf, .doc, .docx, .txt, image).'
+  },
+  assignment: {
+    accept: '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp',
+    validExts: ['pdf', 'doc', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'webp'],
+    errorMsg: 'Please select a valid Assignment file (.pdf, .doc, .docx, image).'
+  },
+  link: {
+    accept: '',
+    validExts: [],
+    errorMsg: ''
+  }
+};
+
 export default function TeacherMaterials() {
   const [materials, setMaterials] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -22,18 +50,87 @@ export default function TeacherMaterials() {
     finally { setLoading(false); }
   };
 
+  const validateAndSetFile = (selectedFile, currentType = form.type) => {
+    if (!selectedFile) {
+      setFile(null);
+      return true;
+    }
+
+    const config = TYPE_CONFIGS[currentType];
+    if (config && config.validExts.length > 0) {
+      const ext = (selectedFile.name.split('.').pop() || '').toLowerCase();
+      if (!config.validExts.includes(ext)) {
+        setMsg(`❌ Invalid File: Selected type is "${currentType.toUpperCase()}". ${config.errorMsg}`);
+        setFile(null);
+        const el = document.getElementById('teacher-material-file-upload');
+        if (el) el.value = '';
+        return false;
+      }
+    }
+    setMsg('');
+    setFile(selectedFile);
+    return true;
+  };
+
+  const handleTypeChange = (newType) => {
+    setForm(f => ({ ...f, type: newType }));
+    if (file) {
+      const config = TYPE_CONFIGS[newType];
+      if (config && config.validExts.length > 0) {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (!config.validExts.includes(ext)) {
+          setMsg(`❌ File removed: Uploaded file does not match new type "${newType.toUpperCase()}". ${config.errorMsg}`);
+          setFile(null);
+          const el = document.getElementById('teacher-material-file-upload');
+          if (el) el.value = '';
+        } else {
+          setMsg('');
+        }
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); setSubmitting(true); setMsg('');
+    e.preventDefault();
+    setMsg('');
+
+    if (form.type !== 'link' && !file) {
+      setMsg(`❌ File Required: Please select and upload a valid ${form.type.toUpperCase()} file first.`);
+      return;
+    }
+
+    if (form.type === 'link' && !form.external_url && !file) {
+      setMsg('❌ URL Required: Please provide an External URL or attach a file.');
+      return;
+    }
+
+    if (file && form.type) {
+      const config = TYPE_CONFIGS[form.type];
+      if (config && config.validExts.length > 0) {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (!config.validExts.includes(ext)) {
+          setMsg(`❌ Invalid File: Selected type is "${form.type.toUpperCase()}". ${config.errorMsg}`);
+          return;
+        }
+      }
+    }
+
+    setSubmitting(true);
     try {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       if (file) fd.append('file', file);
       await api.post('/teacher/materials', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setMsg('✅ Material uploaded!');
-      setShowForm(false); setForm({ course_id: '', title: '', type: 'notes', content: '', external_url: '' }); setFile(null);
+      setShowForm(false);
+      setForm({ course_id: '', title: '', type: 'notes', content: '', external_url: '' });
+      setFile(null);
       fetchData();
-    } catch (err) { setMsg('❌ ' + (err.response?.data?.error || 'Upload failed.')); }
-    finally { setSubmitting(false); }
+    } catch (err) {
+      setMsg('❌ ' + (err.response?.data?.error || 'Upload failed.'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -68,8 +165,8 @@ export default function TeacherMaterials() {
                 </select></div>
               <div><label className="form-label">Title *</label>
                 <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required placeholder="Material title" /></div>
-              <div><label className="form-label">Type</label>
-                <select className="form-select" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+              <div><label className="form-label">Type *</label>
+                <select className="form-select" value={form.type} onChange={e => handleTypeChange(e.target.value)}>
                   <option value="notes">Notes</option><option value="pdf">PDF</option><option value="video">Video</option>
                   <option value="link">Link</option><option value="assignment">Assignment</option>
                 </select></div>
@@ -77,9 +174,60 @@ export default function TeacherMaterials() {
             <div><label className="form-label">Content / Description</label>
               <textarea className="form-input" rows={3} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Optional description or notes..." /></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div><label className="form-label">File Upload</label>
-                <input type="file" onChange={e => setFile(e.target.files[0])} className="form-input" style={{ padding: 8 }} /></div>
-              <div><label className="form-label">External URL</label>
+              <div>
+                <label className="form-label">
+                  File Upload {form.type !== 'link' && <span style={{ color: '#ef4444' }}>*</span>}
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="file"
+                    id="teacher-material-file-upload"
+                    accept={TYPE_CONFIGS[form.type]?.accept || ''}
+                    onChange={e => validateAndSetFile(e.target.files?.[0] || null)}
+                    style={{ display: 'none' }}
+                  />
+                  <label
+                    htmlFor="teacher-material-file-upload"
+                    className="form-input"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      padding: '8px 12px',
+                      background: 'var(--bg-surface-2, #f8fafc)',
+                      color: file ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                      userSelect: 'none'
+                    }}
+                  >
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                      {file ? file.name : 'Choose File...'}
+                    </span>
+                    {file ? (
+                      <span
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFile(null);
+                          const el = document.getElementById('teacher-material-file-upload');
+                          if (el) el.value = '';
+                        }}
+                        style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold', marginLeft: 8, fontSize: '14px' }}
+                        title="Remove file"
+                      >
+                        ✕
+                      </span>
+                    ) : (
+                      <span className="btn btn-secondary btn-sm" style={{ padding: '2px 8px', fontSize: '11px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                        Browse
+                      </span>
+                    )}
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label className="form-label">
+                  External URL {form.type === 'link' && !file && <span style={{ color: '#ef4444' }}>*</span>}
+                </label>
                 <input className="form-input" value={form.external_url} onChange={e => setForm(f => ({ ...f, external_url: e.target.value }))} placeholder="https://..." /></div>
             </div>
             <button type="submit" className="btn btn-accent" disabled={submitting}>{submitting ? '⏳ Uploading...' : '🚀 Upload Material'}</button>

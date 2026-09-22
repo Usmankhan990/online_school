@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api, { FILE_BASE } from '../../services/api';
 
 export default function TeacherHomework() {
@@ -13,6 +13,19 @@ export default function TeacherHomework() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
   const [selectedImageModal, setSelectedImageModal] = useState(null);
+  const dateTimerRef = useRef(null);
+
+  const handleDateTimeChange = (e) => {
+    const val = e.target.value;
+    const target = e.target;
+    setForm(f => ({ ...f, due_date: val }));
+    if (dateTimerRef.current) clearTimeout(dateTimerRef.current);
+    if (val && val.length >= 16) {
+      dateTimerRef.current = setTimeout(() => {
+        try { target.blur(); } catch {}
+      }, 400);
+    }
+  };
 
   useEffect(() => { fetchData(); }, []);
   const fetchData = async () => {
@@ -120,7 +133,14 @@ export default function TeacherHomework() {
               </div>
               <div>
                 <label className="form-label">Due Date *</label>
-                <input type="datetime-local" className="form-input" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} required />
+                <input
+                  type="datetime-local"
+                  className="form-input"
+                  value={form.due_date}
+                  onChange={handleDateTimeChange}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+                  required
+                />
               </div>
               <div>
                 <label className="form-label">Total Marks</label>
@@ -157,7 +177,7 @@ export default function TeacherHomework() {
                     accept="image/*"
                     onChange={handlePageImagesChange}
                     className="form-input"
-                    style={{ padding: 8 }}
+                    style={{ padding: 8, color: 'transparent' }}
                   />
                   <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>
                     Upload clear pictures of only these assigned pages for students to see.
@@ -199,7 +219,50 @@ export default function TeacherHomework() {
 
             <div>
               <label className="form-label">Additional Attachment (optional PDF / Doc)</label>
-              <input type="file" onChange={e => setFile(e.target.files[0])} className="form-input" style={{ padding: 8 }} />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="file"
+                  id="teacher-homework-file-upload"
+                  onChange={e => setFile(e.target.files?.[0] || null)}
+                  style={{ display: 'none' }}
+                />
+                <label
+                  htmlFor="teacher-homework-file-upload"
+                  className="form-input"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    padding: '8px 12px',
+                    background: 'var(--bg-surface-2, #f8fafc)',
+                    color: file ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                    userSelect: 'none'
+                  }}
+                >
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '13px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                    {file ? `📄 ${file.name}` : '📁 Choose File...'}
+                  </span>
+                  {file ? (
+                    <span
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setFile(null);
+                        const el = document.getElementById('teacher-homework-file-upload');
+                        if (el) el.value = '';
+                      }}
+                      style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold', marginLeft: 8, fontSize: '14px' }}
+                      title="Remove file"
+                    >
+                      ✕
+                    </span>
+                  ) : (
+                    <span className="btn btn-secondary btn-sm" style={{ padding: '2px 8px', fontSize: '11px', pointerEvents: 'none', userSelect: 'none', cursor: 'pointer' }}>
+                      Browse
+                    </span>
+                  )}
+                </label>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-accent" disabled={submitting}>

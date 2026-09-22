@@ -34,6 +34,14 @@ export default function StudentFees() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
 
+  const receivingAccounts = Object.values(paymentInfo)
+    .map(p => (p.account || '').replace(/[^a-zA-Z0-9]/g, ''))
+    .filter(acc => acc.length > 5);
+
+  const cleanTxn = (payForm.transaction_id || '').trim();
+  const isReceivingAccount = receivingAccounts.includes(cleanTxn);
+  const isTxnInvalid = cleanTxn.length > 0 && (cleanTxn.length < 6 || isReceivingAccount);
+
   useEffect(() => { fetchFees(); }, []);
 
   const fetchFees = async () => {
@@ -56,6 +64,9 @@ export default function StudentFees() {
 
   const handlePay = async (e) => {
     e.preventDefault();
+    if (cleanTxn.length < 6 || isReceivingAccount) {
+      return;
+    }
     setSubmitting(true);
     setMsg('');
     try {
@@ -181,11 +192,68 @@ export default function StudentFees() {
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Transaction ID / Reference *</label>
-                <input value={payForm.transaction_id} onChange={e => setPayForm(f => ({ ...f, transaction_id: e.target.value }))} placeholder="e.g., TXN123456789" required style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: 14 }} />
+                <input
+                  value={payForm.transaction_id}
+                  onChange={e => {
+                    const cleaned = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                    setPayForm(f => ({ ...f, transaction_id: cleaned }));
+                  }}
+                  placeholder="e.g., TXN123456789"
+                  minLength={6}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    border: isTxnInvalid ? '1.5px solid #ef4444' : '1px solid var(--border-light)',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-primary)',
+                    fontSize: 14,
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                />
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Payment Slip / Screenshot *</label>
-                <input type="file" accept="image/*" onChange={e => setPayForm(f => ({ ...f, payment_proof: e.target.files[0] }))} required style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: 14 }} />
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: '1px dashed var(--border-medium, #cbd5e1)',
+                  background: 'var(--bg-surface-2, #f8fafc)',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  color: 'var(--text-primary)',
+                  transition: 'all 0.2s ease',
+                }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 16 }}>📎</span>
+                    <span style={{ color: payForm.payment_proof ? 'var(--text-primary)' : 'var(--text-tertiary)', fontWeight: payForm.payment_proof ? 600 : 400 }}>
+                      {payForm.payment_proof ? payForm.payment_proof.name : 'Upload Screenshot / Receipt'}
+                    </span>
+                  </span>
+                  <span style={{
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    background: '#eff6ff',
+                    color: '#2563eb',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    flexShrink: 0
+                  }}>
+                    Browse File
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setPayForm(f => ({ ...f, payment_proof: e.target.files[0] || null }))}
+                    required={!payForm.payment_proof}
+                    style={{ display: 'none' }}
+                  />
+                </label>
               </div>
               {payForm.payment_method && paymentInfo[payForm.payment_method] && (
                 <div style={{ padding: 12, borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe', fontSize: 12, color: '#1e40af' }}>

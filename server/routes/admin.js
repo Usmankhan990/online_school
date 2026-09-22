@@ -21,7 +21,7 @@ const upload = require('../middleware/upload');
 const handleTeacherUploads = (req, res, next) => {
   upload.fields([
     { name: 'photo', maxCount: 1 },
-    { name: 'cnic', maxCount: 1 },
+    { name: 'cnic', maxCount: 2 },
   ])(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.message || 'File upload failed' });

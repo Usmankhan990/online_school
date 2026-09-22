@@ -34,6 +34,39 @@ export default function TeacherAttendance() {
   const [fetchingStudents, setFetchingStudents] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [studentMsg, setStudentMsg] = useState('');
+  const [updatingSectionId, setUpdatingSectionId] = useState(null);
+  const [sectionMsg, setSectionMsg] = useState('');
+
+  const getStudentAutoSection = (s, idx = 0) => {
+    if (s?.section && s.section.trim()) {
+      return s.section.trim().toUpperCase();
+    }
+    const rollStr = String(s?.roll_number || s?.user_id || s?.id || (idx + 1));
+    const matches = rollStr.match(/\d+/g);
+    if (!matches || matches.length === 0) return 'A';
+    const num = parseInt(matches[matches.length - 1], 10);
+    if (isNaN(num) || num <= 0) return 'A';
+    const index = num - 1;
+    const charCode = 65 + Math.floor(index / 15);
+    return String.fromCharCode(Math.min(charCode, 90));
+  };
+
+  const handleUpdateStudentSection = async (studentUserId, newSection) => {
+    setUpdatingSectionId(studentUserId);
+    setSectionMsg('');
+    try {
+      await api.put(`/teacher/students/${studentUserId}/section`, { section: newSection });
+      setStudents(prev => prev.map(s => s.user_id === studentUserId ? { ...s, section: newSection } : s));
+      setSectionMsg(`✅ Student section changed to Section ${newSection}`);
+      setTimeout(() => setSectionMsg(''), 3500);
+    } catch (err) {
+      console.error('Update student section error:', err);
+      setSectionMsg('❌ ' + (err.response?.data?.error || 'Failed to update student section.'));
+      setTimeout(() => setSectionMsg(''), 3500);
+    } finally {
+      setUpdatingSectionId(null);
+    }
+  };
 
   // Fetch Teacher's own attendance
   const fetchSelfAttendance = useCallback(async () => {
@@ -740,76 +773,128 @@ export default function TeacherAttendance() {
                 </div>
               </div>
               
+              {sectionMsg && (
+                <div style={{
+                  padding: '10px 16px',
+                  borderRadius: 8,
+                  marginBottom: 16,
+                  background: sectionMsg.includes('✅') ? '#ecfdf5' : '#fef2f2',
+                  color: sectionMsg.includes('✅') ? '#059669' : '#dc2626',
+                  border: `1px solid ${sectionMsg.includes('✅') ? '#10b981' : '#ef4444'}`,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  {sectionMsg}
+                </div>
+              )}
+
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border-light)' }}>
                     <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-tertiary)' }}>#</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-tertiary)' }}>Student Name</th>
                     <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: 'var(--text-tertiary)' }}>Roll Number / Contact</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--text-tertiary)' }}>Section</th>
                     <th style={{ padding: '10px 14px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--text-tertiary)' }}>Attendance Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {students.map((s, i) => (
-                    <tr key={s.user_id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                      <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-tertiary)' }}>{i + 1}</td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--color-primary-100)', color: 'var(--color-primary-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 }}>
-                            {s.user?.full_name?.charAt(0) || 'S'}
+                  {students.map((s, i) => {
+                    const studentSection = s.section || getStudentAutoSection(s, i);
+                    return (
+                      <tr key={s.user_id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                        <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-tertiary)' }}>{i + 1}</td>
+                        <td style={{ padding: '12px 14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--color-primary-100)', color: 'var(--color-primary-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 }}>
+                              {s.user?.full_name?.charAt(0) || 'S'}
+                            </div>
+                            <div>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>
+                                {s.user?.full_name}
+                              </span>
+                              <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{s.user?.email || '-'}</span>
+                            </div>
                           </div>
-                          <div>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>
-                              {s.user?.full_name}
+                        </td>
+                        <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-secondary)' }}>
+                          {s.roll_number ? (
+                            <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 6, background: 'var(--bg-secondary)', fontWeight: 700, fontSize: 12 }}>
+                              Roll #{s.roll_number}
                             </span>
-                            <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{s.user?.email || '-'}</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-tertiary)' }}>ID: {s.user_id}</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <select
+                              value={studentSection}
+                              onChange={(e) => handleUpdateStudentSection(s.user_id, e.target.value)}
+                              disabled={updatingSectionId === s.user_id}
+                              title="Edit/Change student section"
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: 8,
+                                border: '1.5px solid var(--border-light)',
+                                background: 'var(--bg-secondary)',
+                                color: 'var(--text-primary)',
+                                fontWeight: 800,
+                                fontSize: 12,
+                                cursor: 'pointer',
+                                outline: 'none'
+                              }}
+                            >
+                              {['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(sec => (
+                                <option key={sec} value={sec}>
+                                  Section {sec}
+                                </option>
+                              ))}
+                            </select>
+                            {updatingSectionId === s.user_id && (
+                              <span style={{ fontSize: 12, animation: 'spin 1s linear infinite' }}>⏳</span>
+                            )}
                           </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {s.roll_number ? (
-                          <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 6, background: 'var(--bg-secondary)', fontWeight: 700, fontSize: 12 }}>
-                            Roll #{s.roll_number}
-                          </span>
-                        ) : (
-                          <span style={{ color: 'var(--text-tertiary)' }}>ID: {s.user_id}</span>
-                        )}
-                      </td>
-                      <td style={{ padding: '12px 14px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                          {[
-                            { key: 'present', label: 'Present', icon: '✅' },
-                            { key: 'absent', label: 'Absent', icon: '❌' },
-                            { key: 'late', label: 'Late', icon: '⏰' },
-                            { key: 'leave', label: 'Leave', icon: '🏠' },
-                          ].map(({ key: status, label, icon }) => {
-                            const isCurrent = (records[s.user_id] || 'present') === status;
-                            const col = statusColors[status];
-                            return (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => setRecords(r => ({ ...r, [s.user_id]: status }))}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: 6,
-                                  border: `1.5px solid ${isCurrent ? col.border : 'var(--border-light)'}`,
-                                  background: isCurrent ? col.bg : 'transparent',
-                                  color: isCurrent ? col.text : 'var(--text-tertiary)',
-                                  fontSize: 12,
-                                  fontWeight: isCurrent ? 800 : 600,
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s ease',
-                                }}
-                              >
-                                {icon} {label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {[
+                              { key: 'present', label: 'Present', icon: '✅' },
+                              { key: 'absent', label: 'Absent', icon: '❌' },
+                              { key: 'late', label: 'Late', icon: '⏰' },
+                              { key: 'leave', label: 'Leave', icon: '🏠' },
+                            ].map(({ key: status, label, icon }) => {
+                              const isCurrent = (records[s.user_id] || 'present') === status;
+                              const col = statusColors[status];
+                              return (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => setRecords(r => ({ ...r, [s.user_id]: status }))}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: 6,
+                                    border: `1.5px solid ${isCurrent ? col.border : 'var(--border-light)'}`,
+                                    background: isCurrent ? col.bg : 'transparent',
+                                    color: isCurrent ? col.text : 'var(--text-tertiary)',
+                                    fontSize: 12,
+                                    fontWeight: isCurrent ? 800 : 600,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                  }}
+                                >
+                                  {icon} {label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 

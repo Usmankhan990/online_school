@@ -37,10 +37,11 @@ router.put('/submissions/:id/grade', teacherController.gradeSubmission);
 // Results
 router.get('/results', teacherController.getMyResults);
 
-// Attendance
+// Attendance & Students
 router.post('/attendance', teacherController.markAttendance);
 router.get('/attendance', teacherController.getAttendance);
 router.get('/class-students', teacherController.getClassStudents);
+router.put('/students/:id/section', teacherController.updateStudentSection);
 router.post('/attendance/self', teacherController.markSelfAttendance);
 router.get('/attendance/self', teacherController.getMySelfAttendance);
 

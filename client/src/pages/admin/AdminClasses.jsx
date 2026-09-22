@@ -41,6 +41,10 @@ export default function AdminClasses() {
   // ── Add Class ──
   const handleAdd = async (e) => {
     e.preventDefault();
+    if (form.grade_level !== '' && (Number(form.grade_level) > 8 || Number(form.grade_level) < 0)) {
+      showMessage('❌ Grade level must be between 0 (KG) and 8.', 'danger');
+      return;
+    }
     try {
       await api.post('/classes', form);
       showMessage('✅ Class created successfully!', 'success');
@@ -66,6 +70,10 @@ export default function AdminClasses() {
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    if (form.grade_level !== '' && (Number(form.grade_level) > 8 || Number(form.grade_level) < 0)) {
+      showMessage('❌ Grade level must be between 0 (KG) and 8.', 'danger');
+      return;
+    }
     try {
       await api.put(`/classes/${showEditModal.id}`, form);
       showMessage('✅ Class updated!', 'success');
@@ -263,10 +271,22 @@ export default function AdminClasses() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="form-label">Grade Level *</label>
-                    <input type="number" min="0" max="12" value={form.grade_level}
-                      onChange={e => setForm({...form, grade_level: e.target.value})}
-                      required className="form-input" placeholder="0 for KG, 1-8" />
+                    <label className="form-label">Grade Level (0-8) *</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="8" 
+                      value={form.grade_level}
+                      onChange={e => {
+                        let val = e.target.value;
+                        if (val !== '' && Number(val) > 8) val = '8';
+                        if (val !== '' && Number(val) < 0) val = '0';
+                        setForm({ ...form, grade_level: val });
+                      }}
+                      required 
+                      className="form-input" 
+                      placeholder="0 for KG, 1-8" 
+                    />
                   </div>
                   <div>
                     <label className="form-label">Section</label>
@@ -292,7 +312,7 @@ export default function AdminClasses() {
       {/* ═══ EDIT CLASS MODAL ═══ */}
       {showEditModal && (
         <div className="modal-overlay" onClick={() => setShowEditModal(null)}>
-          <div className="modal-panel" onClick={e => e.stopPropagation()}>
+          <div className="modal-panel hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>✏️ Edit {showEditModal.display_name}</h2>
               <button onClick={() => setShowEditModal(null)} className="btn btn-ghost btn-sm">✕</button>
@@ -313,9 +333,21 @@ export default function AdminClasses() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="form-label">Grade Level *</label>
-                    <input type="number" min="0" max="12" value={form.grade_level}
-                      onChange={e => setForm({...form, grade_level: e.target.value})} required className="form-input" />
+                    <label className="form-label">Grade Level (0-8) *</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="8" 
+                      value={form.grade_level}
+                      onChange={e => {
+                        let val = e.target.value;
+                        if (val !== '' && Number(val) > 8) val = '8';
+                        if (val !== '' && Number(val) < 0) val = '0';
+                        setForm({ ...form, grade_level: val });
+                      }}
+                      required 
+                      className="form-input" 
+                    />
                   </div>
                   <div>
                     <label className="form-label">Section</label>
@@ -341,7 +373,7 @@ export default function AdminClasses() {
       {/* ═══ SUBJECT ASSIGNMENT MODAL ═══ */}
       {showSubjectModal && (
         <div className="modal-overlay" onClick={() => setShowSubjectModal(null)}>
-          <div className="modal-panel" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-panel hide-scrollbar" style={{ maxWidth: 600, scrollbarWidth: 'none', msOverflowStyle: 'none' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>📖 Assign Subjects — {showSubjectModal.display_name}</h2>
               <button onClick={() => setShowSubjectModal(null)} className="btn btn-ghost btn-sm">✕</button>
@@ -350,10 +382,13 @@ export default function AdminClasses() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
                 Select subjects to assign to this class. Students enrolled in this class will see these subjects.
               </p>
-              <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: 8, maxHeight: 400, overflowY: 'auto', paddingRight: 4,
-              }}>
+              <div 
+                className="hide-scrollbar"
+                style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                  gap: 8, maxHeight: 400, overflowY: 'auto', paddingRight: 4,
+                  scrollbarWidth: 'none', msOverflowStyle: 'none',
+                }}>
                 {subjects.map(sub => {
                   const isAssigned = assignedSubjects.includes(sub.id);
                   return (

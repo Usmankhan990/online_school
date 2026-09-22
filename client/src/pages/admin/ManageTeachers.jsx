@@ -23,8 +23,9 @@ export default function ManageTeachers() {
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [cnicFile, setCnicFile] = useState(null);
-  const [cnicPreview, setCnicPreview] = useState(null);
+  const [photoBgDetected, setPhotoBgDetected] = useState(null);
+  const [cnicFiles, setCnicFiles] = useState([]);
+  const [cnicPreviews, setCnicPreviews] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [genderFilter, setGenderFilter] = useState('all');
@@ -49,10 +50,111 @@ export default function ManageTeachers() {
     setForm(f => ({ ...f, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
+  // Validate photo background: Blue, White, or Black
+  const validatePhotoBackground = (file) => {
+    return new Promise((resolve) => {
+      if (!file || !file.type.startsWith('image/')) {
+        return resolve({ valid: false, error: 'Please select a valid image file (JPG/PNG).' });
+      }
+
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.src = url;
+
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const w = 150;
+          const h = 150;
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+
+          // Sample corner and top border areas (background behind head/shoulders)
+          const samplePoints = [];
+          for (let y = 0; y < 30; y += 4) {
+            for (let x = 0; x < 30; x += 4) {
+              samplePoints.push((y * w + x) * 4);
+            }
+          }
+          for (let y = 0; y < 30; y += 4) {
+            for (let x = 120; x < 150; x += 4) {
+              samplePoints.push((y * w + x) * 4);
+            }
+          }
+          for (let y = 0; y < 15; y += 3) {
+            for (let x = 50; x < 100; x += 4) {
+              samplePoints.push((y * w + x) * 4);
+            }
+          }
+
+          let blueCount = 0;
+          let whiteCount = 0;
+          let blackCount = 0;
+          const totalSamples = samplePoints.length;
+
+          for (const idx of samplePoints) {
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+
+            // 1. Blue background
+            const isBlue = (b > r + 15 && b > g - 20) || (b > 110 && r < 140 && g < 180);
+            // 2. White / Light background
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            const isWhite = (r > 185 && g > 185 && b > 185 && (max - min) < 45);
+            // 3. Black / Dark background
+            const isBlack = (r < 65 && g < 65 && b < 65);
+
+            if (isBlue) blueCount++;
+            else if (isWhite) whiteCount++;
+            else if (isBlack) blackCount++;
+          }
+
+          const validSamples = blueCount + whiteCount + blackCount;
+          const validPercentage = (validSamples / totalSamples) * 100;
+
+          if (validPercentage >= 40) {
+            let detected = 'Blue';
+            if (whiteCount > blueCount && whiteCount > blackCount) detected = 'White';
+            else if (blackCount > blueCount && blackCount > whiteCount) detected = 'Black';
+            else if (blueCount >= whiteCount && blueCount >= blackCount) detected = 'Blue';
+            return resolve({ valid: true, detectedBg: detected });
+          }
+
+          return resolve({
+            valid: false,
+            error: '❌ Invalid Photo Background: Only Blue, White, or Black plain background is accepted for passport photos.'
+          });
+        } catch {
+          return resolve({ valid: true });
+        }
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve({ valid: false, error: 'Failed to load photo image.' });
+      };
+    });
+  };
+
+  const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      const check = await validatePhotoBackground(file);
+      if (!check.valid) {
+        alert(check.error || 'Invalid background. Only Blue, White, or Black background is accepted.');
+        e.target.value = '';
+        return;
+      }
       setPhotoFile(file);
+      setPhotoBgDetected(check.detectedBg || 'Accepted');
       const reader = new FileReader();
       reader.onload = () => setPhotoPreview(reader.result);
       reader.readAsDataURL(file);
@@ -60,17 +162,61 @@ export default function ManageTeachers() {
   };
 
   const handleCnicChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCnicFile(file);
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = () => setCnicPreview(reader.result);
-        reader.readAsDataURL(file);
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length === 0) return;
+
+    const validNewFiles = selectedFiles.filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+    if (validNewFiles.length === 0) {
+      alert('Please upload image (JPG/PNG) or PDF copy of CNIC.');
+      e.target.value = '';
+      return;
+    }
+
+    let updatedFiles = [];
+    if (selectedFiles.length >= 2) {
+      updatedFiles = validNewFiles.slice(0, 2);
+    } else {
+      if (cnicFiles.length >= 2) {
+        updatedFiles = [validNewFiles[0]];
       } else {
-        setCnicPreview(file.name);
+        updatedFiles = [...cnicFiles, validNewFiles[0]];
       }
     }
+
+    if (updatedFiles.length > 2) {
+      alert('Maximum 2 CNIC pictures (Front & Back) or 1 PDF document can be uploaded.');
+      updatedFiles = updatedFiles.slice(0, 2);
+    }
+
+    setCnicFiles(updatedFiles);
+
+    const newPreviews = [];
+    updatedFiles.forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          newPreviews.push({ type: 'image', url: reader.result, name: file.name });
+          if (newPreviews.length === updatedFiles.length) {
+            setCnicPreviews([...newPreviews]);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        newPreviews.push({ type: 'pdf', url: null, name: file.name });
+        if (newPreviews.length === updatedFiles.length) {
+          setCnicPreviews([...newPreviews]);
+        }
+      }
+    });
+
+    e.target.value = '';
+  };
+
+  const removeCnicFile = (index) => {
+    const newFiles = cnicFiles.filter((_, i) => i !== index);
+    const newPreviews = cnicPreviews.filter((_, i) => i !== index);
+    setCnicFiles(newFiles);
+    setCnicPreviews(newPreviews);
   };
 
   const hasMinLength = form.password.length >= 8;
@@ -100,8 +246,9 @@ export default function ManageTeachers() {
     });
     setPhotoFile(null);
     setPhotoPreview(null);
-    setCnicFile(null);
-    setCnicPreview(null);
+    setPhotoBgDetected(null);
+    setCnicFiles([]);
+    setCnicPreviews([]);
   };
 
   const handleCreate = async (e) => {
@@ -127,8 +274,10 @@ export default function ManageTeachers() {
       if (photoFile) {
         formData.append('photo', photoFile);
       }
-      if (cnicFile) {
-        formData.append('cnic', cnicFile);
+      if (cnicFiles.length > 0) {
+        cnicFiles.forEach((file) => {
+          formData.append('cnic', file);
+        });
       }
 
       const headers = { 'Content-Type': 'multipart/form-data' };
@@ -164,18 +313,25 @@ export default function ManageTeachers() {
       account_holder_name: prof.account_holder_name || '',
     });
     setPhotoFile(null);
-    setCnicFile(null);
+    setPhotoBgDetected(null);
+    setCnicFiles([]);
     const existingPhoto = prof.photo || t.avatar;
     if (existingPhoto) {
       setPhotoPreview(`${FILE_BASE}/uploads/${existingPhoto}`);
+      setPhotoBgDetected('Current Photo');
     } else {
       setPhotoPreview(null);
     }
     const existingCnic = prof.cnic_file;
     if (existingCnic) {
-      setCnicPreview(`${FILE_BASE}/uploads/${existingCnic}`);
+      const files = existingCnic.split(',').map(s => s.trim()).filter(Boolean);
+      setCnicPreviews(files.map((fname, idx) => ({
+        type: fname.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image',
+        url: `${FILE_BASE}/uploads/${fname}`,
+        name: files.length > 1 ? (idx === 0 ? 'CNIC Front Side' : 'CNIC Back Side') : 'CNIC Document'
+      })));
     } else {
-      setCnicPreview(null);
+      setCnicPreviews([]);
     }
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -206,58 +362,62 @@ export default function ManageTeachers() {
           <h1 className="text-2xl font-bold text-gray-900">Manage Teachers</h1>
           <p className="text-dark-400 text-sm mt-1">{teachers.length} teachers registered</p>
         </div>
-        <button onClick={() => { if(showForm) resetForm(); else setShowForm(true); }} className="btn btn-primary btn-sm flex items-center gap-2">
-          <HiOutlinePlus className="w-4 h-4" /> Add Teacher
-        </button>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm flex items-center gap-2">
+            <HiOutlinePlus className="w-4 h-4" /> Add Teacher
+          </button>
+        )}
       </div>
 
       {/* Gender Filter Tabs */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
-        {[
-          { key: 'all', label: 'All Teachers', count: teachers.length },
-          { key: 'male', label: 'Male Teachers', count: maleCount },
-          { key: 'female', label: 'Female Teachers', count: femaleCount },
-        ].map(tab => {
-          const isActive = genderFilter === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setGenderFilter(tab.key)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '8px 16px',
-                borderRadius: 10,
-                border: isActive ? '2px solid var(--color-primary-600, #1e3a5f)' : '1px solid var(--border-light, #e2e8f0)',
-                background: isActive ? 'var(--color-primary-50, #eff6ff)' : 'var(--bg-card, #ffffff)',
-                color: isActive ? 'var(--color-primary-700, #1d4ed8)' : 'var(--text-secondary, #64748b)',
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>{tab.label}</span>
-              {tab.count > 0 && (
-                <span
-                  style={{
-                    background: isActive ? 'var(--color-primary-600, #1e3a5f)' : 'var(--bg-surface-2, #e2e8f0)',
-                    color: isActive ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                    padding: '2px 8px',
-                    borderRadius: 999,
-                    fontSize: 11,
-                    fontWeight: 800
-                  }}
-                >
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {!showForm && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+          {[
+            { key: 'all', label: 'All Teachers', count: teachers.length },
+            { key: 'male', label: 'Male Teachers', count: maleCount },
+            { key: 'female', label: 'Female Teachers', count: femaleCount },
+          ].map(tab => {
+            const isActive = genderFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setGenderFilter(tab.key)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 16px',
+                  borderRadius: 10,
+                  border: isActive ? '2px solid var(--color-primary-600, #1e3a5f)' : '1px solid var(--border-light, #e2e8f0)',
+                  background: isActive ? 'var(--color-primary-50, #eff6ff)' : 'var(--bg-card, #ffffff)',
+                  color: isActive ? 'var(--color-primary-700, #1d4ed8)' : 'var(--text-secondary, #64748b)',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>{tab.label}</span>
+                {tab.count > 0 && (
+                  <span
+                    style={{
+                      background: isActive ? 'var(--color-primary-600, #1e3a5f)' : 'var(--bg-surface-2, #e2e8f0)',
+                      color: isActive ? '#ffffff' : 'var(--text-secondary, #64748b)',
+                      padding: '2px 8px',
+                      borderRadius: 999,
+                      fontSize: 11,
+                      fontWeight: 800
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {showForm && (
         <div className="glass-card p-6 animate-slide-up" style={{ marginBottom: 14 }}>
@@ -266,7 +426,7 @@ export default function ManageTeachers() {
             
             {/* Passport Size Photo Upload */}
             <div className="md:col-span-2" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'var(--bg-surface-2, #f8fafc)', padding: '12px 16px', borderRadius: 12, border: '1px dashed var(--border-light, #cbd5e1)' }}>
-              <div style={{ position: 'relative', width: 64, height: 64, borderRadius: 10, overflow: 'hidden', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #3b82f6', flexShrink: 0 }}>
+              <div style={{ position: 'relative', width: 68, height: 68, borderRadius: 10, overflow: 'hidden', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #3b82f6', flexShrink: 0 }}>
                 {photoPreview ? (
                   <img src={photoPreview} alt="Teacher Photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
@@ -279,54 +439,152 @@ export default function ManageTeachers() {
                     📷 Passport Size Photo *
                   </label>
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#0369a1', background: '#e0f2fe', padding: '2px 8px', borderRadius: 999, border: '1px solid #bae6fd' }}>
-                    White or Blue Background Accepted
+                    {photoBgDetected ? `✅ ${photoBgDetected} Background Verified` : 'Blue, White, or Black Background'}
                   </span>
+                  {photoPreview && (
+                    <button
+                      type="button"
+                      onClick={() => { setPhotoFile(null); setPhotoPreview(null); setPhotoBgDetected(null); }}
+                      style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      ✕ Remove
+                    </button>
+                  )}
                 </div>
                 <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, marginBottom: 6 }}>
-                  Upload clear passport-size photo (White / Blue background).
+                  Upload clear passport-size photo (Blue, White, or Black background only).
                 </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="form-input"
-                  style={{ padding: '6px 10px', fontSize: 12, width: '100%' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <input
+                    type="file"
+                    id="teacher-photo-input"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    style={{ display: 'none' }}
+                  />
+                  <label
+                    htmlFor="teacher-photo-input"
+                    className="btn btn-secondary btn-sm"
+                    style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '6px 14px' }}
+                  >
+                    <span>📁 {photoFile ? 'Change Photo' : 'Upload Passport Photo'}</span>
+                  </label>
+                  {photoFile && (
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      {photoFile.name}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Upload CNIC Section */}
-            <div className="md:col-span-2" style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'var(--bg-surface-2, #f8fafc)', padding: '12px 16px', borderRadius: 12, border: '1px dashed var(--border-light, #cbd5e1)' }}>
-              <div style={{ position: 'relative', width: 64, height: 64, borderRadius: 10, overflow: 'hidden', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #10b981', flexShrink: 0 }}>
-                {cnicPreview ? (
-                  cnicPreview.startsWith('data:image') || cnicPreview.includes('/uploads/') ? (
-                    <img src={cnicPreview} alt="CNIC Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: 4, textAlign: 'center', color: '#059669' }}>📄 {cnicPreview}</span>
-                  )
-                ) : (
-                  <span style={{ fontSize: 26 }}>🪪</span>
-                )}
-              </div>
-              <div style={{ flex: 1 }}>
+            <div className="md:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--bg-surface-2, #f8fafc)', padding: '14px 16px', borderRadius: 12, border: '1px dashed var(--border-light, #cbd5e1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Upload CNIC *
+                    🪪 Upload CNIC (Front & Back) *
                   </label>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: 999, border: '1px solid #a7f3d0' }}>
-                    Front & Back Copy (Image / PDF)
+                  <span style={{ fontSize: 11, fontWeight: 700, color: cnicPreviews.length === 2 ? '#059669' : (cnicPreviews.length === 1 ? '#d97706' : '#0369a1'), background: cnicPreviews.length === 2 ? '#ecfdf5' : (cnicPreviews.length === 1 ? '#fffbeb' : '#e0f2fe'), padding: '2px 8px', borderRadius: 999, border: `1px solid ${cnicPreviews.length === 2 ? '#a7f3d0' : (cnicPreviews.length === 1 ? '#fde68a' : '#bae6fd')}` }}>
+                    {cnicPreviews.length === 2 ? '✅ Both Sides Uploaded (2/2)' : (cnicPreviews.length === 1 ? '🟡 1 Side Uploaded (Add Back Side)' : 'Max 2 Photos (Front + Back) or 1 PDF')}
                   </span>
                 </div>
-                <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2, marginBottom: 6 }}>
-                  Upload clear CNIC front & back photo or document copy.
-                </p>
+              </div>
+              <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: 0 }}>
+                Select 2 photos together (Front & Back) or select them one by one.
+              </p>
+
+              {/* CNIC Previews (Front and Back cards) */}
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 4 }}>
+                {/* Slot 1: Front */}
+                <div style={{ flex: 1, minWidth: 160, background: '#ffffff', borderRadius: 10, border: '1px solid #e2e8f0', padding: 10, display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 8, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #cbd5e1', flexShrink: 0 }}>
+                    {cnicPreviews[0] ? (
+                      cnicPreviews[0].type === 'image' ? (
+                        <img src={cnicPreviews[0].url} alt="CNIC Front" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: 20 }}>📄</span>
+                      )
+                    ) : (
+                      <span style={{ fontSize: 20 }}>🪪</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      {cnicPreviews[0] ? '🪪 Side 1 (Front)' : '🪪 Front Side'}
+                    </p>
+                    <p style={{ fontSize: 11, color: cnicPreviews[0] ? '#059669' : 'var(--text-tertiary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cnicPreviews[0] ? (cnicPreviews[0].name || 'Front side attached') : 'Not uploaded yet'}
+                    </p>
+                  </div>
+                  {cnicPreviews[0] && (
+                    <button
+                      type="button"
+                      onClick={() => removeCnicFile(0)}
+                      style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '50%', width: 22, height: 22, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Remove"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {/* Slot 2: Back */}
+                <div style={{ flex: 1, minWidth: 160, background: '#ffffff', borderRadius: 10, border: '1px solid #e2e8f0', padding: 10, display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 8, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #cbd5e1', flexShrink: 0 }}>
+                    {cnicPreviews[1] ? (
+                      cnicPreviews[1].type === 'image' ? (
+                        <img src={cnicPreviews[1].url} alt="CNIC Back" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: 20 }}>📄</span>
+                      )
+                    ) : (
+                      <span style={{ fontSize: 20 }}>🪪</span>
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                      {cnicPreviews[1] ? '🪪 Side 2 (Back)' : '🪪 Back Side'}
+                    </p>
+                    <p style={{ fontSize: 11, color: cnicPreviews[1] ? '#059669' : 'var(--text-tertiary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {cnicPreviews[1] ? (cnicPreviews[1].name || 'Back side attached') : (cnicPreviews[0] ? 'Upload 2nd photo' : 'Not uploaded yet')}
+                    </p>
+                  </div>
+                  {cnicPreviews[1] && (
+                    <button
+                      type="button"
+                      onClick={() => removeCnicFile(1)}
+                      style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '50%', width: 22, height: 22, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Remove"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* File input button */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
                 <input
                   type="file"
+                  id="teacher-cnic-input"
+                  multiple
                   accept="image/*,application/pdf"
                   onChange={handleCnicChange}
-                  className="form-input"
-                  style={{ padding: '6px 10px', fontSize: 12, width: '100%' }}
+                  style={{ display: 'none' }}
                 />
+                <label
+                  htmlFor="teacher-cnic-input"
+                  className="btn btn-secondary btn-sm"
+                  style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '6px 14px' }}
+                >
+                  <span>📁 {cnicPreviews.length === 0 ? 'Select CNIC Photos (Front & Back)' : (cnicPreviews.length === 1 ? '➕ Add CNIC Back Side Photo' : '🔄 Replace CNIC Photos')}</span>
+                </label>
+                {cnicPreviews.length > 0 && (
+                  <span style={{ fontSize: 11.5, color: '#059669', fontWeight: 700 }}>
+                    {cnicPreviews.length} of 2 file(s) attached
+                  </span>
+                )}
               </div>
             </div>
 
@@ -447,112 +705,119 @@ export default function ManageTeachers() {
         </div>
       )}
 
-      <div className="glass-card table-responsive">
-        <table className="table-dark">
-          <thead>
-            <tr>
-              <th>Teacher</th>
-              <th>Qualification</th>
-              <th>Specialization</th>
-              <th>Experience</th>
-              <th>Easypaisa / Salary Account</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTeachers.map(t => {
-              const photo = t.avatar || t.teacherProfile?.photo;
-              return (
-                <tr key={t.id}>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      {photo ? (
-                        <img
-                          src={`${FILE_BASE}/uploads/${photo}`}
-                          alt={t.full_name}
-                          className="w-10 h-10 rounded-lg object-cover"
-                          style={{ border: '1px solid var(--border-light)' }}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-sm font-semibold">
-                          {t.full_name?.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <p className="text-gray-900 text-sm font-medium">{t.full_name}</p>
-                          {t.gender && (
-                            <span style={{ fontSize: 10.5, padding: '1px 6px', borderRadius: 999, fontWeight: 700, background: t.gender === 'female' ? '#fdf2f8' : '#eff6ff', color: t.gender === 'female' ? '#db2777' : '#2563eb', border: `1px solid ${t.gender === 'female' ? '#fbcfe8' : '#bfdbfe'}` }}>
-                              {t.gender === 'female' ? 'Female' : 'Male'}
-                            </span>
+      {!showForm && (
+        <div className="glass-card table-responsive">
+          <table className="table-dark">
+            <thead>
+              <tr>
+                <th>Teacher</th>
+                <th>Qualification</th>
+                <th>Specialization</th>
+                <th>Experience</th>
+                <th>Easypaisa / Salary Account</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTeachers.map(t => {
+                const photo = t.avatar || t.teacherProfile?.photo;
+                return (
+                  <tr key={t.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        {photo ? (
+                          <img
+                            src={`${FILE_BASE}/uploads/${photo}`}
+                            alt={t.full_name}
+                            className="w-10 h-10 rounded-lg object-cover"
+                            style={{ border: '1px solid var(--border-light)' }}
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-sm font-semibold">
+                            {t.full_name?.charAt(0)}
+                          </div>
+                        )}
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <p className="text-gray-900 text-sm font-medium">{t.full_name}</p>
+                            {t.gender && (
+                              <span style={{ fontSize: 10.5, padding: '1px 6px', borderRadius: 999, fontWeight: 700, background: t.gender === 'female' ? '#fdf2f8' : '#eff6ff', color: t.gender === 'female' ? '#db2777' : '#2563eb', border: `1px solid ${t.gender === 'female' ? '#fbcfe8' : '#bfdbfe'}` }}>
+                                {t.gender === 'female' ? 'Female' : 'Male'}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-dark-500 text-xs">{t.email}</p>
+                          {t.phone && <p className="text-dark-400 text-xs mt-0.5">📞 {t.phone}</p>}
+                          {(t.teacherProfile?.city || t.teacherProfile?.address) && (
+                            <p className="text-dark-400 text-xs mt-0.5">
+                              📍 {[t.teacherProfile.city, t.teacherProfile.address].filter(Boolean).join(', ')}
+                            </p>
+                          )}
+                          {t.teacherProfile?.cnic_file && (
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 3 }}>
+                              {t.teacherProfile.cnic_file.split(',').map((f, i, arr) => (
+                                <a
+                                  key={i}
+                                  href={`${FILE_BASE}/uploads/${f.trim()}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#059669', textDecoration: 'none' }}
+                                >
+                                  🪪 {arr.length > 1 ? (i === 0 ? 'CNIC Front' : 'CNIC Back') : 'View CNIC'}
+                                </a>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <p className="text-dark-500 text-xs">{t.email}</p>
-                        {t.phone && <p className="text-dark-400 text-xs mt-0.5">📞 {t.phone}</p>}
-                        {(t.teacherProfile?.city || t.teacherProfile?.address) && (
-                          <p className="text-dark-400 text-xs mt-0.5">
-                            📍 {[t.teacherProfile.city, t.teacherProfile.address].filter(Boolean).join(', ')}
-                          </p>
-                        )}
-                        {t.teacherProfile?.cnic_file && (
-                          <a
-                            href={`${FILE_BASE}/uploads/${t.teacherProfile.cnic_file}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: '#059669', marginTop: 2, textDecoration: 'none' }}
-                          >
-                            🪪 View CNIC
-                          </a>
-                        )}
                       </div>
-                    </div>
-                  </td>
-                  <td className="text-dark-300 text-sm">{t.teacherProfile?.qualification || '-'}</td>
-                  <td className="text-dark-300 text-sm">{t.teacherProfile?.specialization || '-'}</td>
-                  <td className="text-dark-300 text-sm">{t.teacherProfile?.experience_years ? `${t.teacherProfile.experience_years} years` : '-'}</td>
-                  <td className="text-dark-300 text-sm">
-                    {t.teacherProfile?.easypaisa_number ? (
-                      <div>
-                        <div style={{ fontWeight: 700, color: '#059669', fontSize: 13 }}>
-                          📱 {t.teacherProfile.easypaisa_number}
+                    </td>
+                    <td className="text-dark-300 text-sm">{t.teacherProfile?.qualification || '-'}</td>
+                    <td className="text-dark-300 text-sm">{t.teacherProfile?.specialization || '-'}</td>
+                    <td className="text-dark-300 text-sm">{t.teacherProfile?.experience_years ? `${t.teacherProfile.experience_years} years` : '-'}</td>
+                    <td className="text-dark-300 text-sm">
+                      {t.teacherProfile?.easypaisa_number ? (
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#059669', fontSize: 13 }}>
+                            📱 {t.teacherProfile.easypaisa_number}
+                          </div>
+                          {t.teacherProfile?.account_holder_name && (
+                            <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
+                              👤 {t.teacherProfile.account_holder_name}
+                            </div>
+                          )}
+                          {t.teacherProfile?.account_title && (
+                            <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                              🏷️ {t.teacherProfile.account_title}
+                            </div>
+                          )}
                         </div>
-                        {t.teacherProfile?.account_holder_name && (
-                          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
-                            👤 {t.teacherProfile.account_holder_name}
-                          </div>
-                        )}
-                        {t.teacherProfile?.account_title && (
-                          <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                            🏷️ {t.teacherProfile.account_title}
-                          </div>
-                        )}
+                      ) : (
+                        <span className="text-dark-500 text-xs">Not Set</span>
+                      )}
+                    </td>
+                    <td>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => setPreviewTeacher(t)} className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Preview Teacher Profile">
+                          <HiOutlineEye className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleEdit(t)} className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors" title="Edit Teacher">
+                          <HiOutlinePencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors" title="Delete Teacher">
+                          <HiOutlineTrash className="w-4 h-4" />
+                        </button>
                       </div>
-                    ) : (
-                      <span className="text-dark-500 text-xs">Not Set</span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => setPreviewTeacher(t)} className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Preview Teacher Profile">
-                        <HiOutlineEye className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleEdit(t)} className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors" title="Edit Teacher">
-                        <HiOutlinePencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(t.id)} className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors" title="Delete Teacher">
-                        <HiOutlineTrash className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {filteredTeachers.length === 0 && (
-              <tr><td colSpan="6" className="text-center text-dark-500 py-8">No teachers found</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredTeachers.length === 0 && (
+                <tr><td colSpan="6" className="text-center text-dark-500 py-8">No teachers found</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Teacher Profile Preview Modal */}
       {previewTeacher && (
@@ -633,24 +898,32 @@ export default function ManageTeachers() {
                   <div className="md:col-span-2" style={{ marginTop: 4 }}>
                     <span style={{ color: '#64748b', fontWeight: 600, display: 'block', marginBottom: 6 }}>CNIC Document:</span>
                     {previewTeacher.teacherProfile?.cnic_file ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f0fdf4', padding: '10px 14px', borderRadius: 10, border: '1px solid #bbf7d0' }}>
-                        <span style={{ fontSize: 22 }}>🪪</span>
-                        <div style={{ flex: 1 }}>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: '#166534', margin: 0 }}>CNIC Attached</p>
-                          <p style={{ fontSize: 11, color: '#15803d', margin: 0 }}>Front & Back document copy available</p>
-                        </div>
-                        <a
-                          href={`${FILE_BASE}/uploads/${previewTeacher.teacherProfile.cnic_file}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            padding: '6px 14px', borderRadius: 8, background: '#16a34a',
-                            color: '#ffffff', fontSize: 12, fontWeight: 700, textDecoration: 'none'
-                          }}
-                        >
-                          <HiOutlineEye size={16} /> View CNIC
-                        </a>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {previewTeacher.teacherProfile.cnic_file.split(',').map((fname, idx, arr) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#f0fdf4', padding: '10px 14px', borderRadius: 10, border: '1px solid #bbf7d0' }}>
+                            <span style={{ fontSize: 22 }}>🪪</span>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ fontSize: 12, fontWeight: 700, color: '#166534', margin: 0 }}>
+                                {arr.length > 1 ? (idx === 0 ? '🪪 CNIC Front Side' : '🪪 CNIC Back Side') : 'CNIC Document'}
+                              </p>
+                              <p style={{ fontSize: 11, color: '#15803d', margin: 0 }}>
+                                {fname.trim()}
+                              </p>
+                            </div>
+                            <a
+                              href={`${FILE_BASE}/uploads/${fname.trim()}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                padding: '6px 14px', borderRadius: 8, background: '#16a34a',
+                                color: '#ffffff', fontSize: 12, fontWeight: 700, textDecoration: 'none'
+                              }}
+                            >
+                              <HiOutlineEye size={16} /> View {arr.length > 1 ? (idx === 0 ? 'Front' : 'Back') : 'CNIC'}
+                            </a>
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <span style={{ color: '#94a3b8', fontSize: 12, fontStyle: 'italic' }}>No CNIC document uploaded</span>

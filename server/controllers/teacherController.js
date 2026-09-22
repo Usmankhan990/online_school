@@ -28,16 +28,25 @@ exports.createCourse = async (req, res) => {
       teacher_id: req.user.id, class_id, subject_id, title, description,
     });
 
-    // Auto-enroll all active students of this class
+    // Auto-enroll all active & trial students of this class and notify them
     const students = await StudentProfile.findAll({
       where: { class_id },
-      include: [{ model: User, as: 'user', where: { status: 'active' } }],
+      include: [{ model: User, as: 'user', where: { status: { [Op.in]: ['active', 'trial'] } } }],
     });
     for (const student of students) {
       await Enrollment.findOrCreate({
         where: { student_id: student.user_id, course_id: course.id },
         defaults: { status: 'active' },
       });
+      try {
+        await Notification.create({
+          user_id: student.user_id,
+          title: 'New Course Added! 🎓',
+          message: `New course "${title}" has been created for your class.`,
+          type: 'info',
+          link: '/student/courses',
+        });
+      } catch (notifErr) {}
     }
 
     const fullCourse = await Course.findByPk(course.id, {
@@ -65,13 +74,39 @@ exports.updateCourse = async (req, res) => {
 exports.addMaterial = async (req, res) => {
   try {
     const { course_id, title, type, content, external_url } = req.body;
-    const course = await Course.findOne({ where: { id: course_id, teacher_id: req.user.id } });
+    const course = await Course.findOne({
+      where: { id: course_id, teacher_id: req.user.id },
+      include: [{ model: Class, as: 'class' }, { model: Subject, as: 'subject' }],
+    });
     if (!course) return res.status(404).json({ error: 'Course not found.' });
 
     const material = await CourseMaterial.create({
       course_id, title, type, content, external_url,
       file_path: req.file ? req.file.filename : null,
     });
+
+    // Auto-notify all students enrolled in this course or class
+    try {
+      const enrollments = await Enrollment.findAll({ where: { course_id, status: 'active' } });
+      let studentIds = enrollments.map(e => e.student_id);
+      if (course.class_id) {
+        const classProfiles = await StudentProfile.findAll({ where: { class_id: course.class_id } });
+        studentIds = Array.from(new Set([...studentIds, ...classProfiles.map(p => p.user_id)]));
+      }
+
+      for (const sId of studentIds) {
+        await Notification.create({
+          user_id: sId,
+          title: 'New Study Material Added! 📚',
+          message: `New ${type.toUpperCase()} material "${title}" has been uploaded for ${course.subject?.name || course.title} (${course.class?.display_name || ''}).`,
+          type: 'info',
+          link: '/student/materials',
+        });
+      }
+    } catch (notifErr) {
+      console.error('Material notification error (non-fatal):', notifErr);
+    }
+
     res.status(201).json({ material });
   } catch (err) {
     res.status(500).json({ error: 'Failed to add material.' });
@@ -221,6 +256,18 @@ exports.gradeAnswer = async (req, res) => {
 
     await attempt.update({ total_obtained: totalObtained, percentage, grade, status: 'graded' });
 
+    try {
+      await Notification.create({
+        user_id: attempt.student_id,
+        title: 'Exam Result Graded! 📊',
+        message: `Your exam "${attempt.exam?.title || 'Exam'}" has been graded: ${totalObtained}/${attempt.exam?.total_marks || totalObtained} (${grade}).`,
+        type: 'result',
+        link: '/student/results',
+      });
+    } catch (notifErr) {
+      console.error('Grade notification error (non-fatal):', notifErr);
+    }
+
     res.json({ message: 'Answer graded!', attempt });
   } catch (err) {
     res.status(500).json({ error: 'Failed to grade answer.' });
@@ -347,6 +394,20 @@ exports.gradeSubmission = async (req, res) => {
     if (!submission) return res.status(404).json({ error: 'Submission not found.' });
 
     await submission.update({ marks_obtained, feedback, status: 'graded' });
+
+    try {
+      const homework = await ClassworkHomework.findByPk(submission.homework_id);
+      await Notification.create({
+        user_id: submission.student_id,
+        title: 'Homework Graded! ✅',
+        message: `Your submission for "${homework?.title || 'Homework'}" has been graded: ${marks_obtained} marks.${feedback ? ` Feedback: ${feedback}` : ''}`,
+        type: 'homework',
+        link: '/student/homework',
+      });
+    } catch (notifErr) {
+      console.error('Submission grade notification error (non-fatal):', notifErr);
+    }
+
     res.json({ submission });
   } catch (err) {
     res.status(500).json({ error: 'Failed to grade submission.' });
@@ -502,6 +563,14 @@ exports.getAttendance = async (req, res) => {
 exports.createLiveClass = async (req, res) => {
   try {
     const { course_id, title, description, meeting_url, scheduled_at, duration_minutes } = req.body;
+
+    if (scheduled_at) {
+      const scheduledDate = new Date(scheduled_at);
+      const minAllowed = new Date(Date.now() + 5 * 60 * 1000);
+      if (scheduledDate < minAllowed) {
+        return res.status(400).json({ error: 'Please increase your time by at least 5 minutes from now.' });
+      }
+    }
     
     // Verify teacher owns this course
     const course = await Course.findOne({
@@ -576,8 +645,14 @@ exports.updateLiveClass = async (req, res) => {
       where: { id, teacher_id: req.user.id }
     });
     
-    if (!liveClass) return res.status(404).json({ error: 'Live class not found or unauthorized.' });
-    
+    if (scheduled_at && status !== 'completed' && status !== 'cancelled') {
+      const scheduledDate = new Date(scheduled_at);
+      const minAllowed = new Date(Date.now() + 5 * 60 * 1000);
+      if (scheduledDate < minAllowed) {
+        return res.status(400).json({ error: 'Please increase your time by at least 5 minutes from now.' });
+      }
+    }
+
     const updateData = {};
     if (course_id) updateData.course_id = course_id;
     if (status) updateData.status = status;
@@ -800,6 +875,39 @@ exports.markAllNotificationsRead = async (req, res) => {
     res.json({ message: 'All marked as read.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update.' });
+  }
+};
+
+// Update student section by Teacher
+exports.updateStudentSection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { section } = req.body;
+    if (!section || !section.trim()) {
+      return res.status(400).json({ error: 'Section is required.' });
+    }
+
+    const cleanSection = section.trim().toUpperCase();
+    const profile = await StudentProfile.findOne({
+      where: {
+        [Op.or]: [
+          { user_id: id },
+          { id: id }
+        ]
+      }
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Student profile not found.' });
+    }
+
+    profile.section = cleanSection;
+    await profile.save();
+
+    res.json({ message: `Student section successfully updated to Section ${cleanSection}.`, section: cleanSection, profile });
+  } catch (err) {
+    console.error('Update student section error:', err);
+    res.status(500).json({ error: 'Failed to update student section.' });
   }
 };
 

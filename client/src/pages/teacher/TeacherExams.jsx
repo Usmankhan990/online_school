@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { HiOutlinePlus, HiOutlineCheck } from 'react-icons/hi';
 
@@ -13,6 +13,25 @@ export default function TeacherExams() {
   });
   const [loading, setLoading] = useState(true);
   const [viewExam, setViewExam] = useState(null);
+  const dateTimerRef = useRef({});
+
+  const handleDateTimeChange = (field, e) => {
+    const val = e.target.value;
+    const target = e.target;
+    setForm(prev => ({ ...prev, [field]: val }));
+
+    if (dateTimerRef.current[field]) {
+      clearTimeout(dateTimerRef.current[field]);
+    }
+
+    if (val && val.length >= 16) {
+      dateTimerRef.current[field] = setTimeout(() => {
+        try {
+          target.blur();
+        } catch {}
+      }, 500);
+    }
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -151,11 +170,27 @@ export default function TeacherExams() {
                 <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, fontWeight: 600, color: '#94a3b8', pointerEvents: 'none' }}>Min</span>
               </div>
               <div style={{ position: 'relative' }}>
-                <input className="form-input" type="datetime-local" value={form.start_time} onChange={e => setForm({...form, start_time: e.target.value})} required style={{ paddingRight: 75 }} />
+                <input
+                  className="form-input"
+                  type="datetime-local"
+                  value={form.start_time}
+                  onChange={e => handleDateTimeChange('start_time', e)}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+                  required
+                  style={{ paddingRight: 75 }}
+                />
                 <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, fontWeight: 600, color: '#94a3b8', pointerEvents: 'none' }}>Start Time</span>
               </div>
               <div style={{ position: 'relative' }}>
-                <input className="form-input" type="datetime-local" value={form.end_time} onChange={e => setForm({...form, end_time: e.target.value})} required style={{ paddingRight: 70 }} />
+                <input
+                  className="form-input"
+                  type="datetime-local"
+                  value={form.end_time}
+                  onChange={e => handleDateTimeChange('end_time', e)}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+                  required
+                  style={{ paddingRight: 70 }}
+                />
                 <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, fontWeight: 600, color: '#94a3b8', pointerEvents: 'none' }}>End Time</span>
               </div>
             </div>
@@ -273,7 +308,7 @@ export default function TeacherExams() {
       {/* View Exam Modal */}
       {viewExam && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div className="card animate-slide-up" style={{ width: '100%', maxWidth: 800, maxHeight: '90vh', overflow: 'auto', padding: 32, background: '#fff', borderRadius: 16 }}>
+          <div className="card animate-slide-up hide-scrollbar" style={{ width: '100%', maxWidth: 800, maxHeight: '90vh', overflowY: 'auto', padding: 32, background: '#fff', borderRadius: 16, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: 16, marginBottom: 24 }}>
               <div>
                 <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{viewExam.title}</h2>
