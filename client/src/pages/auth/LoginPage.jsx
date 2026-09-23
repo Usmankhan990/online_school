@@ -3,13 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import logoImg from '../../assets/logo.jpg';
 import LanguageToggle from '../../components/LanguageToggle';
-
-const DEMO_CREDS = [
-  { label: 'Admin', email: 'admin@usmanonlineschool.com', pass: 'Admin@123', icon: '🛡️', color: '#1e3a5f' },
-  { label: 'Teacher', email: 'teacher@usmanonlineschool.com', pass: 'Teacher@123', icon: '👨‍🏫', color: '#7c3aed' },
-  { label: 'Student', email: 'student@usmanonlineschool.com', pass: 'Student@123', icon: '👨‍🎓', color: '#10b981' },
-  { label: 'Parent', email: 'parent@usmanonlineschool.com', pass: 'Parent@123', icon: '👨‍👩‍👧', color: '#f59e0b' },
-];
+import ThemeToggle from '../../components/ThemeToggle';
+import AuthBackgroundSlider from '../../components/AuthBackgroundSlider';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -19,7 +14,6 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [selectedDemo, setSelectedDemo] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,136 +34,222 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemo = (cred) => {
-    setSelectedDemo(cred.label);
-    setEmail(cred.email);
-    setPassword(cred.pass);
-    setError('');
-  };
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 50 }}>
-        <LanguageToggle style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#1e3a5f', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }} />
+    <div style={{ minHeight: '100vh', display: 'flex', position: 'relative', background: 'var(--bg-body, #FAF6EE)' }}>
+      {/* Top Left Home Button */}
+      <Link
+        to="/"
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 24,
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 7,
+          padding: '7px 18px',
+          borderRadius: 9999,
+          fontSize: 13,
+          fontWeight: 700,
+          textDecoration: 'none',
+          background: 'rgba(28, 25, 23, 0.72)',
+          backdropFilter: 'blur(10px)',
+          border: '1.5px solid rgba(255, 204, 77, 0.35)',
+          color: '#FAF6EE',
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.25)',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = '#1C1917';
+          e.currentTarget.style.borderColor = '#FFCC4D';
+          e.currentTarget.style.color = '#FFCC4D';
+          e.currentTarget.style.transform = 'translateY(-1px)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = 'rgba(28, 25, 23, 0.72)';
+          e.currentTarget.style.borderColor = 'rgba(255, 204, 77, 0.35)';
+          e.currentTarget.style.color = '#FAF6EE';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
+        <span style={{ color: '#FFCC4D', fontSize: 14, fontWeight: 800 }}>←</span>
+        <span>Home</span>
+      </Link>
+
+      {/* Top right controls */}
+      <div style={{ position: 'absolute', top: 20, right: 24, zIndex: 50, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <ThemeToggle />
+        <LanguageToggle style={{ background: 'var(--bg-surface, #FFFFFF)', border: '1.5px solid var(--border-light, #EBE4D5)', color: 'var(--text-primary, #1C1917)', boxShadow: '0 2px 8px rgba(44,39,32,0.06)' }} />
       </div>
-      {/* Left Panel — Branding */}
-      <div className="hidden lg:flex flex-col justify-center items-center relative overflow-hidden" style={{
-        width: '45%', background: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)',
-        padding: 48
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+
+      {/* Left Panel — Branding matching current theme with auto-scroll background pictures */}
+      <div
+        className="hidden lg:flex flex-col justify-center items-center relative overflow-hidden"
+        style={{
+          width: '45%',
+          background: '#1C1917',
+          padding: 48,
+          minHeight: '100vh',
+        }}
+      >
+        <AuthBackgroundSlider overlayOpacity={0.72} />
+
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <img src={logoImg} alt="Taleem Ghar" style={{ width: 88, height: 88, borderRadius: 22, objectFit: 'cover', background: '#ffffff', padding: 2, margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }} />
-          <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Taleem Ghar</h1>
-          <p style={{ color: '#94a3b8', fontSize: 15, marginBottom: 40 }}>KG to 8th • Punjab Board • PCTB 2026</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <img
+            src={logoImg}
+            alt="Taleem Ghar"
+            style={{
+              width: 96,
+              height: 96,
+              borderRadius: 22,
+              objectFit: 'cover',
+              margin: '0 auto 20px',
+              display: 'block',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
+            }}
+          />
+          <h1 style={{ color: '#FFFFFF', fontSize: 32, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.02em' }}>Taleem Ghar</h1>
+          <p style={{ color: '#A8A29E', fontSize: 14.5, marginBottom: 40 }}>KG to 8th • Punjab Board • PCTB 2026</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', maxWidth: 380 }}>
             {['📚 66+ Books', '📝 Exams', '📊 Results', '👨‍👩‍👧 Parent Portal'].map(t => (
-              <span key={t} style={{ background: 'rgba(255,255,255,0.08)', color: '#cbd5e1', fontSize: 12, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)' }}>{t}</span>
+              <span key={t} style={{ background: 'rgba(255,255,255,0.08)', color: '#FAF6EE', fontSize: 12.5, padding: '7px 15px', borderRadius: 9999, border: '1px solid rgba(255,255,255,0.12)', fontWeight: 500 }}>
+                {t}
+              </span>
             ))}
           </div>
         </div>
       </div>
 
       {/* Right Panel — Form */}
-      <div className="flex-1 flex items-center justify-center bg-slate-50 p-6">
-        <div style={{ width: '100%', maxWidth: 440 }} className="animate-fade-in">
+      <div className="flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh' }}>
+        <div style={{ width: '100%', maxWidth: 460 }} className="animate-fade-in">
           {/* Mobile logo */}
-          <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 32 }}>
-            <img src={logoImg} alt="Taleem Ghar" style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'cover', background: '#ffffff', padding: 2, display: 'inline-block', marginBottom: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
-            <h2 style={{ color: '#0f172a', fontSize: 20, fontWeight: 800 }}>Taleem Ghar</h2>
+          <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 28 }}>
+            <img
+              src={logoImg}
+              alt="Taleem Ghar"
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: 18,
+                objectFit: 'cover',
+                margin: '0 auto 10px',
+                display: 'block',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
+              }}
+            />
+            <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 20, fontWeight: 800 }}>Taleem Ghar</h2>
+            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 12 }}>KG to 8th • Punjab Board • PCTB 2026</p>
           </div>
 
-          <div>
-            <h2 style={{ color: '#0f172a', fontSize: 26, fontWeight: 800, marginBottom: 4 }}>Welcome back 👋</h2>
-            <p style={{ color: '#64748b', fontSize: 15, marginBottom: 28 }}>Sign in to your account to continue</p>
+          <div style={{ marginBottom: 26 }}>
+            <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 28, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>Welcome back <span>👋</span></h2>
+            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 14 }}>Sign in to your account to continue</p>
           </div>
 
           {error && (
-            <div className="alert-danger" style={{ padding: '12px 16px', borderRadius: 10, marginBottom: 16, fontSize: 14, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+            <div style={{ padding: '12px 16px', borderRadius: 12, marginBottom: 16, fontSize: 13, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', textAlign: 'center' }}>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label className="form-label">Email Address</label>
-              <input className="form-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" required />
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)', marginBottom: 6 }}>Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-input, #FFFFFF)',
+                  border: '1.5px solid var(--border-input, #E8DFD1)',
+                  color: 'var(--text-primary, #1C1917)',
+                  padding: '13px 20px',
+                  borderRadius: 12,
+                  fontSize: 14,
+                  outline: 'none',
+                  boxShadow: '0 2px 6px rgba(44,39,32,0.03)',
+                  transition: 'all 0.2s ease',
+                }}
+                onFocus={e => { e.target.style.borderColor = '#FFCC4D'; e.target.style.boxShadow = '0 0 0 3px rgba(255,204,77,0.25)'; }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border-input, #E8DFD1)'; e.target.style.boxShadow = '0 2px 6px rgba(44,39,32,0.03)'; }}
+              />
             </div>
+
             <div>
-              <label className="form-label">Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)' }}>Password</label>
+              </div>
               <div style={{ position: 'relative' }}>
-                <input className="form-input" type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required style={{ paddingRight: 44 }} />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 13, fontWeight: 500 }}>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                  style={{
+                    width: '100%',
+                    background: 'var(--bg-input, #FFFFFF)',
+                    border: '1.5px solid var(--border-input, #E8DFD1)',
+                    color: 'var(--text-primary, #1C1917)',
+                    padding: '13px 56px 13px 20px',
+                    borderRadius: 12,
+                    fontSize: 14,
+                    outline: 'none',
+                    boxShadow: '0 2px 6px rgba(44,39,32,0.03)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = '#FFCC4D'; e.target.style.boxShadow = '0 0 0 3px rgba(255,204,77,0.25)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border-input, #E8DFD1)'; e.target.style.boxShadow = '0 2px 6px rgba(44,39,32,0.03)'; }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  style={{
+                    position: 'absolute',
+                    right: 16,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-tertiary, #78716C)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
                   {showPass ? 'Hide' : 'Show'}
                 </button>
               </div>
-              <div style={{ textAlign: 'right', marginTop: 6 }}>
-                <Link to="/forgot-password" style={{ color: '#1e3a5f', fontWeight: 500, textDecoration: 'none', fontSize: 12.5 }}>Forgot?</Link>
+              <div style={{ textAlign: 'right', marginTop: 8 }}>
+                <Link to="/forgot-password" style={{ color: 'var(--text-secondary, #78716C)', fontWeight: 500, textDecoration: 'none', fontSize: 12.5 }}>Forgot?</Link>
               </div>
             </div>
-            <button type="submit" className="btn btn-primary btn-lg" disabled={loading} style={{ width: '100%', marginTop: 4 }}>
-              {loading ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
-                  Signing in...
-                </span>
-              ) : 'Sign In'}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+              style={{
+                width: '100%',
+                marginTop: 6,
+                fontWeight: 800,
+                fontSize: 15,
+                padding: '14px 20px',
+                borderRadius: 12,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div style={{ textAlign: 'center', margin: '24px 0', color: '#94a3b8', fontSize: 13 }}>
-            Don't have an account? <Link to="/register" style={{ color: '#1e3a5f', fontWeight: 600, textDecoration: 'none' }}>Apply for Admission</Link>
-          </div>
-
-          {/* Demo credentials */}
-          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20, marginTop: 8 }}>
-            <p style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, textAlign: 'center' }}>Quick Demo Access</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {DEMO_CREDS.map(c => {
-                const isSelected = selectedDemo === c.label;
-                return (
-                  <button
-                    key={c.label}
-                    type="button"
-                    onClick={() => fillDemo(c)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '10px 14px',
-                      borderRadius: 10,
-                      border: isSelected ? `2px solid ${c.color}` : '1px solid #e2e8f0',
-                      background: isSelected ? '#f1f5f9' : 'white',
-                      boxShadow: isSelected ? `0 0 0 3px ${c.color}25, 0 4px 12px rgba(0,0,0,0.06)` : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left',
-                      outline: 'none',
-                    }}
-                    onMouseOver={e => {
-                      if (!isSelected) {
-                        e.currentTarget.style.borderColor = c.color;
-                        e.currentTarget.style.background = '#f8fafc';
-                      }
-                    }}
-                    onMouseOut={e => {
-                      if (!isSelected) {
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                        e.currentTarget.style.background = 'white';
-                      }
-                    }}
-                  >
-                    <span style={{ fontSize: 20 }}>{c.icon}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: isSelected ? 700 : 600, color: '#0f172a' }}>{c.label}</div>
-                      <div style={{ fontSize: 11, color: isSelected ? c.color : '#94a3b8', fontWeight: isSelected ? 600 : 400 }}>
-                        {isSelected ? '✓ Selected' : 'Demo Login'}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          <div style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-secondary, #78716C)', fontSize: 13.5 }}>
+            Don't have an account? <Link to="/register" style={{ color: 'var(--color-primary-yellow, #FFCC4D)', fontWeight: 700, textDecoration: 'none' }}>Apply for Admission →</Link>
           </div>
         </div>
       </div>

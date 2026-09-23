@@ -28,7 +28,7 @@ const authenticate = async (req, res, next) => {
     if (user.status === 'trial') {
       const trialDuration = 3 * 24 * 60 * 60 * 1000;
       if (new Date() - new Date(user.createdAt) > trialDuration) {
-        return res.status(401).json({ error: 'Your 3-day free trial has expired. Contact admin.' });
+        return res.status(401).json({ error: 'Invalid email or password.' });
       }
     }
 

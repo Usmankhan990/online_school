@@ -2,7 +2,7 @@ import { PublicNav, Footer } from './LandingPage';
 
 export default function TermsPage() {
   return (
-    <div style={{ background: '#f8fafc' }}>
+    <div style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh', color: 'var(--text-primary, #1C1917)' }}>
       <PublicNav />
       <div style={{ paddingTop: 90 }}>
         <section className="gradient-bg-hero" style={{ padding: '48px 24px' }}>
@@ -11,7 +11,7 @@ export default function TermsPage() {
           </div>
         </section>
         <section style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
-          <div className="card" style={{ padding: 40 }}>
+          <div className="card" style={{ padding: 40, borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)' }}>
             {[
               { t: 'Acceptance', c: 'By using Taleem Ghar, you agree to these Terms. If you do not agree, please do not use the platform.' },
               { t: 'Services', c: 'We provide an online school management platform including digital books, exams, homework management, attendance, results, and fee tracking for KG to 8th grade following PCTB Punjab curriculum.' },
@@ -23,11 +23,11 @@ export default function TermsPage() {
               { t: 'Changes', c: 'We reserve the right to modify these terms. Users will be notified of significant changes through the notification system.' },
             ].map((s, i) => (
               <div key={i} style={{ marginBottom: 24 }}>
-                <h3 style={{ color: '#1e3a5f', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{s.t}</h3>
-                <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.7 }}>{s.c}</p>
+                <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{s.t}</h3>
+                <p style={{ color: 'var(--text-secondary, #57534E)', fontSize: 15, lineHeight: 1.7 }}>{s.c}</p>
               </div>
             ))}
-            <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 24 }}>Last updated: April 2026</p>
+            <p style={{ color: 'var(--text-tertiary, #8C827A)', fontSize: 13, marginTop: 24 }}>Last updated: April 2026</p>
           </div>
         </section>
       </div>

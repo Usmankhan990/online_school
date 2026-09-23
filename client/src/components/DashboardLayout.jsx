@@ -168,6 +168,8 @@ export default function DashboardLayout({ children }) {
     return localStorage.getItem('theme') === 'dark';
   });
   const [unreadCount, setUnreadCount] = useState(0);
+  const [studentLiveCount, setStudentLiveCount] = useState(0);
+  const [liveClassAlert, setLiveClassAlert] = useState(null);
 
   const { searchQuery, setSearchQuery } = useSearch();
 
@@ -285,23 +287,168 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: darkMode ? 'dark' : 'light' } }));
   }, [darkMode]);
 
   useEffect(() => {
-    if (!user) return;
-    const fetchUnreadCount = () => {
-      api.get('/auth/notifications/unread-count')
-        .then(res => setUnreadCount(res.data.unread_count))
-        .catch(err => console.error('Failed to fetch unread count', err));
+    const handleTheme = (e) => {
+      if (e.detail?.theme) {
+        setDarkMode(e.detail.theme === 'dark');
+      }
     };
-    fetchUnreadCount();
-    window.addEventListener('notifications-updated', fetchUnreadCount);
-    const interval = setInterval(fetchUnreadCount, 30000);
+    window.addEventListener('theme-changed', handleTheme);
+    return () => window.removeEventListener('theme-changed', handleTheme);
+  }, []);
+
+  const [moduleBadges, setModuleBadges] = useState({});
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchPortalStats = async () => {
+      try {
+        const badges = {};
+
+        // 1. Unread notifications count (all portals)
+        const unreadRes = await api.get('/auth/notifications/unread-count').catch(() => null);
+        const unread = unreadRes?.data?.unread_count || 0;
+        setUnreadCount(unread);
+        if (unread > 0) {
+          const notifPath = `/${user.role === 'super_admin' ? 'admin' : user.role}/notifications`;
+          badges[notifPath] = { count: unread > 99 ? '99+' : unread, variant: 'blue' };
+        }
+
+        // 2. Student Portal stats
+        if (user.role === 'student') {
+          const dashRes = await api.get('/student/dashboard').catch(() => null);
+          const dash = dashRes?.data || {};
+          if (dash.enrolledCourses?.length > 0) {
+            badges['/student/courses'] = { count: dash.enrolledCourses.length, variant: 'neutral' };
+          }
+          if (dash.pendingHomework?.length > 0) {
+            badges['/student/homework'] = { count: dash.pendingHomework.length, variant: 'amber' };
+          }
+          if (dash.upcomingExams?.length > 0) {
+            badges['/student/exams'] = { count: dash.upcomingExams.length, variant: 'purple' };
+          }
+
+          // Textbooks count
+          const booksRes = await api.get('/student/books').catch(() => null);
+          const books = booksRes?.data?.books || [];
+          if (books.length > 0) {
+            badges['/student/books'] = { count: books.length, variant: 'emerald' };
+          }
+
+          // Live Classes & popup alert
+          const liveRes = await api.get('/student/live-classes').catch(() => null);
+          const liveClasses = liveRes?.data?.liveClasses || [];
+          const now = new Date();
+          const activeOrUpcoming = liveClasses.filter(lc => {
+            const d = new Date(lc.scheduled_at);
+            const isLive = lc.status === 'live' || (d <= now && d.getTime() + (lc.duration_minutes || 45) * 60000 > now.getTime());
+            const isUpcoming = d > now && lc.status === 'scheduled';
+            return isLive || isUpcoming;
+          });
+          setStudentLiveCount(activeOrUpcoming.length);
+          if (activeOrUpcoming.length > 0) {
+            badges['/student/live-classes'] = { count: activeOrUpcoming.length, variant: 'red' };
+          }
+
+          let seenIds = [];
+          try {
+            seenIds = JSON.parse(localStorage.getItem(`seen_live_classes_${user.id}`) || '[]');
+          } catch {}
+
+          const unnotified = activeOrUpcoming.find(lc => !seenIds.includes(lc.id));
+          if (unnotified) {
+            setLiveClassAlert(unnotified);
+          }
+        } 
+        // 3. Teacher Portal stats
+        else if (user.role === 'teacher') {
+          const dashRes = await api.get('/teacher/dashboard').catch(() => null);
+          const stats = dashRes?.data?.stats || dashRes?.data || {};
+          if (stats.coursesCount || stats.totalCourses) {
+            badges['/teacher/courses'] = { count: stats.coursesCount || stats.totalCourses, variant: 'neutral' };
+          }
+          if (stats.examsCount || stats.upcomingExams) {
+            badges['/teacher/exams'] = { count: stats.examsCount || stats.upcomingExams, variant: 'purple' };
+          }
+          if (stats.homeworkCount) {
+            badges['/teacher/homework'] = { count: stats.homeworkCount, variant: 'amber' };
+          }
+          if (stats.pendingSubmissions > 0) {
+            badges['/teacher/submissions'] = { count: stats.pendingSubmissions, variant: 'amber' };
+          }
+          if (stats.upcomingLiveClasses > 0) {
+            badges['/teacher/live-classes'] = { count: stats.upcomingLiveClasses, variant: 'red' };
+          }
+
+          const booksRes = await api.get('/teacher/books').catch(() => null);
+          if (booksRes?.data?.books?.length > 0) {
+            badges['/teacher/books'] = { count: booksRes.data.books.length, variant: 'emerald' };
+          }
+        } 
+        // 4. Admin Portal stats
+        else if (user.role === 'super_admin') {
+          const adminRes = await api.get('/admin/dashboard').catch(() => null);
+          const stats = adminRes?.data?.stats || {};
+          if (stats.pendingStudents > 0) {
+            badges['/admin/pending-students'] = { count: stats.pendingStudents, variant: 'red' };
+          }
+          if (stats.totalStudents > 0) {
+            badges['/admin/students'] = { count: stats.totalStudents, variant: 'neutral' };
+          }
+          if (stats.totalTeachers > 0) {
+            badges['/admin/teachers'] = { count: stats.totalTeachers, variant: 'neutral' };
+          }
+          if (stats.totalCourses > 0) {
+            badges['/admin/courses'] = { count: stats.totalCourses, variant: 'neutral' };
+          }
+          if (stats.totalExams > 0) {
+            badges['/admin/exams'] = { count: stats.totalExams, variant: 'purple' };
+          }
+        } 
+        // 5. Parent Portal stats
+        else if (user.role === 'parent') {
+          const parentRes = await api.get('/parent/dashboard').catch(() => null);
+          const pDash = parentRes?.data || {};
+          if (pDash.pendingHomework?.length > 0) {
+            badges['/parent/homework'] = { count: pDash.pendingHomework.length, variant: 'amber' };
+          }
+        }
+
+        setModuleBadges(badges);
+      } catch (e) {
+        console.error('Error fetching portal badge stats:', e);
+      }
+    };
+
+    fetchPortalStats();
+    const interval = setInterval(fetchPortalStats, 30000);
+    window.addEventListener('notifications-updated', fetchPortalStats);
     return () => {
-      window.removeEventListener('notifications-updated', fetchUnreadCount);
       clearInterval(interval);
+      window.removeEventListener('notifications-updated', fetchPortalStats);
     };
   }, [user]);
+
+  const handleDismissLiveAlert = (join = false) => {
+    if (liveClassAlert && user) {
+      try {
+        const key = `seen_live_classes_${user.id}`;
+        const seen = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!seen.includes(liveClassAlert.id)) {
+          seen.push(liveClassAlert.id);
+          localStorage.setItem(key, JSON.stringify(seen));
+        }
+      } catch {}
+      setLiveClassAlert(null);
+      if (join) {
+        navigate('/student/live-classes');
+      }
+    }
+  };
 
   const navRef = useRef(null);
 
@@ -360,16 +507,22 @@ export default function DashboardLayout({ children }) {
               (item.path === '/admin/fees' && location.pathname === '/fees' && user?.role === 'super_admin') ||
               (item.path === '/parent/fees' && location.pathname === '/fees' && user?.role === 'parent') ||
               (item.path === '/parent/child-overview' && (location.pathname === '/parent/child-overview' || location.pathname === '/parent/child'));
+            
+            const badge = moduleBadges[item.path];
+
             return (
               <Link key={i} to={item.path} className={`sidebar-link ${isActive ? 'active' : ''}`}
                 onClick={() => setSidebarOpen(false)}>
                 <span className="link-icon">{Icons[item.icon]}</span>
-                <span>{item.label}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {badge && badge.count !== undefined && (
+                  <span className={`sidebar-badge sidebar-badge-${badge.variant || 'blue'}`}>
+                    {badge.count}
+                  </span>
+                )}
               </Link>
             );
           })}
-
-
         </nav>
 
         <div className="sidebar-user">
@@ -479,16 +632,16 @@ export default function DashboardLayout({ children }) {
                     right: 0, 
                     marginTop: 8, 
                     width: 220, 
-                    background: '#ffffff', 
+                    background: 'var(--bg-surface, #ffffff)', 
                     borderRadius: 12, 
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)', 
-                    border: '1px solid #e2e8f0', 
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.15)', 
+                    border: '1px solid var(--border-light, #e2e8f0)', 
                     zIndex: 50, 
                     overflow: 'hidden',
                     fontFamily: 'system-ui, -apple-system, sans-serif'
                   }}
                 >
-                  <div style={{ padding: '12px 14px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border-light, #f1f5f9)', backgroundColor: 'var(--bg-surface-2, #f8fafc)', display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div 
                       style={{ 
                         background: '#334155', 
@@ -518,10 +671,10 @@ export default function DashboardLayout({ children }) {
                       )}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary, #0f172a)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {user?.full_name}
                       </p>
-                      <p style={{ margin: 0, marginTop: 2, fontSize: 11.5, color: '#64748b', fontWeight: 500 }}>
+                      <p style={{ margin: 0, marginTop: 2, fontSize: 11.5, color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>
                         {roleName}
                       </p>
                     </div>
@@ -540,9 +693,9 @@ export default function DashboardLayout({ children }) {
                         textAlign: 'left', 
                         padding: '8px 12px', 
                         fontSize: 13, 
-                        fontWeight: 600,
-                        color: '#ffffff', 
-                        background: '#0f172a', 
+                        fontWeight: 700,
+                        color: '#1C1917', 
+                        background: 'var(--color-primary-yellow, #FFCC4D)', 
                         borderRadius: 8,
                         border: 'none', 
                         cursor: 'pointer',
@@ -617,7 +770,7 @@ export default function DashboardLayout({ children }) {
             <div 
               className="hide-scrollbar"
               style={{ 
-                background: '#ffffff', 
+                background: 'var(--bg-surface, #ffffff)', 
                 borderRadius: 20, 
                 padding: '32px 36px', 
                 maxWidth: 680, 
@@ -626,34 +779,32 @@ export default function DashboardLayout({ children }) {
                 overflowY: 'auto',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
-                boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
-                border: '1px solid #e2e8f0',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                border: '1px solid var(--border-light, #e2e8f0)',
                 boxSizing: 'border-box',
                 fontFamily: 'system-ui, -apple-system, sans-serif'
               }}
             >
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' }}>Edit Profile</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary, #0f172a)', margin: 0, letterSpacing: '-0.3px' }}>Edit Profile</h2>
                 <button 
                   type="button" 
                   onClick={() => setEditProfileOpen(false)} 
                   style={{ 
-                    background: '#f1f5f9', 
+                    background: 'var(--bg-surface-2, #f1f5f9)', 
                     border: 'none', 
                     width: 32, 
                     height: 32, 
                     borderRadius: '50%', 
                     fontSize: 14, 
                     cursor: 'pointer', 
-                    color: '#64748b',
+                    color: 'var(--text-secondary, #64748b)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'background 0.2s'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                 >
                   ✕
                 </button>
@@ -778,14 +929,13 @@ export default function DashboardLayout({ children }) {
                             value={user?.role || 'student'} 
                             style={{ 
                               width: '100%', 
-                              padding: '10px 32px 10px 14px', 
+                              padding: '10px 42px 10px 14px', 
                               background: '#f8fafc', 
                               border: '1px solid #e2e8f0', 
                               borderRadius: 10, 
                               fontSize: 13.5, 
                               color: '#0f172a', 
                               fontWeight: 500,
-                              appearance: 'none',
                               cursor: 'not-allowed',
                               boxSizing: 'border-box'
                             }}
@@ -795,7 +945,6 @@ export default function DashboardLayout({ children }) {
                             <option value="student">Student</option>
                             <option value="parent">Parent</option>
                           </select>
-                          <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b', fontSize: 10 }}>▼</span>
                         </div>
                       </div>
                     </div>
@@ -995,6 +1144,95 @@ export default function DashboardLayout({ children }) {
             onClose={() => setCropImageSrc(null)} 
             onCropComplete={handleCropComplete} 
           />
+        )}
+
+        {/* Live Class Popup Alert for Students Only */}
+        {liveClassAlert && user?.role === 'student' && createPortal(
+          <div 
+            className="animate-slide-up"
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 99999,
+              maxWidth: 380,
+              width: 'calc(100% - 48px)',
+              background: 'var(--bg-surface, #ffffff)',
+              borderRadius: 16,
+              boxShadow: '0 20px 40px -10px rgba(124, 58, 237, 0.35), 0 0 0 1.5px rgba(124, 58, 237, 0.3)',
+              padding: 18,
+              border: '2px solid #8b5cf6',
+              boxSizing: 'border-box',
+              fontFamily: 'inherit'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#f5f3ff', border: '1px solid #ddd6fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                  🎥
+                </div>
+                <div>
+                  <div style={{ display: 'inline-block', fontSize: 10.5, fontWeight: 800, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: 0.6, background: '#ede9fe', padding: '1px 7px', borderRadius: 6 }}>
+                    Live Class Alert
+                  </div>
+                  <h4 style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary, #0f172a)', margin: '3px 0 0 0', lineHeight: 1.3 }}>
+                    {liveClassAlert.title}
+                  </h4>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDismissLiveAlert(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16, padding: 2 }}
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: 12.5, color: 'var(--text-secondary, #475569)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
+              {liveClassAlert.course?.subject?.name && <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{liveClassAlert.course.subject.name} • </span>}
+              {new Date(liveClassAlert.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, {new Date(liveClassAlert.scheduled_at).toLocaleDateString([], { month: 'short', day: 'numeric' })} ({liveClassAlert.duration_minutes || 45} mins)
+            </p>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => handleDismissLiveAlert(true)}
+                style={{
+                  flex: 1,
+                  padding: '9px 14px',
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                  color: '#ffffff',
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(124, 58, 237, 0.35)'
+                }}
+              >
+                Join / View Class →
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDismissLiveAlert(false)}
+                style={{
+                  padding: '9px 14px',
+                  borderRadius: 10,
+                  background: 'var(--bg-surface-2, #f1f5f9)',
+                  color: 'var(--text-secondary, #475569)',
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Got it
+              </button>
+            </div>
+          </div>,
+          document.body
         )}
 
         {/* Page content */}

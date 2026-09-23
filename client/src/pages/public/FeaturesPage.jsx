@@ -17,23 +17,74 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <div style={{ background: '#f8fafc' }}>
+    <div style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh', color: 'var(--text-primary, #1C1917)' }}>
       <PublicNav />
       <div style={{ paddingTop: 90 }}>
         <section className="gradient-bg-hero" style={{ padding: '60px 24px' }}>
           <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
             <h1 style={{ color: 'white', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Platform Features</h1>
-            <p style={{ color: '#94a3b8', fontSize: 18 }}>Everything a school needs — now digital, accessible, and beautiful.</p>
+            <p style={{ color: '#D8CEBD', fontSize: 18 }}>Everything a school needs — now digital, accessible, and beautiful.</p>
           </div>
         </section>
 
         <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
             {modules.map(m => (
-              <div key={m.title} className="card" style={{ padding: 28, borderLeft: `4px solid ${m.color}` }}>
-                <span style={{ fontSize: 36, display: 'block', marginBottom: 12 }}>{m.icon}</span>
-                <h3 style={{ color: '#0f172a', fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{m.title}</h3>
-                <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.6 }}>{m.desc}</p>
+              <div
+                key={m.title}
+                style={{
+                  padding: '24px 22px',
+                  borderRadius: 22,
+                  background: 'var(--bg-surface, #FFFFFF)',
+                  border: '1.5px solid var(--border-light, #EBE4D5)',
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+                  transition: 'all 0.25s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  borderTop: `3px solid ${m.color || '#FFCC4D'}`
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(255, 204, 77, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.05)';
+                }}
+              >
+                <div style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 16,
+                  background: 'var(--bg-surface-2, #FAF6EE)',
+                  border: '1.5px solid var(--border-light, #EBE4D5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 24,
+                  marginBottom: 16,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                }}>
+                  {m.icon}
+                </div>
+                <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 17, fontWeight: 800, marginBottom: 8 }}>{m.title}</h3>
+                <p style={{ color: 'var(--text-secondary, #57534E)', fontSize: 13.5, lineHeight: 1.6, margin: 0, flex: 1 }}>{m.desc}</p>
+                <div style={{
+                  marginTop: 18,
+                  paddingTop: 14,
+                  borderTop: '1px solid var(--border-light, #EBE4D5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#1C1917', background: '#FFCC4D', padding: '3px 10px', borderRadius: 999 }}>
+                    PCTB 2026
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary, #1C1917)' }}>
+                    View Module →
+                  </span>
+                </div>
               </div>
             ))}
           </div>

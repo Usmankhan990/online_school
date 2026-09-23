@@ -262,7 +262,7 @@ exports.login = async (req, res) => {
     if (user.status === 'trial') {
       const trialDuration = 3 * 24 * 60 * 60 * 1000; // 3 days in ms
       if (new Date() - new Date(user.createdAt) > trialDuration) {
-        return res.status(403).json({ error: 'Your 3-day free trial has expired. Please contact admin to upgrade.' });
+        return res.status(401).json({ error: 'Invalid email or password.' });
       }
     }
 

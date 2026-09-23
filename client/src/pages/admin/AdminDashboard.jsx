@@ -90,7 +90,7 @@ export default function AdminDashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>📋 Recent Member Registrations</h3>
-              <Link to="/admin/students" style={{ fontSize: 14, color: '#1e3a5f', fontWeight: 700, textDecoration: 'none' }}>View Detailed Directory →</Link>
+              <Link to="/admin/students" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700, textDecoration: 'none' }}>View Detailed Directory →</Link>
             </div>
             <div className="card-glass table-responsive">
               <table className="data-table">

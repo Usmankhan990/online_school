@@ -210,7 +210,25 @@ export default function TeacherExams() {
                 <div key={qi} className="mb-4 p-5 rounded-xl bg-dark-800/50">
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#64748b' }}>Q{qi + 1}</span>
-                    <select style={{ padding: '5px 32px 5px 10px', borderRadius: 8, border: '1px solid #e8edf3', fontSize: 12, color: '#0f172a', background: '#fff', cursor: 'pointer', outline: 'none' }} value={q.question_type} onChange={e => updateQuestion(qi, 'question_type', e.target.value)}>
+                    <select
+                      style={{
+                        padding: '6px 42px 6px 14px',
+                        borderRadius: 8,
+                        border: '1px solid var(--border-input, #e8edf3)',
+                        fontSize: 12,
+                        color: 'var(--text-primary)',
+                        backgroundColor: 'var(--bg-input, #fff)',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.5L6 6L10.5 1.5' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 18px center'
+                      }}
+                      value={q.question_type}
+                      onChange={e => updateQuestion(qi, 'question_type', e.target.value)}
+                    >
                       <option value="mcq">MCQ</option>
                       <option value="true_false">True/False</option>
                       <option value="subjective">Subjective</option>
@@ -218,16 +236,28 @@ export default function TeacherExams() {
                   </div>
                   <textarea className="form-input h-16 resize-none" style={{ marginBottom: 10 }} placeholder="Question text..." value={q.question_text} onChange={e => updateQuestion(qi, 'question_text', e.target.value)} />
                   {q.question_type === 'mcq' && (
-                    <div className="grid grid-cols-2 gap-4" style={{ marginBottom: 10 }}>
-                      {q.options.map((opt, oi) => (
-                        <input key={oi} className="form-input text-xs py-2" placeholder={`Option ${String.fromCharCode(65 + oi)}`} value={opt} onChange={e => updateOption(qi, oi, e.target.value)} />
-                      ))}
+                    <>
+                      <div className="grid grid-cols-2 gap-4" style={{ marginBottom: 10 }}>
+                        {q.options.map((opt, oi) => (
+                          <input key={oi} className="form-input text-xs py-2" placeholder={`Option ${String.fromCharCode(65 + oi)}`} value={opt} onChange={e => updateOption(qi, oi, e.target.value)} />
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4" style={{ marginTop: 0 }}>
+                        <input className="form-input text-xs py-2" placeholder="Correct Answer" value={q.correct_answer} onChange={e => updateQuestion(qi, 'correct_answer', e.target.value)} />
+                        <input className="form-input text-xs py-2" type="number" placeholder="Marks" value={q.marks} onChange={e => updateQuestion(qi, 'marks', parseInt(e.target.value))} />
+                      </div>
+                    </>
+                  )}
+                  {q.question_type === 'true_false' && (
+                    <div className="grid grid-cols-2 gap-4" style={{ marginTop: 0 }}>
+                      <select className="form-input text-xs py-2" value={q.correct_answer} onChange={e => updateQuestion(qi, 'correct_answer', e.target.value)}>
+                        <option value="">Select Correct Answer (True / False)</option>
+                        <option value="True">True</option>
+                        <option value="False">False</option>
+                      </select>
+                      <input className="form-input text-xs py-2" type="number" placeholder="Marks" value={q.marks} onChange={e => updateQuestion(qi, 'marks', parseInt(e.target.value))} />
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4" style={{ marginTop: 0 }}>
-                    <input className="form-input text-xs py-2" placeholder="Correct Answer" value={q.correct_answer} onChange={e => updateQuestion(qi, 'correct_answer', e.target.value)} />
-                    <input className="form-input text-xs py-2" type="number" placeholder="Marks" value={q.marks} onChange={e => updateQuestion(qi, 'marks', parseInt(e.target.value))} />
-                  </div>
                 </div>
               ))}
               <button type="button" onClick={addQuestion} className="text-primary-400 text-sm hover:text-primary-300 flex items-center gap-1" style={{ marginTop: 16, marginBottom: 8 }}>
@@ -307,29 +337,29 @@ export default function TeacherExams() {
 
       {/* View Exam Modal */}
       {viewExam && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div className="card animate-slide-up hide-scrollbar" style={{ width: '100%', maxWidth: 800, maxHeight: '90vh', overflowY: 'auto', padding: 32, background: '#fff', borderRadius: 16, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: 16, marginBottom: 24 }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div className="card animate-slide-up hide-scrollbar" style={{ width: '100%', maxWidth: 800, maxHeight: '90vh', overflowY: 'auto', padding: 32, background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: 16, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: 16, marginBottom: 24 }}>
               <div>
-                <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{viewExam.title}</h2>
-                <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Time Limit: {viewExam.duration_minutes} minutes • Total Marks: {viewExam.total_marks}</p>
+                <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{viewExam.title}</h2>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>Time Limit: {viewExam.duration_minutes} minutes • Total Marks: {viewExam.total_marks}</p>
               </div>
-              <button onClick={() => setViewExam(null)} style={{ background: '#f1f5f9', border: 'none', padding: '8px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Close</button>
+              <button onClick={() => setViewExam(null)} className="btn btn-secondary btn-sm">Close</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {viewExam.questions?.map((q, i) => (
-                <div key={q.id} style={{ background: '#f8fafc', padding: 24, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                <div key={q.id} style={{ background: 'var(--bg-surface-2)', padding: 24, borderRadius: 12, border: '1px solid var(--border-light)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <h4 style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>Q{i + 1}. {q.question_text}</h4>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>{q.marks} Marks</span>
+                    <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Q{i + 1}. {q.question_text}</h4>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{q.marks} Marks</span>
                   </div>
 
                   {q.question_type === 'mcq' && q.options && (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
                       {JSON.parse(q.options).map((opt, oi) => (
-                        <div key={oi} style={{ padding: 12, background: q.correct_answer === opt ? '#dcfce7' : '#fff', border: `1px solid ${q.correct_answer === opt ? '#22c55e' : '#cbd5e1'}`, borderRadius: 8 }}>
-                          <span style={{ fontSize: 14, color: q.correct_answer === opt ? '#166534' : '#1e293b', fontWeight: q.correct_answer === opt ? 700 : 400 }}>{opt} {q.correct_answer === opt && '✓'}</span>
+                        <div key={oi} style={{ padding: 12, background: q.correct_answer === opt ? 'rgba(34, 197, 94, 0.15)' : 'var(--bg-surface)', border: `1px solid ${q.correct_answer === opt ? '#22c55e' : 'var(--border-light)'}`, borderRadius: 8 }}>
+                          <span style={{ fontSize: 14, color: q.correct_answer === opt ? '#22c55e' : 'var(--text-primary)', fontWeight: q.correct_answer === opt ? 700 : 400 }}>{opt} {q.correct_answer === opt && '✓'}</span>
                         </div>
                       ))}
                     </div>
@@ -338,15 +368,15 @@ export default function TeacherExams() {
                   {q.question_type === 'true_false' && (
                     <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
                       {['True', 'False'].map(opt => (
-                        <div key={opt} style={{ padding: '10px 20px', background: q.correct_answer === opt ? '#dcfce7' : '#fff', border: `1px solid ${q.correct_answer === opt ? '#22c55e' : '#cbd5e1'}`, borderRadius: 8 }}>
-                          <span style={{ fontSize: 14, color: q.correct_answer === opt ? '#166534' : '#1e293b', fontWeight: q.correct_answer === opt ? 700 : 400 }}>{opt} {q.correct_answer === opt && '✓'}</span>
+                        <div key={opt} style={{ padding: '10px 20px', background: q.correct_answer === opt ? 'rgba(34, 197, 94, 0.15)' : 'var(--bg-surface)', border: `1px solid ${q.correct_answer === opt ? '#22c55e' : 'var(--border-light)'}`, borderRadius: 8 }}>
+                          <span style={{ fontSize: 14, color: q.correct_answer === opt ? '#22c55e' : 'var(--text-primary)', fontWeight: q.correct_answer === opt ? 700 : 400 }}>{opt} {q.correct_answer === opt && '✓'}</span>
                         </div>
                       ))}
                     </div>
                   )}
 
                   {q.question_type === 'subjective' && (
-                    <div style={{ marginTop: 16, padding: 16, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 14, color: '#64748b' }}>
+                    <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: 8, fontSize: 14, color: 'var(--text-secondary)' }}>
                       [Subjective Question - Answer Area]
                     </div>
                   )}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SearchProvider } from './contexts/SearchContext';
@@ -99,6 +100,11 @@ const P = ({ title, roles }) => (
 );
 
 function App() {
+  useEffect(() => {
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+  }, []);
+
   return (
     <BrowserRouter basename="/online_school">
       <AuthProvider>

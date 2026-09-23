@@ -20,6 +20,8 @@ import {
 } from 'react-icons/hi';
 import logoImg from '../../assets/logo.jpg';
 import LanguageToggle from '../../components/LanguageToggle';
+import ThemeToggle from '../../components/ThemeToggle';
+import AuthBackgroundSlider from '../../components/AuthBackgroundSlider';
 
 const fallbackClasses = [
   { id: 1, display_name: 'KG / Pre-1' },
@@ -362,24 +364,57 @@ export default function RegisterPage() {
   return (
     <main className="auth-page">
       <section className="auth-shell">
-        <aside className="auth-aside">
-          <Link to="/" className="auth-back-link">
-            <HiOutlineArrowLeft />
-            Home
-          </Link>
-          <div className="auth-brand">
-            <img src={logoImg} alt="Taleem Ghar" className="auth-brand-mark" style={{ objectFit: 'cover', background: '#ffffff', padding: 2, borderRadius: 14 }} />
-            <div>
-              <h1>Student Admission</h1>
-              <p>Taleem Ghar</p>
+        <aside className="auth-aside" style={{ position: 'relative', overflow: 'hidden' }}>
+          <AuthBackgroundSlider overlayOpacity={0.72} />
+
+          {/* Top Branding matching screenshot */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  background: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  padding: 3,
+                }}
+              >
+                <img
+                  src={logoImg}
+                  alt="Taleem Ghar"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <div>
+                <h1 style={{ color: '#FFFFFF', fontSize: 22, fontWeight: 800, margin: 0, lineHeight: 1.2 }}>
+                  Student Admission
+                </h1>
+                <p style={{ color: '#A8A29E', fontSize: 13.5, margin: '2px 0 0', fontWeight: 500 }}>
+                  Taleem Ghar
+                </p>
+              </div>
             </div>
           </div>
-          <div className="auth-aside-copy">
-            <h2>KG to 8th Punjab Board admissions</h2>
-            <p>Fill the student and guardian details carefully. Your application will be reviewed by the school admin.</p>
-          </div>
-          <div className="auth-note">
-            Documents are optional, but school leaving certificates help the admission team verify records faster.
+
+          {/* Bottom Heading & Description matching screenshot */}
+          <div style={{ position: 'relative', zIndex: 1, marginTop: 'auto', paddingTop: 16 }}>
+            <h2 style={{ color: '#FFFFFF', fontSize: 'clamp(20px, 2.2vw, 26px)', fontWeight: 800, lineHeight: 1.25, marginBottom: 8 }}>
+              KG to 8th Punjab<br />Board admissions
+            </h2>
+            <p style={{ color: '#D6D3D1', fontSize: 13.5, lineHeight: 1.5, maxWidth: 330, margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+              Fill the student and guardian details carefully. Your application will be reviewed by the school admin.
+            </p>
           </div>
         </aside>
 
@@ -389,9 +424,10 @@ export default function RegisterPage() {
               <p className="auth-eyebrow">Admission Form</p>
               <h2>Apply for Admission</h2>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <LanguageToggle style={{ border: '1px solid var(--border-color)', background: 'var(--bg-surface-2)' }} />
-              <Link to="/login" className="btn btn-secondary btn-sm">Sign In</Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ThemeToggle />
+              <LanguageToggle style={{ background: 'var(--bg-surface, #FFFFFF)', border: '1.5px solid var(--border-light, #EBE4D5)', color: 'var(--text-primary, #1C1917)', padding: '6px 14px', fontSize: 13, borderRadius: 9999 }} />
+              <Link to="/login" className="btn btn-secondary btn-sm" style={{ borderRadius: 9999, padding: '7px 18px', fontSize: 13, fontWeight: 700 }}>Sign In</Link>
             </div>
           </div>
 
@@ -458,48 +494,48 @@ export default function RegisterPage() {
           {/* 3-Step Wizard Navigation Tabs */}
           <div style={{
             display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-around',
-            padding: '20px 12px',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '6px 8px',
             background: 'var(--bg-surface, #ffffff)',
-            borderRadius: '16px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
-            border: '1px solid var(--border-color, #e2e8f0)',
-            marginBottom: '24px',
-            gap: '8px'
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+            border: '1.5px solid #EBE4D5',
+            marginBottom: '10px',
+            gap: '6px'
           }}>
             {/* Step 1: Personal Details */}
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
               style={{
-                background: 'none',
+                background: currentStep === 1 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
                 cursor: 'pointer',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 gap: '8px',
                 flex: 1,
-                padding: '4px',
+                padding: '5px 8px',
+                borderRadius: '8px',
                 transition: 'all 0.2s ease',
-                outline: 'none'
+                outline: 'none',
+                justifyContent: 'center'
               }}
             >
               <div style={{
-                width: '58px',
-                height: '58px',
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
-                background: currentStep === 1 ? '#3f7a1e' : (currentStep > 1 ? '#22c55e' : '#4b882d'),
-                color: '#ffffff',
+                background: currentStep === 1 ? '#1C1917' : (currentStep > 1 ? '#FFCC4D' : '#F4EFE6'),
+                color: currentStep === 1 ? '#FFCC4D' : (currentStep > 1 ? '#1C1917' : '#8C827A'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: currentStep === 1 ? '0 0 0 4px rgba(63, 122, 30, 0.25), 0 4px 12px rgba(63, 122, 30, 0.35)' : '0 2px 6px rgba(0,0,0,0.08)',
-                transform: currentStep === 1 ? 'scale(1.05)' : 'scale(1)',
-                transition: 'all 0.2s ease'
+                boxShadow: currentStep === 1 ? '0 0 0 3px rgba(255, 204, 77, 0.35)' : 'none',
+                flexShrink: 0
               }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                   <circle cx="12" cy="13" r="2.2" />
@@ -507,13 +543,14 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <span style={{
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: currentStep === 1 ? 700 : 600,
-                color: currentStep === 1 ? '#0f172a' : 'var(--text-secondary, #64748b)',
-                textAlign: 'center',
-                lineHeight: 1.2
+                color: currentStep === 1 ? '#1C1917' : 'var(--text-secondary, #57534E)',
+                textAlign: 'left',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap'
               }}>
-                Personal Details
+                1. Personal Details
               </span>
             </button>
 
@@ -522,46 +559,47 @@ export default function RegisterPage() {
               type="button"
               onClick={() => setCurrentStep(2)}
               style={{
-                background: 'none',
+                background: currentStep === 2 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
                 cursor: 'pointer',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 gap: '8px',
                 flex: 1,
-                padding: '4px',
+                padding: '5px 8px',
+                borderRadius: '8px',
                 transition: 'all 0.2s ease',
-                outline: 'none'
+                outline: 'none',
+                justifyContent: 'center'
               }}
             >
               <div style={{
-                width: '58px',
-                height: '58px',
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
-                background: currentStep === 2 ? '#1e6e73' : (currentStep > 2 ? '#0d9488' : '#227b80'),
-                color: '#ffffff',
+                background: currentStep === 2 ? '#1C1917' : (currentStep > 2 ? '#FFCC4D' : '#F4EFE6'),
+                color: currentStep === 2 ? '#FFCC4D' : (currentStep > 2 ? '#1C1917' : '#8C827A'),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: currentStep === 2 ? '0 0 0 4px rgba(30, 110, 115, 0.25), 0 4px 12px rgba(30, 110, 115, 0.35)' : '0 2px 6px rgba(0,0,0,0.08)',
-                transform: currentStep === 2 ? 'scale(1.05)' : 'scale(1)',
-                transition: 'all 0.2s ease'
+                boxShadow: currentStep === 2 ? '0 0 0 3px rgba(255, 204, 77, 0.35)' : 'none',
+                flexShrink: 0
               }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <circle cx="12" cy="9" r="2.2" />
                   <path d="M8 17c0-1.8 1.8-3 4-3s4 1.2 4 3" />
                 </svg>
               </div>
               <span style={{
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: currentStep === 2 ? 700 : 600,
-                color: currentStep === 2 ? '#0f172a' : 'var(--text-secondary, #64748b)',
-                textAlign: 'center',
-                lineHeight: 1.2
+                color: currentStep === 2 ? '#1C1917' : 'var(--text-secondary, #57534E)',
+                textAlign: 'left',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap'
               }}>
-                Parent / Guarantor Details
+                2. Parents Details
               </span>
             </button>
 
@@ -570,34 +608,34 @@ export default function RegisterPage() {
               type="button"
               onClick={() => setCurrentStep(3)}
               style={{
-                background: 'none',
+                background: currentStep === 3 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
                 cursor: 'pointer',
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 gap: '8px',
                 flex: 1,
-                padding: '4px',
+                padding: '5px 8px',
+                borderRadius: '8px',
                 transition: 'all 0.2s ease',
-                outline: 'none'
+                outline: 'none',
+                justifyContent: 'center'
               }}
             >
               <div style={{
-                width: '58px',
-                height: '58px',
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
-                background: currentStep === 3 ? '#2563eb' : '#f8fafc',
-                border: currentStep === 3 ? 'none' : '2px solid #cbd5e1',
-                color: currentStep === 3 ? '#ffffff' : '#94a3b8',
+                background: currentStep === 3 ? '#1C1917' : '#F4EFE6',
+                border: currentStep === 3 ? 'none' : '1.5px solid #EBE4D5',
+                color: currentStep === 3 ? '#FFCC4D' : '#8C827A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: currentStep === 3 ? '0 0 0 4px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(37, 99, 235, 0.35)' : 'none',
-                transform: currentStep === 3 ? 'scale(1.05)' : 'scale(1)',
-                transition: 'all 0.2s ease'
+                boxShadow: currentStep === 3 ? '0 0 0 3px rgba(255, 204, 77, 0.35)' : 'none',
+                flexShrink: 0
               }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 21h18" />
                   <path d="M3 10h18" />
                   <path d="M12 3l9 4.5H3L12 3z" />
@@ -608,13 +646,14 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <span style={{
-                fontSize: '13px',
+                fontSize: '12px',
                 fontWeight: currentStep === 3 ? 700 : 600,
-                color: currentStep === 3 ? '#0f172a' : 'var(--text-secondary, #64748b)',
-                textAlign: 'center',
-                lineHeight: 1.2
+                color: currentStep === 3 ? '#1C1917' : 'var(--text-secondary, #57534E)',
+                textAlign: 'left',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap'
               }}>
-                Educational Institution Detail
+                3. Education Details
               </span>
             </button>
           </div>
@@ -816,12 +855,12 @@ export default function RegisterPage() {
                   </Field>
                 </FormSection>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
                     className="btn btn-primary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: 600 }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', fontSize: '13.5px', fontWeight: 600 }}
                   >
                     Next: Parent / Guarantor Details →
                   </button>
@@ -1273,13 +1312,13 @@ export default function RegisterPage() {
                   background: 'var(--bg-surface-2, #f8fafc)',
                   border: '1px solid var(--border-color, #e2e8f0)',
                   borderRadius: '12px',
-                  padding: '16px',
-                  marginTop: '16px'
+                  padding: '10px 14px',
+                  marginTop: '10px'
                 }}>
-                  <p style={{ fontWeight: 700, fontSize: '14px', color: '#0f172a', marginBottom: '8px' }}>
+                  <p style={{ fontWeight: 700, fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>
                     📋 Application Summary
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '13px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12.5px' }}>
                     <div>
                       <span style={{ color: 'var(--text-tertiary, #64748b)' }}>Student: </span>
                       <strong>{form.full_name || '—'}</strong>
@@ -1299,20 +1338,20 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
                     className="btn btn-secondary"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600 }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', fontSize: '13.5px', fontWeight: 600 }}
                   >
                     ← Previous
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="btn btn-primary btn-lg"
-                    style={{ padding: '12px 32px', fontSize: '15px', fontWeight: 700 }}
+                    className="btn btn-primary"
+                    style={{ padding: '9px 24px', fontSize: '14px', fontWeight: 700 }}
                   >
                     {loading ? 'Submitting...' : 'Submit Admission Application'}
                   </button>

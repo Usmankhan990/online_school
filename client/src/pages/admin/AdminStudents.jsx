@@ -246,8 +246,8 @@ export default function AdminStudents() {
               `}</style>
 
               {/* Section 1: Student Information */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>👤</span> Student Information
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 13 }}>
@@ -262,8 +262,8 @@ export default function AdminStudents() {
               </div>
 
               {/* Section 2: Parent & Guardian Details */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>👨‍👩‍👦</span> Parent / Guardian Details
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 13 }}>
@@ -278,8 +278,8 @@ export default function AdminStudents() {
               </div>
 
               {/* Section 3: Residential Address */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>📍</span> Residential Address
                 </h3>
                 <p style={{ margin: 0, fontSize: 13, color: '#1e293b', lineHeight: 1.5, fontWeight: 500 }}>
@@ -288,8 +288,8 @@ export default function AdminStudents() {
               </div>
 
               {/* Section 4: Attached Verification Documents */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>📎</span> Uploaded Verification Documents ({viewModal.documents?.length || 0})
                 </h3>
                 {(!viewModal.documents || viewModal.documents.length === 0) ? (

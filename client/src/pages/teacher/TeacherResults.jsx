@@ -457,9 +457,9 @@ export default function TeacherResults() {
                           borderRadius: 6,
                           fontSize: 11.5,
                           fontWeight: 700,
-                          background: '#f1f5f9',
-                          color: '#334155',
-                          border: '1px solid #e2e8f0',
+                          background: 'var(--bg-surface-2)',
+                          color: 'var(--text-primary)',
+                          border: '1px solid var(--border-light)',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 4
@@ -473,9 +473,9 @@ export default function TeacherResults() {
                           borderRadius: 6,
                           fontSize: 11.5,
                           fontWeight: 700,
-                          background: '#eff6ff',
-                          color: '#1d4ed8',
-                          border: '1px solid #bfdbfe',
+                          background: 'rgba(59, 130, 246, 0.12)',
+                          color: '#3b82f6',
+                          border: '1px solid rgba(59, 130, 246, 0.25)',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 4
@@ -497,7 +497,7 @@ export default function TeacherResults() {
                     minWidth: 100,
                     padding: '8px 16px',
                     borderRadius: 12,
-                    background: 'var(--bg-secondary)',
+                    background: 'var(--bg-surface-2)',
                     border: '1px solid var(--border-light)'
                   }}>
                     <div style={{ fontSize: 26, fontWeight: 900, color: gradeColor(r.grade), lineHeight: 1.1 }}>
@@ -514,8 +514,8 @@ export default function TeacherResults() {
 
                 {/* Show subjective answers needing grading */}
                 {ungradedAnswers.length > 0 && (
-                  <div style={{ marginTop: 14, padding: 14, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#b45309', margin: '0 0 10px 0' }}>
+                  <div style={{ marginTop: 14, padding: 14, background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 10 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b', margin: '0 0 10px 0' }}>
                       ⏳ {ungradedAnswers.length} subjective answer(s) awaiting your grading:
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -524,9 +524,9 @@ export default function TeacherResults() {
                           key={a.id}
                           style={{
                             padding: '10px 12px',
-                            background: '#ffffff',
+                            background: 'var(--bg-surface)',
                             borderRadius: 8,
-                            border: '1px solid #fde68a',
+                            border: '1px solid var(--border-light)',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
@@ -534,7 +534,7 @@ export default function TeacherResults() {
                             gap: 8
                           }}
                         >
-                          <div style={{ fontSize: 13, color: '#1e293b', flex: 1, minWidth: 200 }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-primary)', flex: 1, minWidth: 200 }}>
                             <strong>Answer:</strong> {a.answer_text?.slice(0, 120) || '(File submission attached)'}
                           </div>
                           <button

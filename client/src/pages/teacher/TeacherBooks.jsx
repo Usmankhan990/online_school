@@ -77,7 +77,7 @@ export default function StudentBooks() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: 48, height: 48, border: '3px solid var(--border-light)', borderTopColor: '#1e3a5f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+          <div style={{ width: 48, height: 48, border: '3px solid var(--border-light)', borderTopColor: '#FFCC4D', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
           <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>Loading PCTB 2026 Books...</p>
         </div>
       </div>
@@ -199,11 +199,11 @@ export default function StudentBooks() {
           <div key={className} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Class Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ height: 1, flex: 1, background: 'linear-gradient(to right, #1e3a5f33, transparent)' }} />
+              <div style={{ height: 1, flex: 1, background: 'linear-gradient(to right, rgba(28,25,23,0.15), transparent)' }} />
               <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', padding: '6px 16px', borderRadius: 999, background: 'var(--bg-surface)', border: '1px solid var(--border-light)', whiteSpace: 'nowrap' }}>
                 📖 {className}
               </h2>
-              <div style={{ height: 1, flex: 1, background: 'linear-gradient(to left, #1e3a5f33, transparent)' }} />
+              <div style={{ height: 1, flex: 1, background: 'linear-gradient(to left, rgba(28,25,23,0.15), transparent)' }} />
               <span style={{ fontSize: 12, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{classBooks.length} books</span>
             </div>
 
@@ -253,7 +253,7 @@ export default function StudentBooks() {
                         )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-light)' }}>
                           <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{book.publisher}</span>
-                          <span style={{ fontSize: 12, color: '#1e3a5f', fontWeight: 600 }}>View Book →</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>View Book →</span>
                         </div>
                       </div>
                     </div>
@@ -306,8 +306,8 @@ export default function StudentBooks() {
       {/* Source Credit */}
       <div className="card" style={{ padding: 14, textAlign: 'center' }}>
         <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-          📖 Textbooks courtesy of <a href="https://pctb.punjab.gov.pk" target="_blank" rel="noopener" style={{ color: '#1e3a5f', fontWeight: 500 }}>PCTB Punjab</a>
-          {' '}&amp; <a href="https://www.ustad360.com" target="_blank" rel="noopener" style={{ color: '#1e3a5f', fontWeight: 500 }}>Ustad360.com</a>
+          📖 Textbooks courtesy of <a href="https://pctb.punjab.gov.pk" target="_blank" rel="noopener" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>PCTB Punjab</a>
+          {' '}&amp; <a href="https://www.ustad360.com" target="_blank" rel="noopener" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Ustad360.com</a>
           {' '}• Free for educational use • Edition 2026
         </p>
       </div>

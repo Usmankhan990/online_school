@@ -178,7 +178,7 @@ export default function StudentReportCard() {
       </div>
 
       {/* Student Info & Header Banner */}
-      <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, #1e3a5f, #0f172a)', color: 'white', borderRadius: 16 }}>
+      <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, #1C1917, #292524)', color: 'white', borderRadius: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <img

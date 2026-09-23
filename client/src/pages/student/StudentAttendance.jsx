@@ -292,7 +292,7 @@ export default function StudentAttendance() {
 
         {loading ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-tertiary)' }}>
-            <div style={{ width: 36, height: 36, border: '3px solid var(--border-light)', borderTopColor: '#1e3a5f', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+            <div style={{ width: 36, height: 36, border: '3px solid var(--border-light)', borderTopColor: '#FFCC4D', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
             <p style={{ fontSize: 14 }}>Loading records...</p>
           </div>
         ) : attendance.length === 0 ? (

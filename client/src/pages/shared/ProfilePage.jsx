@@ -2,7 +2,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const roleBg = { super_admin: '#1e3a5f', teacher: '#7c3aed', student: '#10b981', parent: '#f59e0b' };
+  const roleBg = { super_admin: '#1C1917', teacher: '#7c3aed', student: '#10b981', parent: '#f59e0b' };
   const roleLabel = { super_admin: 'Super Admin', teacher: 'Teacher', student: 'Student', parent: 'Parent' };
 
   return (
@@ -10,7 +10,7 @@ export default function ProfilePage() {
       <div><h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>👤 My Profile</h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Your account information</p></div>
       <div className="card table-responsive">
-        <div style={{ background: `linear-gradient(135deg, ${roleBg[user?.role] || '#1e3a5f'}, #0f172a)`, padding: 32, color: 'white', display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ background: `linear-gradient(135deg, ${roleBg[user?.role] || '#1C1917'}, #292524)`, padding: 32, color: 'white', display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, flexShrink: 0 }}>
             {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
           </div>

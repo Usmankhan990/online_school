@@ -2,11 +2,19 @@ const { Sequelize } = require('sequelize');
 const path = require('path');
 require('dotenv').config();
 
+const poolConfig = {
+  max: 5,
+  min: 0,
+  acquire: 30000,
+  idle: 10000,
+};
+
 const sequelize = process.env.DATABASE_URL
   ? new Sequelize(process.env.DATABASE_URL, {
       dialect: 'postgres',
       logging: false,
       define: { timestamps: true, underscored: true },
+      pool: poolConfig,
       dialectOptions: {
         ssl: process.env.NODE_ENV === 'production' ? { require: true, rejectUnauthorized: false } : false
       }
@@ -21,6 +29,7 @@ const sequelize = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       logging: false,
+      pool: poolConfig,
       define: {
         timestamps: true,
         underscored: true,

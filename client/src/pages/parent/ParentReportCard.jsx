@@ -116,7 +116,7 @@ export default function ParentReportCard() {
             <div key={childId} className="card" style={{ overflow: 'hidden', borderRadius: 16, border: '1.5px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* Header Banner */}
               <div style={{
-                background: 'linear-gradient(135deg, #1e3a5f, #0f172a)',
+                background: 'linear-gradient(135deg, #1C1917, #292524)',
                 padding: 24,
                 color: 'white',
                 display: 'flex',

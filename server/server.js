@@ -7,8 +7,15 @@ const { sequelize } = require('./models');
 
 const app = express();
 
+// Track server state for graceful termination
+let isShuttingDown = false;
+
 // Normalize URL for cPanel Passenger subdirectory
 app.use((req, res, next) => {
+  if (isShuttingDown) {
+    res.set('Connection', 'close');
+    return res.status(503).json({ error: 'Server is restarting, please retry in a moment.' });
+  }
   if (req.url.startsWith('/online_school')) {
     req.url = req.url.replace('/online_school', '') || '/';
   }
@@ -58,20 +65,73 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
+// Server reference for lifecycle control
+let server;
+
+// Graceful Shutdown Handler for Passenger / Process Manager
+const gracefulShutdown = async (signal) => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
+
+  // Force exit safety timeout (5 seconds) so worker never hangs or becomes an orphan
+  const forceExitTimeout = setTimeout(() => {
+    console.error('⚠️ Graceful shutdown timed out (5s), forcing exit.');
+    process.exit(1);
+  }, 5000);
+  forceExitTimeout.unref();
+
+  try {
+    if (server) {
+      await new Promise((resolve) => {
+        server.close((err) => {
+          if (err) console.error('Error closing HTTP server:', err);
+          else console.log('✅ HTTP server closed (no new connections accepted).');
+          resolve();
+        });
+      });
+    }
+
+    // Close Sequelize DB connection pool
+    try {
+      await sequelize.close();
+      console.log('✅ Database connections closed cleanly.');
+    } catch (dbErr) {
+      console.error('Error closing database connection:', dbErr);
+    }
+
+    console.log('👋 Process exiting cleanly.');
+    clearTimeout(forceExitTimeout);
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Error during shutdown:', err);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 // Start
 async function start() {
   try {
-    await sequelize.sync();
-    console.log('✅ Database connected');
+    // Authenticate database connection quickly without heavy sync/migrations
+    await sequelize.authenticate();
+    console.log('✅ Database connected and authenticated');
     
-    try {
-      const runMigrations = require('./scripts/runMigrations');
-      await runMigrations();
-    } catch (migErr) {
-      console.error('Migration warning:', migErr.message);
+    // Only run migrations/sync if explicitly enabled via environment variable (e.g. initial setup)
+    // In standard production, migrations are run separately via: npm run migrate
+    if (process.env.AUTO_MIGRATE === 'true') {
+      try {
+        console.log('🔄 AUTO_MIGRATE enabled, running migrations...');
+        const runMigrations = require('./scripts/runMigrations');
+        await runMigrations();
+      } catch (migErr) {
+        console.error('Migration warning:', migErr.message);
+      }
     }
     
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       console.log(`\n🏫 Taleem Ghar Server running on http://localhost:${PORT}`);
       console.log(`📚 API: http://localhost:${PORT}/api/health\n`);
     });

@@ -116,9 +116,9 @@ export default function AdminNotifications() {
             onClick={() => setShowAnnouncementModal(true)} 
             style={{ 
               padding: '8px 16px', 
-              borderRadius: 8, 
+              borderRadius: 9999, 
               border: 'none', 
-              background: '#1e3a5f', 
+              background: '#1C1917', 
               color: '#ffffff', 
               fontWeight: 600, 
               fontSize: 13, 

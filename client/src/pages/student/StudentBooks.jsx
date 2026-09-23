@@ -84,7 +84,7 @@ export default function StudentBooks() {
             width: 48,
             height: 48,
             border: '3px solid var(--border-light)',
-            borderTopColor: '#1e3a5f',
+            borderTopColor: '#FFCC4D',
             borderRadius: '50%',
             animation: 'spin 0.8s linear infinite',
             margin: '0 auto 16px'
@@ -105,7 +105,7 @@ export default function StudentBooks() {
               📚 My Textbooks
             </h1>
             <span style={{
-              background: '#1e3a5f',
+              background: '#1C1917',
               color: '#ffffff',
               padding: '4px 12px',
               borderRadius: 999,
@@ -319,7 +319,7 @@ export default function StudentBooks() {
                     borderTop: '1px solid var(--border-light)'
                   }}>
                     <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{book.publisher || 'PCTB Punjab'}</span>
-                    <span style={{ fontSize: 12, color: '#1e3a5f', fontWeight: 700 }}>Read Book →</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>Read Book →</span>
                   </div>
                 </div>
               </div>
@@ -380,11 +380,11 @@ export default function StudentBooks() {
       <div className="card" style={{ padding: 14, textAlign: 'center' }}>
         <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
           📖 Textbooks courtesy of{' '}
-          <a href="https://pctb.punjab.gov.pk" target="_blank" rel="noopener noreferrer" style={{ color: '#1e3a5f', fontWeight: 600 }}>
+          <a href="https://pctb.punjab.gov.pk" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
             PCTB Punjab
           </a>
           {' '}&amp;{' '}
-          <a href="https://www.ustad360.com" target="_blank" rel="noopener noreferrer" style={{ color: '#1e3a5f', fontWeight: 600 }}>
+          <a href="https://www.ustad360.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
             Ustad360.com
           </a>
           {' '}• Free for educational use • Edition 2026
