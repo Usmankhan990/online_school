@@ -383,14 +383,71 @@ exports.updateTeacher = async (req, res) => {
 // Get all teachers
 exports.getAllTeachers = async (req, res) => {
   try {
+    const { status } = req.query;
+    const where = { role: 'teacher' };
+    if (status) where.status = status;
+
     const teachers = await User.findAll({
-      where: { role: 'teacher' },
+      where,
       include: [{ model: TeacherProfile, as: 'teacherProfile' }],
       order: [['created_at', 'DESC']],
     });
     res.json({ teachers: teachers.map(t => t.toSafeJSON()) });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch teachers.' });
+  }
+};
+
+// Approve teacher application
+exports.approveTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const teacher = await User.findByPk(id);
+    if (!teacher || teacher.role !== 'teacher') {
+      return res.status(404).json({ error: 'Teacher not found.' });
+    }
+
+    await teacher.update({ status: 'active', rejection_reason: null });
+
+    // Send notification to teacher
+    await Notification.create({
+      user_id: id,
+      title: 'Teacher Application Approved! 🎉',
+      message: 'Congratulations! Your teacher application has been approved. You can now login to the Teacher Portal.',
+      type: 'success',
+    });
+
+    res.json({ message: 'Teacher approved successfully!' });
+  } catch (err) {
+    console.error('Approve teacher error:', err);
+    res.status(500).json({ error: 'Failed to approve teacher.' });
+  }
+};
+
+// Reject teacher application
+exports.rejectTeacher = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const teacher = await User.findByPk(id);
+    if (!teacher || teacher.role !== 'teacher') {
+      return res.status(404).json({ error: 'Teacher not found.' });
+    }
+
+    await teacher.update({ status: 'rejected', rejection_reason: reason || 'Not specified' });
+
+    // Send notification to teacher
+    await Notification.create({
+      user_id: id,
+      title: 'Teacher Application Update',
+      message: `Your teacher application was rejected. Reason: ${reason || 'Not specified'}`,
+      type: 'error',
+    });
+
+    res.json({ message: 'Teacher rejected.' });
+  } catch (err) {
+    console.error('Reject teacher error:', err);
+    res.status(500).json({ error: 'Failed to reject teacher.' });
   }
 };
 

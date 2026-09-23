@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import logoImg from '../../assets/logo.jpg';
 import LanguageToggle from '../../components/LanguageToggle';
 import ThemeToggle from '../../components/ThemeToggle';
 import AuthBackgroundSlider from '../../components/AuthBackgroundSlider';
+import { t, getCurrentLanguage } from '../../utils/translate';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -14,6 +15,15 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [, setLang] = useState(() => getCurrentLanguage());
+
+  useEffect(() => {
+    const handleLangChange = (e) => {
+      setLang(e.detail?.lang || getCurrentLanguage());
+    };
+    window.addEventListener('language-changed', handleLangChange);
+    return () => window.removeEventListener('language-changed', handleLangChange);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,7 +83,7 @@ export default function LoginPage() {
         }}
       >
         <span style={{ color: '#FFCC4D', fontSize: 14, fontWeight: 800 }}>←</span>
-        <span>Home</span>
+        <span>{t('Home')}</span>
       </Link>
 
       {/* Top right controls */}
@@ -143,8 +153,8 @@ export default function LoginPage() {
           </div>
 
           <div style={{ marginBottom: 26 }}>
-            <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 28, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>Welcome back <span>👋</span></h2>
-            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 14 }}>Sign in to your account to continue</p>
+            <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 28, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>{t('Welcome back')} <span>👋</span></h2>
+            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 14 }}>{t('Sign in to your account to continue')}</p>
           </div>
 
           {error && (
@@ -155,7 +165,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)', marginBottom: 6 }}>Email Address</label>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)', marginBottom: 6 }}>{t('Email Address')}</label>
               <input
                 type="email"
                 value={email}
@@ -181,7 +191,7 @@ export default function LoginPage() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)' }}>Password</label>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #1C1917)' }}>{t('Password')}</label>
               </div>
               <div style={{ position: 'relative' }}>
                 <input
@@ -221,11 +231,11 @@ export default function LoginPage() {
                     fontWeight: 600,
                   }}
                 >
-                  {showPass ? 'Hide' : 'Show'}
+                  {showPass ? t('Hide') : t('Show')}
                 </button>
               </div>
               <div style={{ textAlign: 'right', marginTop: 8 }}>
-                <Link to="/forgot-password" style={{ color: 'var(--text-secondary, #78716C)', fontWeight: 500, textDecoration: 'none', fontSize: 12.5 }}>Forgot?</Link>
+                <Link to="/forgot-password" style={{ color: 'var(--text-secondary, #78716C)', fontWeight: 500, textDecoration: 'none', fontSize: 12.5 }}>{t('Forgot?')}</Link>
               </div>
             </div>
 
@@ -244,12 +254,12 @@ export default function LoginPage() {
                 transition: 'all 0.2s ease',
               }}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('Signing in...') : t('Sign In')}
             </button>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-secondary, #78716C)', fontSize: 13.5 }}>
-            Don't have an account? <Link to="/register" style={{ color: 'var(--color-primary-yellow, #FFCC4D)', fontWeight: 700, textDecoration: 'none' }}>Apply for Admission →</Link>
+            {t("Don't have an account?")} <Link to="/register" style={{ color: 'var(--color-primary-yellow, #FFCC4D)', fontWeight: 700, textDecoration: 'none' }}>{t('Apply for Admission →')}</Link>
           </div>
         </div>
       </div>

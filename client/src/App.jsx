@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SearchProvider } from './contexts/SearchContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
+import { getCurrentLanguage, setLanguage, triggerLanguage } from './utils/translate';
 
 // ── Public Pages ──
 import LandingPage from './pages/public/LandingPage';
@@ -12,6 +13,7 @@ import FeaturesPage from './pages/public/FeaturesPage';
 import ContactPage from './pages/public/ContactPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import TermsPage from './pages/public/TermsPage';
+import CareersPage from './pages/public/CareersPage';
 
 // ── Auth Pages ──
 import LoginPage from './pages/auth/LoginPage';
@@ -99,14 +101,46 @@ const P = ({ title, roles }) => (
   <D roles={roles}><PlaceholderPage title={title} /></D>
 );
 
+function LanguageRouteSync() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const savedLang = getCurrentLanguage();
+    if (savedLang === 'ur') {
+      triggerLanguage('ur');
+    }
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   useEffect(() => {
-    const saved = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const savedLang = getCurrentLanguage();
+    if (savedLang === 'ur') {
+      setLanguage('ur');
+    }
   }, []);
 
   return (
     <BrowserRouter basename="/online_school">
+      <ScrollToTop />
+      <LanguageRouteSync />
       <AuthProvider>
         <SearchProvider>
           <Routes>
@@ -115,6 +149,8 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/features" element={<FeaturesPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/careers" element={<CareersPage />} />
+            <Route path="/career" element={<CareersPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
 

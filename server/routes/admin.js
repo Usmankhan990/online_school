@@ -34,6 +34,8 @@ const handleTeacherUploads = (req, res, next) => {
 router.get('/teachers', adminController.getAllTeachers);
 router.post('/teachers', handleTeacherUploads, adminController.createTeacher);
 router.put('/teachers/:id', handleTeacherUploads, adminController.updateTeacher);
+router.put('/approve-teacher/:id', adminController.approveTeacher);
+router.put('/reject-teacher/:id', adminController.rejectTeacher);
 
 // Parents Management
 router.get('/parents', adminController.getParents);

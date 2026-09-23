@@ -17,11 +17,20 @@ export default function LanguageToggle({ className = '', style = {} }) {
 
   const handleToggle = () => {
     setLoading(true);
-    const newLang = toggleLanguage();
-    setLang(newLang);
-    setTimeout(() => {
-      setLoading(false);
-    }, 450);
+    const current = getCurrentLanguage();
+    const next = current === 'ur' ? 'en' : 'ur';
+    setLang(next);
+    toggleLanguage();
+
+    if (next === 'en') {
+      setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    } else {
+      setTimeout(() => {
+        setLoading(false);
+      }, 400);
+    }
   };
 
   const isUrdu = lang === 'ur';

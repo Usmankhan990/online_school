@@ -607,3 +607,74 @@ exports.verifyCurrentPassword = async (req, res) => {
     return res.json({ valid: false });
   }
 };
+
+// Teacher Registration (Careers)
+exports.registerTeacher = async (req, res) => {
+  try {
+    const { 
+      email, password, full_name, phone, gender, qualification, specialization, 
+      experience_years, bio, easypaisa_number, account_title, account_holder_name,
+      city, address 
+    } = req.body;
+
+    if (!email || !password || !full_name) {
+      return res.status(400).json({ error: 'Full Name, Email, and Password are required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await User.findOne({
+      where: sequelize.where(sequelize.fn('LOWER', sequelize.col('email')), normalizedEmail),
+    });
+    if (existing) return res.status(400).json({ error: 'This email is already registered.' });
+
+    const photoFilename = req.files?.photo?.[0]?.filename || req.file?.filename || req.body.photo || null;
+    const cnicFilesList = req.files?.cnic || [];
+    const cnicFilename = cnicFilesList.length > 0 
+      ? cnicFilesList.map(f => f.filename).join(',') 
+      : (req.body.cnic_file || null);
+
+    const cvFilename = req.files?.cv?.[0]?.filename || req.body.cv_file || null;
+    const degreeFilesList = req.files?.degrees || [];
+    const degreeFilenames = degreeFilesList.length > 0
+      ? degreeFilesList.map(f => f.filename).join(',')
+      : (req.body.degree_files || null);
+
+    const user = await User.create({
+      email: normalizedEmail,
+      password,
+      role: 'teacher',
+      full_name: full_name?.trim(),
+      phone: phone?.trim(),
+      gender: gender || null,
+      status: 'pending', // Pending admin review and approval
+      avatar: photoFilename || null,
+    });
+
+    const expYears = (experience_years !== undefined && experience_years !== '' && !isNaN(experience_years)) ? parseInt(experience_years, 10) : 0;
+
+    await TeacherProfile.create({
+      user_id: user.id, 
+      qualification: qualification?.trim() || null, 
+      specialization: specialization?.trim() || null, 
+      experience_years: expYears, 
+      bio: bio?.trim() || null, 
+      easypaisa_number: easypaisa_number?.trim() || null,
+      account_title: account_title?.trim() || null,
+      account_holder_name: account_holder_name?.trim() || null,
+      photo: photoFilename || null,
+      city: city?.trim() || null,
+      cnic_file: cnicFilename || null,
+      cv_file: cvFilename || null,
+      degree_files: degreeFilenames || null,
+      address: address?.trim() || null,
+    });
+
+    res.status(201).json({ 
+      message: 'Teacher registration application submitted successfully! Our administration will review your details soon.',
+      teacher: user.toSafeJSON() 
+    });
+  } catch (err) {
+    console.error('Register teacher error:', err);
+    res.status(500).json({ error: 'Failed to submit teacher application. Please try again.' });
+  }
+};

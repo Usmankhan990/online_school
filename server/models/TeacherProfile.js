@@ -50,6 +50,12 @@ const TeacherProfile = sequelize.define('TeacherProfile', {
   cnic_file: {
     type: DataTypes.STRING,
   },
+  cv_file: {
+    type: DataTypes.STRING,
+  },
+  degree_files: {
+    type: DataTypes.TEXT,
+  },
   address: {
     type: DataTypes.TEXT,
   },

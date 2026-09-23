@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
   const quickActions = [
     { label: 'Approve Students', path: '/admin/pending-students', icon: '✅', color: '#10b981' },
-    { label: 'Add Teacher', path: '/admin/teachers', icon: '➕', color: '#3b82f6' },
+    { label: 'Manage Teachers', path: '/admin/teachers', icon: '👨‍🏫', color: '#3b82f6' },
     { label: 'Manage Classes', path: '/admin/classes', icon: '🏫', color: '#8b5cf6' },
     { label: 'Upload Books', path: '/admin/books', icon: '📚', color: '#f59e0b' },
     { label: 'Send Notification', path: '/admin/notifications', icon: '🔔', color: '#06b6d4' },

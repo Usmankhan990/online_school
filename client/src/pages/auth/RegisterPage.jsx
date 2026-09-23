@@ -756,7 +756,7 @@ export default function RegisterPage() {
                   </Field>
                   <Field label="Upload CNIC / B-Form">
                     {!bFormDoc ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
                         <input
                           type="file"
                           id="bform-upload"
@@ -764,27 +764,12 @@ export default function RegisterPage() {
                           onChange={handleBFormChange}
                           style={{ display: 'none' }}
                         />
-                        <input
-                          type="file"
-                          id="bform-camera"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleBFormChange}
-                          style={{ display: 'none' }}
-                        />
                         <label
                           htmlFor="bform-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
                         >
-                          <HiOutlineUpload size={15} color="var(--primary-color, #2563eb)" /> Browse File
-                        </label>
-                        <label
-                          htmlFor="bform-camera"
-                          className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed #10b981', background: '#ecfdf5', fontSize: '12px', fontWeight: 600, color: '#047857' }}
-                        >
-                          <HiOutlineCamera size={15} color="#059669" /> Camera Scan
+                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC / B-Form
                         </label>
                       </div>
                     ) : (
@@ -900,7 +885,7 @@ export default function RegisterPage() {
 
                   <Field label="CNIC Front Side">
                     {!parentCnicFront ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
                         <input
                           type="file"
                           id="parent-cnic-front-upload"
@@ -908,27 +893,12 @@ export default function RegisterPage() {
                           onChange={handleParentCnicFrontChange}
                           style={{ display: 'none' }}
                         />
-                        <input
-                          type="file"
-                          id="parent-cnic-front-camera"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleParentCnicFrontChange}
-                          style={{ display: 'none' }}
-                        />
                         <label
                           htmlFor="parent-cnic-front-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
                         >
-                          <HiOutlineUpload size={15} color="var(--primary-color, #2563eb)" /> Front File
-                        </label>
-                        <label
-                          htmlFor="parent-cnic-front-camera"
-                          className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed #10b981', background: '#ecfdf5', fontSize: '12px', fontWeight: 600, color: '#047857' }}
-                        >
-                          <HiOutlineCamera size={15} color="#059669" /> Scan Front
+                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC Front
                         </label>
                       </div>
                     ) : (
@@ -1000,7 +970,7 @@ export default function RegisterPage() {
 
                   <Field label="CNIC Back Side">
                     {!parentCnicBack ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      <div>
                         <input
                           type="file"
                           id="parent-cnic-back-upload"
@@ -1008,27 +978,12 @@ export default function RegisterPage() {
                           onChange={handleParentCnicBackChange}
                           style={{ display: 'none' }}
                         />
-                        <input
-                          type="file"
-                          id="parent-cnic-back-camera"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleParentCnicBackChange}
-                          style={{ display: 'none' }}
-                        />
                         <label
                           htmlFor="parent-cnic-back-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
                         >
-                          <HiOutlineUpload size={15} color="var(--primary-color, #2563eb)" /> Back File
-                        </label>
-                        <label
-                          htmlFor="parent-cnic-back-camera"
-                          className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 10px', borderRadius: '10px', border: '1px dashed #10b981', background: '#ecfdf5', fontSize: '12px', fontWeight: 600, color: '#047857' }}
-                        >
-                          <HiOutlineCamera size={15} color="#059669" /> Scan Back
+                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC Back
                         </label>
                       </div>
                     ) : (

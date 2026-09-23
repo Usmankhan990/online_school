@@ -7,6 +7,23 @@ const upload = require('../middleware/upload');
 // Student Registration (with document upload)
 router.post('/register/student', upload.array('documents', 5), authController.registerStudent);
 
+const handleTeacherUploads = (req, res, next) => {
+  upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'cnic', maxCount: 2 },
+    { name: 'cv', maxCount: 1 },
+    { name: 'degrees', maxCount: 5 },
+  ])(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'File upload failed' });
+    }
+    next();
+  });
+};
+
+// Teacher Registration (Careers)
+router.post('/register/teacher', handleTeacherUploads, authController.registerTeacher);
+
 // Student Trial Registration
 router.post('/register/trial', authController.registerTrialStudent);
 

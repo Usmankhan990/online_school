@@ -6,6 +6,7 @@ import { useSearch } from '../contexts/SearchContext';
 import api, { FILE_BASE } from '../services/api';
 import logoImg from '../assets/logo.jpg';
 import LanguageToggle from './LanguageToggle';
+import { t, getCurrentLanguage } from '../utils/translate';
 /* ═══════════════════════════════════════════════════
    ICON COMPONENTS (inline SVG for zero-dep icons)
    ═══════════════════════════════════════════════════ */
@@ -170,6 +171,15 @@ export default function DashboardLayout({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [studentLiveCount, setStudentLiveCount] = useState(0);
   const [liveClassAlert, setLiveClassAlert] = useState(null);
+  const [, setLang] = useState(() => getCurrentLanguage());
+
+  useEffect(() => {
+    const handleLangChange = (e) => {
+      setLang(e.detail?.lang || getCurrentLanguage());
+    };
+    window.addEventListener('language-changed', handleLangChange);
+    return () => window.removeEventListener('language-changed', handleLangChange);
+  }, []);
 
   const { searchQuery, setSearchQuery } = useSearch();
 
@@ -496,7 +506,7 @@ export default function DashboardLayout({ children }) {
         <nav ref={navRef} className="sidebar-nav">
           {navItems.map((item, i) => {
             if (item.section) {
-              return <div key={i} className="sidebar-section">{item.section}</div>;
+              return <div key={i} className="sidebar-section">{t(item.section)}</div>;
             }
             const isActive = location.pathname === item.path ||
               (item.path === '/student/courses' && location.pathname === '/my-courses') ||
@@ -514,7 +524,7 @@ export default function DashboardLayout({ children }) {
               <Link key={i} to={item.path} className={`sidebar-link ${isActive ? 'active' : ''}`}
                 onClick={() => setSidebarOpen(false)}>
                 <span className="link-icon">{Icons[item.icon]}</span>
-                <span style={{ flex: 1 }}>{item.label}</span>
+                <span style={{ flex: 1 }}>{t(item.label)}</span>
                 {badge && badge.count !== undefined && (
                   <span className={`sidebar-badge sidebar-badge-${badge.variant || 'blue'}`}>
                     {badge.count}
@@ -540,7 +550,7 @@ export default function DashboardLayout({ children }) {
           </div>
           <div className="sidebar-user-info">
             <h4>{user?.full_name || 'User'}</h4>
-            <p>{roleName}</p>
+            <p>{t(roleName)}</p>
           </div>
         </div>
       </aside>
@@ -590,7 +600,7 @@ export default function DashboardLayout({ children }) {
                     borderRadius: 'var(--radius-full)',
                     padding: '6px 14px'
                   }}>
-              {rolePortal}
+              {t(rolePortal)}
             </span>
             <LanguageToggle />
             <button className="topbar-icon-btn" onClick={() => setDarkMode(!darkMode)} title="Toggle theme">
@@ -675,7 +685,7 @@ export default function DashboardLayout({ children }) {
                         {user?.full_name}
                       </p>
                       <p style={{ margin: 0, marginTop: 2, fontSize: 11.5, color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>
-                        {roleName}
+                        {t(roleName)}
                       </p>
                     </div>
                   </div>
@@ -693,7 +703,7 @@ export default function DashboardLayout({ children }) {
                         textAlign: 'left', 
                         padding: '8px 12px', 
                         fontSize: 13, 
-                        fontWeight: 700,
+                        fontWeight: 700, 
                         color: '#1C1917', 
                         background: 'var(--color-primary-yellow, #FFCC4D)', 
                         borderRadius: 8,
@@ -709,7 +719,7 @@ export default function DashboardLayout({ children }) {
                     >
                       <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span>👤</span>
-                        <span>Edit Profile</span>
+                        <span>{t('Edit Profile')}</span>
                       </span>
                       <span style={{ fontSize: 12, opacity: 0.8 }}>⚙️</span>
                     </button>
@@ -721,7 +731,7 @@ export default function DashboardLayout({ children }) {
                         textAlign: 'left', 
                         padding: '8px 12px', 
                         fontSize: 13, 
-                        fontWeight: 600,
+                        fontWeight: 600, 
                         color: '#ef4444', 
                         background: 'transparent', 
                         border: 'none', 
@@ -736,7 +746,7 @@ export default function DashboardLayout({ children }) {
                       onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center' }}>{Icons.logout}</span>
-                      Sign out
+                      {t('Sign Out')}
                     </button>
                   </div>
                 </div>

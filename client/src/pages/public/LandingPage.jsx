@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import logoImg from '../../assets/logo.jpg';
 import LanguageToggle from '../../components/LanguageToggle';
 import ThemeToggle from '../../components/ThemeToggle';
+import { t, getCurrentLanguage } from '../../utils/translate';
 
 export const scrollToSection = (id, e) => {
   const targetId = (id || '').replace(/^#/, '');
@@ -10,7 +11,17 @@ export const scrollToSection = (id, e) => {
   const el = document.getElementById(targetId);
   if (el) {
     if (e && e.preventDefault) e.preventDefault();
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (targetId === 'hero') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const navHeight = 70;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
     window.history.replaceState(null, '', `#${targetId}`);
   } else {
     window.location.href = `/#${targetId}`;
@@ -21,6 +32,7 @@ const NAV_LINKS = [
   { label: 'Home', id: 'hero', href: '/#hero' },
   { label: 'Features', id: 'features', href: '/#features' },
   { label: 'Admissions', id: 'admissions', href: '/#admissions' },
+  { label: 'Careers', id: 'careers', href: '/careers', isRoute: true },
   { label: 'About', id: 'about', href: '/#about' },
   { label: 'Contact', id: 'contact', href: '/#contact' },
 ];
@@ -53,6 +65,16 @@ const FAQ = [
 
 function PublicNav() {
   const [open, setOpen] = useState(false);
+  const [, setLang] = useState(() => getCurrentLanguage());
+
+  useEffect(() => {
+    const handleLangChange = (e) => {
+      setLang(e.detail?.lang || getCurrentLanguage());
+    };
+    window.addEventListener('language-changed', handleLangChange);
+    return () => window.removeEventListener('language-changed', handleLangChange);
+  }, []);
+
   return (
     <nav style={{ background: 'rgba(28, 25, 23, 0.95)', backdropFilter: 'blur(20px)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
       <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 70 }}>
@@ -65,16 +87,29 @@ function PublicNav() {
         </a>
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: 28 }}>
           {NAV_LINKS.map(l => (
-            <a
-              key={l.id}
-              href={l.href}
-              onClick={(e) => scrollToSection(l.id, e)}
-              style={{ color: 'rgba(203,213,225,0.9)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s', cursor: 'pointer' }}
-              onMouseOver={e => e.target.style.color = '#FFCC4D'}
-              onMouseOut={e => e.target.style.color = 'rgba(203,213,225,0.9)'}
-            >
-              {l.label}
-            </a>
+            l.isRoute ? (
+              <Link
+                key={l.id}
+                to={l.href}
+                onClick={() => window.scrollTo(0, 0)}
+                style={{ color: 'rgba(203,213,225,0.9)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s', cursor: 'pointer' }}
+                onMouseOver={e => e.target.style.color = '#FFCC4D'}
+                onMouseOut={e => e.target.style.color = 'rgba(203,213,225,0.9)'}
+              >
+                {t(l.label)}
+              </Link>
+            ) : (
+              <a
+                key={l.id}
+                href={l.href}
+                onClick={(e) => scrollToSection(l.id, e)}
+                style={{ color: 'rgba(203,213,225,0.9)', textDecoration: 'none', fontSize: 14, fontWeight: 500, transition: 'color 0.2s', cursor: 'pointer' }}
+                onMouseOver={e => e.target.style.color = '#FFCC4D'}
+                onMouseOut={e => e.target.style.color = 'rgba(203,213,225,0.9)'}
+              >
+                {t(l.label)}
+              </a>
+            )
           ))}
         </div>
         <div className="hidden md:flex" style={{ alignItems: 'center', gap: 12 }}>
@@ -101,9 +136,8 @@ function PublicNav() {
               e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
             }}
           >
-            Sign In
+            {t('Sign In')}
           </Link>
-          <Link to="/register" className="btn btn-primary">Apply Now</Link>
         </div>
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggle />
@@ -116,21 +150,34 @@ function PublicNav() {
       {open && (
         <div className="md:hidden" style={{ padding: '12px clamp(16px, 4vw, 24px) 20px', background: 'rgba(28,25,23,0.98)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {NAV_LINKS.map(l => (
-            <a
-              key={l.id}
-              href={l.href}
-              onClick={(e) => {
-                setOpen(false);
-                scrollToSection(l.id, e);
-              }}
-              style={{ display: 'block', color: '#cbd5e1', textDecoration: 'none', padding: '10px 0', fontSize: 15, cursor: 'pointer' }}
-            >
-              {l.label}
-            </a>
+            l.isRoute ? (
+              <Link
+                key={l.id}
+                to={l.href}
+                onClick={() => {
+                  setOpen(false);
+                  window.scrollTo(0, 0);
+                }}
+                style={{ display: 'block', color: '#cbd5e1', textDecoration: 'none', padding: '10px 0', fontSize: 15, cursor: 'pointer' }}
+              >
+                {t(l.label)}
+              </Link>
+            ) : (
+              <a
+                key={l.id}
+                href={l.href}
+                onClick={(e) => {
+                  setOpen(false);
+                  scrollToSection(l.id, e);
+                }}
+                style={{ display: 'block', color: '#cbd5e1', textDecoration: 'none', padding: '10px 0', fontSize: 15, cursor: 'pointer' }}
+              >
+                {t(l.label)}
+              </a>
+            )
           ))}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <Link to="/login" className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }}>Sign In</Link>
-            <Link to="/register" className="btn btn-primary btn-sm" style={{ flex: 1, justifyContent: 'center' }}>Apply Now</Link>
+            <Link to="/login" className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center' }}>{t('Sign In')}</Link>
           </div>
         </div>
       )}
@@ -139,6 +186,16 @@ function PublicNav() {
 }
 
 function Footer() {
+  const [, setLang] = useState(() => getCurrentLanguage());
+
+  useEffect(() => {
+    const handleLangChange = (e) => {
+      setLang(e.detail?.lang || getCurrentLanguage());
+    };
+    window.addEventListener('language-changed', handleLangChange);
+    return () => window.removeEventListener('language-changed', handleLangChange);
+  }, []);
+
   return (
     <footer style={{ background: '#1C1917', color: '#A8A29E', borderTop: '1px solid #292524' }}>
       <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '48px clamp(16px, 3vw, 32px) 24px' }}>
@@ -151,44 +208,66 @@ function Footer() {
             <p style={{ fontSize: 13, lineHeight: 1.6 }}>Complete online school platform for KG to 8th grade following Punjab Board (PCTB 2026) curriculum.</p>
           </div>
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>Quick Links</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>{t('Quick Links')}</h4>
             {[
               { label: 'Features', id: 'features' },
               { label: 'Admissions', id: 'admissions' },
+              { label: 'Careers', id: 'careers', href: '/careers', isRoute: true },
               { label: 'About', id: 'about' },
               { label: 'Contact', id: 'contact' },
             ].map(l => (
-              <a
-                key={l.label}
-                href={`/#${l.id}`}
-                onClick={(e) => scrollToSection(l.id, e)}
-                style={{
-                  display: 'block',
-                  color: '#A8A29E',
-                  textDecoration: 'none',
-                  fontSize: 13,
-                  padding: '4px 0',
-                  transition: 'color 0.2s',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={e => e.target.style.color='#FFCC4D'}
-                onMouseOut={e => e.target.style.color='#A8A29E'}
-              >
-                {l.label}
-              </a>
+              l.isRoute ? (
+                <Link
+                  key={l.label}
+                  to={l.href}
+                  onClick={() => window.scrollTo(0, 0)}
+                  style={{
+                    display: 'block',
+                    color: '#A8A29E',
+                    textDecoration: 'none',
+                    fontSize: 13,
+                    padding: '4px 0',
+                    transition: 'color 0.2s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => e.target.style.color='#FFCC4D'}
+                  onMouseOut={e => e.target.style.color='#A8A29E'}
+                >
+                  {t(l.label)}
+                </Link>
+              ) : (
+                <a
+                  key={l.label}
+                  href={`/#${l.id}`}
+                  onClick={(e) => scrollToSection(l.id, e)}
+                  style={{
+                    display: 'block',
+                    color: '#A8A29E',
+                    textDecoration: 'none',
+                    fontSize: 13,
+                    padding: '4px 0',
+                    transition: 'color 0.2s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={e => e.target.style.color='#FFCC4D'}
+                  onMouseOut={e => e.target.style.color='#A8A29E'}
+                >
+                  {t(l.label)}
+                </a>
+              )
             ))}
           </div>
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>Portals</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>{t('Portals')}</h4>
             {['Admin Login', 'Teacher Login', 'Student Login', 'Parent Login'].map(l => (
               <Link key={l} to="/login" style={{ display: 'block', color: '#A8A29E', textDecoration: 'none', fontSize: 13, padding: '4px 0', transition: 'color 0.2s' }}
-                onMouseOver={e => e.target.style.color='#FFCC4D'} onMouseOut={e => e.target.style.color='#A8A29E'}>{l}</Link>
+                onMouseOver={e => e.target.style.color='#FFCC4D'} onMouseOut={e => e.target.style.color='#A8A29E'}>{t(l)}</Link>
             ))}
           </div>
           <div>
-            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>Legal</h4>
+            <h4 style={{ color: 'white', fontWeight: 600, fontSize: 14, marginBottom: 12 }}>{t('Legal')}</h4>
             {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms']].map(([l, h]) => (
-              <Link key={l} to={h} style={{ display: 'block', color: '#A8A29E', textDecoration: 'none', fontSize: 13, padding: '4px 0' }}>{l}</Link>
+              <Link key={l} to={h} style={{ display: 'block', color: '#A8A29E', textDecoration: 'none', fontSize: 13, padding: '4px 0' }}>{t(l)}</Link>
             ))}
           </div>
         </div>
@@ -211,7 +290,17 @@ export default function LandingPage() {
       const el = document.getElementById(targetId);
       if (el) {
         setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (targetId === 'hero') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            const navHeight = 70;
+            const elementPosition = el.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
         }, 150);
       }
     }
@@ -222,7 +311,7 @@ export default function LandingPage() {
       <PublicNav />
 
       {/* ── HERO ── */}
-      <section id="hero" className="gradient-bg-hero" style={{ paddingTop: 'clamp(96px, 12vh, 130px)', paddingBottom: 'clamp(48px, 8vh, 80px)', position: 'relative', overflow: 'hidden', width: '100%' }}>
+      <section id="hero" className="gradient-bg-hero" style={{ paddingTop: 'clamp(90px, 11vh, 120px)', paddingBottom: 'clamp(40px, 6vh, 60px)', position: 'relative', overflow: 'hidden', width: '100%' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.03\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1.5\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
         <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: '0 clamp(16px, 3vw, 32px)', position: 'relative', zIndex: 1 }}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
@@ -298,8 +387,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+      <section id="features" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)', scrollMarginTop: '70px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <span style={{ color: '#D97706', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Platform Features</span>
           <h2 style={{ color: 'var(--text-primary)', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 8 }}>Everything a School Needs, Online</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: 16, marginTop: 8, maxWidth: 600, margin: '8px auto 0' }}>From admission to report cards — a complete digital school experience for students, teachers, and parents.</p>
@@ -376,9 +465,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── HOW IT WORKS / ADMISSIONS ── */}
-      <section id="admissions" style={{ background: 'var(--bg-surface-2)', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
+      <section id="admissions" style={{ background: 'var(--bg-surface-2)', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)', scrollMarginTop: '70px' }}>
         <div style={{ maxWidth: 1320, width: '100%', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>Get Started</span>
             <h2 style={{ color: 'var(--text-primary)', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 12 }}>How It Works</h2>
           </div>
@@ -455,8 +544,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4 PORTALS / ABOUT ── */}
-      <section id="about" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+      <section id="about" style={{ maxWidth: 1320, width: '100%', margin: '0 auto', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)', scrollMarginTop: '70px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>Role-Based Access</span>
           <h2 style={{ color: 'var(--text-primary)', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 12 }}>4 Dedicated Portals</h2>
         </div>
@@ -534,9 +623,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ & CONTACT ── */}
-      <section id="contact" style={{ background: 'var(--bg-surface-2)', padding: 'clamp(48px, 8vw, 80px) clamp(16px, 3vw, 32px)', scrollMarginTop: '80px' }}>
+      <section id="contact" style={{ background: 'var(--bg-surface-2)', padding: 'clamp(32px, 5vw, 48px) clamp(16px, 3vw, 32px)', scrollMarginTop: '70px' }}>
         <div style={{ maxWidth: 760, width: '100%', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>Help & Contact</span>
             <h2 style={{ color: 'var(--text-primary)', fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, marginTop: 12 }}>Frequently Asked Questions</h2>
           </div>
