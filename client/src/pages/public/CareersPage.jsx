@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { PublicNav, Footer } from './LandingPage';
 import api from '../../services/api';
@@ -20,6 +21,8 @@ import {
   HiOutlineClipboardList,
   HiOutlineDocumentText,
   HiOutlinePaperClip,
+  HiOutlineX,
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 
 // Modular job postings list - easily expandable in future or fetched from API
@@ -179,13 +182,32 @@ export default function CareersPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successData, setSuccessData] = useState(null);
+  const [jobPosts, setJobPosts] = useState(INITIAL_JOB_POSTS);
+  const [, setJobsLoading] = useState(true);
 
-  const filteredJobs = INITIAL_JOB_POSTS.filter((job) => {
+  useEffect(() => {
+    const fetchLiveJobs = async () => {
+      try {
+        const { data } = await api.get('/jobs');
+        if (data && Array.isArray(data.jobs) && data.jobs.length > 0) {
+          setJobPosts(data.jobs);
+        }
+      } catch (err) {
+        console.warn('Could not load live jobs from server, using default list:', err);
+      } finally {
+        setJobsLoading(false);
+      }
+    };
+    fetchLiveJobs();
+  }, []);
+
+  const filteredJobs = jobPosts.filter((job) => {
     const matchCategory = activeCategory === 'all' || job.category === activeCategory;
+    const skillsList = Array.isArray(job.skills) ? job.skills : [];
     const matchSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+      (job.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (job.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      skillsList.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchCategory && matchSearch;
   });
 
@@ -197,12 +219,8 @@ export default function CareersPage() {
         specialization: job.title,
       }));
     }
+    setErrorMsg('');
     setIsFormOpen(true);
-    setTimeout(() => {
-      if (formRef.current) {
-        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 50);
   };
 
   const handleChange = (e) => {
@@ -430,13 +448,15 @@ export default function CareersPage() {
     setDegreePreviews(updatedPreviews);
   };
 
-  // Strong password requirements check
-  const hasUpper = /[A-Z]/.test(form.password);
-  const hasLower = /[a-z]/.test(form.password);
-  const hasNumber = /[0-9]/.test(form.password);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(form.password);
-  const hasMinLength = form.password.length >= 8;
-  const isPasswordValid = hasUpper && hasLower && hasNumber && hasSpecial && hasMinLength;
+  // Password requirements check (matching Signup page)
+  const passwordRules = [
+    { label: 'Password must be at least 6 characters', valid: form.password.length >= 6 },
+    { label: 'Password must contain at least one uppercase letter (A-Z)', valid: /[A-Z]/.test(form.password) },
+    { label: 'Password must contain at least one lowercase letter (a-z)', valid: /[a-z]/.test(form.password) },
+    { label: 'Password must contain at least one number (0-9)', valid: /[0-9]/.test(form.password) },
+  ];
+  const firstUnmetRule = passwordRules.find((r) => !r.valid);
+  const isPasswordValid = !firstUnmetRule;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -444,18 +464,16 @@ export default function CareersPage() {
 
     if (!photoFile) {
       setErrorMsg('Please upload a passport size photo with a Blue, White, or Black background.');
-      if (formRef.current) formRef.current.scrollIntoView({ behavior: 'smooth' });
       return;
     }
 
     if (cnicFiles.length === 0) {
       setErrorMsg('Please upload your CNIC photo or document (Front and Back).');
-      if (formRef.current) formRef.current.scrollIntoView({ behavior: 'smooth' });
       return;
     }
 
     if (!isPasswordValid) {
-      setErrorMsg('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      setErrorMsg(firstUnmetRule?.label || 'Password must meet all requirements.');
       return;
     }
 
@@ -573,54 +591,11 @@ export default function CareersPage() {
                 fontSize: 'clamp(15px, 2vw, 17px)',
                 lineHeight: 1.6,
                 maxWidth: 680,
-                margin: '0 auto 28px',
+                margin: '0 auto',
               }}
             >
               {t('Join Punjab\'s leading online learning platform. Teach KG to 8th class students with verified PCTB 2026 books, earn attractive compensation, and work comfortably from home.')}
             </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
-              <a
-                href="#open-positions"
-                className="btn btn-primary"
-                style={{
-                  padding: '12px 28px',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  borderRadius: 12,
-                  boxShadow: '0 4px 16px rgba(255,204,77,0.3)',
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <HiOutlineBriefcase style={{ fontSize: 18 }} />
-                {t('Explore Open Positions')}
-              </a>
-              <button
-                type="button"
-                onClick={() => openFormForPosition(null)}
-                className="btn"
-                style={{
-                  background: isFormOpen ? '#FFCC4D' : 'rgba(255,255,255,0.08)',
-                  color: isFormOpen ? '#1C1917' : '#ffffff',
-                  border: '1px solid rgba(255,255,255,0.25)',
-                  padding: '12px 28px',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  borderRadius: 12,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <HiOutlineClipboardList style={{ fontSize: 18 }} />
-                {isFormOpen ? t('Application Form Active') : t('Fill Application Form')}
-              </button>
-            </div>
           </div>
         </section>
 
@@ -809,7 +784,7 @@ export default function CareersPage() {
 
                   {/* Skills tags */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
-                    {job.skills.map((s, idx) => (
+                    {(Array.isArray(job.skills) ? job.skills : []).map((s, idx) => (
                       <span
                         key={idx}
                         style={{
@@ -844,7 +819,7 @@ export default function CareersPage() {
                   }}
                 >
                   <HiOutlineCheckCircle style={{ fontSize: 17 }} />
-                  {(selectedPosition?.id === job.id && isFormOpen) ? t('Application Form Open Below') : t('Apply for this Role')}
+                  {t('Apply for this Role')}
                 </button>
               </div>
             ))}
@@ -868,201 +843,167 @@ export default function CareersPage() {
           )}
         </section>
 
-        {/* ═════════ Application Form Container / Interactive Trigger ═════════ */}
-        <div ref={formRef} id="apply-form" style={{ maxWidth: 960, margin: '0 auto', padding: '0 20px' }}>
-          {!isFormOpen && !successData && (
-            /* Sleek CTA Card when form is collapsed */
+        {/* ═════════ Application Modal Popup ═════════ */}
+        {(isFormOpen || successData) &&
+          createPortal(
             <div
-              className="card card-hover animate-fade-in"
               style={{
-                borderRadius: 24,
-                padding: '40px 32px',
-                textAlign: 'center',
-                background: 'linear-gradient(135deg, #1C1917 0%, #292524 100%)',
-                color: '#ffffff',
-                border: '1px solid rgba(255,204,77,0.3)',
-                boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px',
+                background: 'rgba(0, 0, 0, 0.72)',
+                backdropFilter: 'blur(6px)',
+                overflowY: 'auto',
               }}
             >
               <div
+                className="card animate-scale-in"
                 style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 16,
-                  background: 'rgba(255,204,77,0.15)',
-                  color: '#FFCC4D',
+                  width: '100%',
+                  maxWidth: 900,
+                  maxHeight: '92vh',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 28,
-                  margin: '0 auto 16px',
-                  border: '1px solid rgba(255,204,77,0.3)',
+                  flexDirection: 'column',
+                  borderRadius: 20,
+                  background: 'var(--bg-surface, #ffffff)',
+                  border: '1px solid var(--border-medium)',
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                  overflow: 'hidden',
+                  margin: 'auto',
                 }}
               >
-                <HiOutlineClipboardList />
-              </div>
-
-              <h2 style={{ fontSize: 'clamp(22px, 3vw, 28px)', fontWeight: 800, color: '#ffffff', marginBottom: 10 }}>
-                {t('Ready to Join Taleem Ghar Faculty?')}
-              </h2>
-              <p style={{ fontSize: 15, color: '#D8CEBD', maxWidth: 620, margin: '0 auto 24px', lineHeight: 1.6 }}>
-                {t('Submit your teacher application form online with your credentials and document uploads. Open for all subjects and general teaching positions.')}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => openFormForPosition(null)}
-                className="btn btn-primary"
-                style={{
-                  padding: '14px 36px',
-                  fontSize: 16,
-                  fontWeight: 800,
-                  borderRadius: 12,
-                  boxShadow: '0 6px 20px rgba(255,204,77,0.35)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <HiOutlineAcademicCap style={{ fontSize: 20 }} />
-                {t('Open Teacher Registration Form')}
-                <HiOutlineChevronDown style={{ fontSize: 18 }} />
-              </button>
-            </div>
-          )}
-
-          {successData ? (
-            <div
-              className="card animate-fade-in"
-              style={{
-                padding: '48px 32px',
-                textAlign: 'center',
-                borderRadius: 24,
-                border: '1px solid #86efac',
-                background: 'linear-gradient(180deg, #f0fdf4 0%, var(--bg-card, #ffffff) 100%)',
-                boxShadow: '0 12px 36px rgba(22, 101, 52, 0.08)',
-              }}
-            >
-              <div
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: '50%',
-                  background: '#dcfce7',
-                  color: '#16a34a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 36,
-                  margin: '0 auto 20px',
-                }}
-              >
-                <HiOutlineCheckCircle />
-              </div>
-
-              <h2 style={{ color: '#166534', fontSize: 26, fontWeight: 800, marginBottom: 10 }}>
-                {t('Teacher Application Submitted Successfully!')}
-              </h2>
-              <p style={{ color: '#374151', fontSize: 15, lineHeight: 1.6, maxWidth: 620, margin: '0 auto 24px' }}>
-                {t('Thank you for applying to join the Taleem Ghar teaching faculty. Our administrative panel will review your credentials, passport photograph, CNIC, CV, and degree documentation. You will receive an email and SMS update regarding your interview and orientation.')}
-              </p>
-
-              <div style={{ display: 'inline-flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link to="/" className="btn btn-secondary" style={{ padding: '10px 24px' }}>
-                  {t('Back to Home')}
-                </Link>
-                <Link to="/login" className="btn btn-primary" style={{ padding: '10px 24px' }}>
-                  {t('Go to Portal Login')}
-                </Link>
-              </div>
-            </div>
-          ) : isFormOpen ? (
-            <div
-              className="card animate-fade-in"
-              style={{
-                borderRadius: 24,
-                overflow: 'hidden',
-                border: '1px solid var(--border-medium)',
-                background: 'var(--bg-surface)',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            >
-              {/* Form Title & Top Banner */}
-              <div
-                style={{
-                  padding: '24px 28px',
-                  background: '#1C1917',
-                  color: 'white',
-                  borderBottom: '1px solid rgba(255,255,255,0.08)',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 16,
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                    <img src={logoImg} alt="Taleem Ghar" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', background: '#ffffff', padding: 1 }} />
-                    <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', margin: 0 }}>
-                      {t('Teacher Application & Registration Form')}
-                    </h2>
-                  </div>
-                  <p style={{ fontSize: 13, color: '#A8A29E', margin: 0 }}>
-                    {t('Fill out all required details accurately. Applications are reviewed by the school administration.')}
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  {selectedPosition && (
-                    <div
-                      style={{
-                        background: 'rgba(255,204,77,0.15)',
-                        border: '1px solid rgba(255,204,77,0.4)',
-                        padding: '5px 12px',
-                        borderRadius: 10,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                      }}
-                    >
-                      <span style={{ fontSize: 12, color: '#FFCC4D', fontWeight: 600 }}>
-                        💼 {t('Position:')} {selectedPosition.title}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPosition(null)}
-                        style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: 13, opacity: 0.7 }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setIsFormOpen(false)}
-                    className="btn btn-sm"
+                {successData ? (
+                  <div
                     style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      color: '#E7DFD5',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      padding: '6px 12px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 4,
+                      padding: '48px 32px',
+                      textAlign: 'center',
+                      background: 'linear-gradient(180deg, #f0fdf4 0%, var(--bg-card, #ffffff) 100%)',
                     }}
                   >
-                    <HiOutlineChevronUp /> {t('Hide Form')}
-                  </button>
-                </div>
-              </div>
+                    <div
+                      style={{
+                        width: 72,
+                        height: 72,
+                        borderRadius: '50%',
+                        background: '#dcfce7',
+                        color: '#16a34a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 36,
+                        margin: '0 auto 20px',
+                      }}
+                    >
+                      <HiOutlineCheckCircle />
+                    </div>
 
-              <form onSubmit={handleSubmit} style={{ padding: '32px clamp(20px, 4vw, 40px)' }}>
+                    <h2 style={{ color: '#166534', fontSize: 26, fontWeight: 800, marginBottom: 10 }}>
+                      {t('Teacher Application Submitted Successfully!')}
+                    </h2>
+                    <p style={{ color: '#374151', fontSize: 15, lineHeight: 1.6, maxWidth: 620, margin: '0 auto 24px' }}>
+                      {t('Thank you for applying to join the Taleem Ghar teaching faculty. Our administrative panel will review your credentials, passport photograph, CNIC, CV, and degree documentation. You will receive an email and SMS update regarding your interview and orientation.')}
+                    </p>
+
+                    <div style={{ display: 'inline-flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSuccessData(null);
+                          setIsFormOpen(false);
+                        }}
+                        className="btn btn-secondary"
+                        style={{ padding: '10px 24px' }}
+                      >
+                        {t('Close')}
+                      </button>
+                      <Link to="/login" className="btn btn-primary" style={{ padding: '10px 24px' }}>
+                        {t('Go to Portal Login')}
+                      </Link>
+                    </div>
+                  </div>
+                ) : isFormOpen ? (
+                  <>
+                    {/* Form Title & Top Banner */}
+                    <div
+                      style={{
+                        padding: '18px 24px',
+                        background: '#1C1917',
+                        color: 'white',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 16,
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                          <img src={logoImg} alt="Taleem Ghar" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', background: '#ffffff', padding: 1 }} />
+                          <h2 style={{ fontSize: 18, fontWeight: 800, color: 'white', margin: 0 }}>
+                            {t('Teacher Application & Registration Form')}
+                          </h2>
+                        </div>
+                        <p style={{ fontSize: 12.5, color: '#A8A29E', margin: 0 }}>
+                          {t('Fill out all required details accurately. Applications are reviewed by the school administration.')}
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        {selectedPosition && (
+                          <div
+                            style={{
+                              background: 'rgba(255,204,77,0.15)',
+                              border: '1px solid rgba(255,204,77,0.4)',
+                              padding: '4px 12px',
+                              borderRadius: 10,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                            }}
+                          >
+                            <span style={{ fontSize: 12, color: '#FFCC4D', fontWeight: 600 }}>
+                              💼 {t('Position:')} {selectedPosition.title}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPosition(null)}
+                              style={{ background: 'transparent', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: 13, opacity: 0.7 }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setIsFormOpen(false)}
+                          style={{
+                            background: 'rgba(255,255,255,0.1)',
+                            border: 'none',
+                            color: '#ffffff',
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 18,
+                          }}
+                          title="Close"
+                        >
+                          <HiOutlineX />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ overflowY: 'auto', flex: 1, padding: '24px clamp(16px, 3vw, 32px)' }}>
+                      <form onSubmit={handleSubmit} ref={formRef}>
                 {errorMsg && (
                   <div
                     className="animate-fade-in"
@@ -1187,9 +1128,13 @@ export default function CareersPage() {
                           value={form.password}
                           onChange={handleChange}
                           required
-                          placeholder="Min. 8 characters"
+                          placeholder="Min. 6 characters"
                           className="form-input"
-                          style={{ paddingRight: 40 }}
+                          style={{
+                            paddingRight: 40,
+                            borderColor: form.password && !isPasswordValid ? '#ef4444' : undefined,
+                            boxShadow: form.password && !isPasswordValid ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
+                          }}
                         />
                         <button
                           type="button"
@@ -1209,14 +1154,12 @@ export default function CareersPage() {
                         </button>
                       </div>
 
-                      {/* Password strength checklist */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6, fontSize: 11 }}>
-                        <span style={{ color: hasMinLength ? '#16a34a' : '#9ca3af' }}>{hasMinLength ? '✓' : '•'} 8+ chars</span>
-                        <span style={{ color: hasUpper ? '#16a34a' : '#9ca3af' }}>{hasUpper ? '✓' : '•'} Uppercase</span>
-                        <span style={{ color: hasLower ? '#16a34a' : '#9ca3af' }}>{hasLower ? '✓' : '•'} Lowercase</span>
-                        <span style={{ color: hasNumber ? '#16a34a' : '#9ca3af' }}>{hasNumber ? '✓' : '•'} Number</span>
-                        <span style={{ color: hasSpecial ? '#16a34a' : '#9ca3af' }}>{hasSpecial ? '✓' : '•'} Symbol</span>
-                      </div>
+                      {form.password.length > 0 && !isPasswordValid && (
+                        <p style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, color: '#ef4444' }}>
+                          <HiOutlineExclamationCircle size={14} style={{ flexShrink: 0 }} />
+                          <span>{firstUnmetRule?.label}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -1705,8 +1648,12 @@ export default function CareersPage() {
                 </div>
               </form>
             </div>
-          ) : null}
-        </div>
+          </>
+        ) : null}
+      </div>
+    </div>,
+    document.body
+  )}
       </div>
 
       <Footer />

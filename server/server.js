@@ -42,6 +42,7 @@ app.use('/api/books', require('./routes/books'));
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/timetable', require('./routes/timetable'));
+app.use('/api/jobs', require('./routes/jobs'));
 
 // Health check
 app.get('/api/health', (req, res) => {

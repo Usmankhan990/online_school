@@ -52,6 +52,8 @@ export default function AdminClasses() {
       resetForm();
       fetchData();
     } catch (err) {
+      setShowAddModal(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed to create class'), 'danger');
     }
   };
@@ -71,6 +73,7 @@ export default function AdminClasses() {
   const handleEdit = async (e) => {
     e.preventDefault();
     if (form.grade_level !== '' && (Number(form.grade_level) > 8 || Number(form.grade_level) < 0)) {
+      setShowEditModal(null);
       showMessage('❌ Grade level must be between 0 (KG) and 8.', 'danger');
       return;
     }
@@ -81,6 +84,8 @@ export default function AdminClasses() {
       resetForm();
       fetchData();
     } catch (err) {
+      setShowEditModal(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed to update'), 'danger');
     }
   };

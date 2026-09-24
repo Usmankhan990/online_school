@@ -39,6 +39,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import AdminParents from './pages/admin/AdminParents';
 import AdminCourses from './pages/admin/AdminCourses';
 import AdminExams from './pages/admin/AdminExams';
+import AdminCareers from './pages/admin/AdminCareers';
 
 // ── Teacher Pages ──
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -170,6 +171,8 @@ function App() {
             <Route path="/admin/pending-students" element={<D roles={['super_admin']}><PendingStudents /></D>} />
             <Route path="/admin/students" element={<D roles={['super_admin']}><AdminStudents /></D>} />
             <Route path="/admin/teachers" element={<D roles={['super_admin']}><ManageTeachers /></D>} />
+            <Route path="/admin/careers" element={<D roles={['super_admin']}><AdminCareers /></D>} />
+            <Route path="/admin/jobs" element={<D roles={['super_admin']}><AdminCareers /></D>} />
             <Route path="/admin/books" element={<D roles={['super_admin']}><AdminBooks /></D>} />
             <Route path="/admin/classes" element={<D roles={['super_admin']}><AdminClasses /></D>} />
             <Route path="/admin/subjects" element={<D roles={['super_admin']}><AdminSubjects /></D>} />

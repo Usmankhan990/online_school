@@ -38,7 +38,7 @@ exports.getById = async (req, res) => {
 // Create subject
 exports.create = async (req, res) => {
   try {
-    const { name, name_urdu, code, description, icon, color, sort_order } = req.body;
+    const { name, name_urdu, code, description, icon, color, sort_order, class_ids } = req.body;
 
     if (!name) return res.status(400).json({ error: 'Subject name is required.' });
 
@@ -57,6 +57,14 @@ exports.create = async (req, res) => {
       sort_order: sort_order || 0,
     });
 
+    if (class_ids && Array.isArray(class_ids) && class_ids.length > 0) {
+      const classSubjects = class_ids.map(cid => ({
+        class_id: cid,
+        subject_id: subject.id,
+      }));
+      await ClassSubject.bulkCreate(classSubjects);
+    }
+
     res.status(201).json({ message: 'Subject created!', subject });
   } catch (err) {
     console.error('Create subject error:', err);
@@ -70,7 +78,7 @@ exports.update = async (req, res) => {
     const subject = await Subject.findByPk(req.params.id);
     if (!subject) return res.status(404).json({ error: 'Subject not found.' });
 
-    const { name, name_urdu, code, description, icon, color, sort_order, is_active } = req.body;
+    const { name, name_urdu, code, description, icon, color, sort_order, is_active, class_ids } = req.body;
 
     // Check unique code if changing
     if (code && code !== subject.code) {
@@ -88,6 +96,17 @@ exports.update = async (req, res) => {
       sort_order: sort_order !== undefined ? sort_order : subject.sort_order,
       is_active: is_active !== undefined ? is_active : subject.is_active,
     });
+
+    if (class_ids !== undefined && Array.isArray(class_ids)) {
+      await ClassSubject.destroy({ where: { subject_id: subject.id } });
+      if (class_ids.length > 0) {
+        const classSubjects = class_ids.map(cid => ({
+          class_id: cid,
+          subject_id: subject.id,
+        }));
+        await ClassSubject.bulkCreate(classSubjects);
+      }
+    }
 
     res.json({ message: 'Subject updated!', subject });
   } catch (err) {

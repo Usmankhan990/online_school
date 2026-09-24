@@ -25,6 +25,7 @@ const Document = require('./Document');
 const Module = require('./Module');
 const Lesson = require('./Lesson');
 const Settings = require('./Settings');
+const JobPost = require('./JobPost');
 
 // ============= ASSOCIATIONS =============
 
@@ -177,4 +178,5 @@ module.exports = {
   Module,
   Lesson,
   Settings,
+  JobPost,
 };

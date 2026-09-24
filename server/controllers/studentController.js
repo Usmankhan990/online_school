@@ -259,6 +259,34 @@ exports.getStudentDashboard = async (req, res) => {
   }
 };
 
+// ============= MY BOOKS =============
+exports.getMyBooks = async (req, res) => {
+  try {
+    const student = await StudentProfile.findOne({
+      where: { user_id: req.user.id },
+      include: [{ model: Class, as: 'class' }],
+    });
+
+    if (!student || !student.class_id) {
+      return res.json({ books: [], studentClass: null });
+    }
+
+    const books = await Book.findAll({
+      where: { class_id: student.class_id, is_active: true },
+      include: [
+        { model: Class, as: 'class' },
+        { model: Subject, as: 'subject' },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+
+    res.json({ books, studentClass: student.class });
+  } catch (err) {
+    console.error('Fetch student books error:', err);
+    res.status(500).json({ error: 'Failed to fetch student books.' });
+  }
+};
+
 // Get my courses
 exports.getMyCourses = async (req, res) => {
   try {

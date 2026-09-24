@@ -6,17 +6,23 @@ const COLOR_OPTIONS = ['#2563eb','#059669','#d97706','#7c3aed','#e11d48','#0d948
 
 export default function AdminSubjects() {
   const [subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedClassFilter, setSelectedClassFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(null);
   const [msg, setMsg] = useState('');
   const [msgType, setMsgType] = useState('info');
-  const [form, setForm] = useState({ name: '', name_urdu: '', code: '', description: '', icon: '📚', color: '#64748b' });
+  const [form, setForm] = useState({ name: '', name_urdu: '', code: '', description: '', icon: '📚', color: '#64748b', class_ids: [] });
 
   const fetchData = async () => {
     try {
-      const r = await api.get('/subjects');
+      const [r, c] = await Promise.all([
+        api.get('/subjects'),
+        api.get('/classes'),
+      ]);
       setSubjects(r.data.subjects || []);
+      setClasses(c.data.classes || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -31,18 +37,20 @@ export default function AdminSubjects() {
     setTimeout(() => setMsg(''), 4000);
   };
 
-  const resetForm = () => setForm({ name: '', name_urdu: '', code: '', description: '', icon: '📚', color: '#64748b' });
+  const resetForm = () => setForm({ name: '', name_urdu: '', code: '', description: '', icon: '📚', color: '#64748b', class_ids: [] });
 
   // ── Add Subject ──
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
       await api.post('/subjects', form);
-      showMessage('✅ Subject created!', 'success');
+      showMessage('✅ Subject created & assigned to classes!', 'success');
       setShowAddModal(false);
       resetForm();
       fetchData();
     } catch (err) {
+      setShowAddModal(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed'), 'danger');
     }
   };
@@ -56,6 +64,7 @@ export default function AdminSubjects() {
       description: sub.description || '',
       icon: sub.icon || '📚',
       color: sub.color || '#64748b',
+      class_ids: sub.classes ? sub.classes.map(c => c.id) : [],
     });
     setShowEditModal(sub);
   };
@@ -64,11 +73,13 @@ export default function AdminSubjects() {
     e.preventDefault();
     try {
       await api.put(`/subjects/${showEditModal.id}`, form);
-      showMessage('✅ Subject updated!', 'success');
+      showMessage('✅ Subject & class assignments updated!', 'success');
       setShowEditModal(null);
       resetForm();
       fetchData();
     } catch (err) {
+      setShowEditModal(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed'), 'danger');
     }
   };
@@ -100,6 +111,11 @@ export default function AdminSubjects() {
   const activeSubjects = subjects.filter(s => s.is_active).length;
   const totalClasses = subjects.reduce((sum, s) => sum + (s.classesCount || 0), 0);
 
+  const filteredSubjects = subjects.filter(sub => {
+    if (selectedClassFilter === 'all') return true;
+    return sub.classes?.some(c => c.id === parseInt(selectedClassFilter));
+  });
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -119,7 +135,7 @@ export default function AdminSubjects() {
 
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-panel" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-panel" style={{ maxWidth: 620, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
           <div className="modal-header">
             <h2>{title}</h2>
             <button onClick={onClose} className="btn btn-ghost btn-sm">✕</button>
@@ -144,6 +160,102 @@ export default function AdminSubjects() {
                   className="form-input" placeholder="e.g. MATH, ENG, SCI" style={{ textTransform: 'uppercase' }} />
                 <p className="form-helper">Short unique code for identification</p>
               </div>
+
+              {/* Class Selection Tabs / Multi-Select */}
+              <div style={{
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'var(--bg-surface-2)',
+                border: '1px solid var(--border-light)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                  <div>
+                    <label className="form-label" style={{ marginBottom: 0, fontWeight: 700, fontSize: 13 }}>
+                      🏫 Applicable Classes / Grades
+                    </label>
+                    <p className="form-helper" style={{ margin: 0, fontSize: 11 }}>
+                      Mention which class(es) have this subject/book ({form.class_ids?.length || 0} selected)
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, class_ids: classes.map(c => c.id) })}
+                      className="btn btn-ghost btn-xs"
+                      style={{ fontSize: 11, padding: '3px 8px', height: 'auto', border: '1px solid var(--border-light)' }}
+                    >
+                      All Classes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const primaryIds = classes.filter(c => c.grade_level !== undefined && c.grade_level <= 5).map(c => c.id);
+                        setForm({ ...form, class_ids: primaryIds });
+                      }}
+                      className="btn btn-ghost btn-xs"
+                      style={{ fontSize: 11, padding: '3px 8px', height: 'auto', border: '1px solid var(--border-light)' }}
+                    >
+                      KG-5th
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const middleIds = classes.filter(c => c.grade_level !== undefined && c.grade_level >= 6).map(c => c.id);
+                        setForm({ ...form, class_ids: middleIds });
+                      }}
+                      className="btn btn-ghost btn-xs"
+                      style={{ fontSize: 11, padding: '3px 8px', height: 'auto', border: '1px solid var(--border-light)' }}
+                    >
+                      6th-8th
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, class_ids: [] })}
+                      className="btn btn-ghost btn-xs"
+                      style={{ fontSize: 11, padding: '3px 8px', height: 'auto', color: 'var(--text-tertiary)', border: '1px solid var(--border-light)' }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 6 }}>
+                  {classes.map(cls => {
+                    const isSelected = form.class_ids?.includes(cls.id);
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        onClick={() => {
+                          const current = form.class_ids || [];
+                          const updated = isSelected ? current.filter(id => id !== cls.id) : [...current, cls.id];
+                          setForm({ ...form, class_ids: updated });
+                        }}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: isSelected ? 700 : 500,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          transition: 'all 0.15s ease',
+                          background: isSelected ? '#1e3a5f' : 'var(--bg-surface)',
+                          color: isSelected ? '#ffffff' : 'var(--text-primary)',
+                          border: isSelected ? '1.5px solid #1e3a5f' : '1px solid var(--border-light)',
+                          boxShadow: isSelected ? '0 2px 6px rgba(30, 58, 95, 0.25)' : 'none',
+                        }}
+                      >
+                        <span style={{ fontSize: 12 }}>{isSelected ? '✓' : '+'}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cls.display_name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div>
                 <label className="form-label">Description</label>
                 <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})}
@@ -195,7 +307,7 @@ export default function AdminSubjects() {
                     {form.name || 'Subject Name'}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-                    {form.code || 'CODE'} • Preview
+                    {form.code || 'CODE'} • {form.class_ids?.length || 0} class(es) linked
                   </div>
                 </div>
               </div>
@@ -242,15 +354,41 @@ export default function AdminSubjects() {
         ))}
       </div>
 
+      {/* Class Filter Tabs */}
+      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+        <button
+          onClick={() => setSelectedClassFilter('all')}
+          className={`btn btn-sm ${selectedClassFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ borderRadius: 20, fontSize: 12 }}
+        >
+          All Classes ({subjects.length})
+        </button>
+        {classes.map(c => {
+          const count = subjects.filter(s => s.classes?.some(sc => sc.id === c.id)).length;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setSelectedClassFilter(String(c.id))}
+              className={`btn btn-sm ${selectedClassFilter === String(c.id) ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ borderRadius: 20, fontSize: 12, whiteSpace: 'nowrap' }}
+            >
+              {c.display_name} ({count})
+            </button>
+          );
+        })}
+      </div>
+
       {/* Subjects Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
-        {subjects.length === 0 ? (
+        {filteredSubjects.length === 0 ? (
           <div className="card" style={{ padding: 48, textAlign: 'center', gridColumn: '1 / -1' }}>
             <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📭</span>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>No Subjects Found</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Create your first subject to get started.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+              {selectedClassFilter === 'all' ? 'Create your first subject to get started.' : 'No subjects assigned to this class yet.'}
+            </p>
           </div>
-        ) : subjects.map(sub => (
+        ) : filteredSubjects.map(sub => (
           <div key={sub.id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
             {/* Color Bar Top */}
             <div style={{ height: 4, background: sub.color || '#64748b' }} />
@@ -277,7 +415,7 @@ export default function AdminSubjects() {
               {/* Info Row */}
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                 {sub.code && <span className="badge badge-info" style={{ fontSize: 11 }}>{sub.code}</span>}
-                <span className="badge badge-purple" style={{ fontSize: 11 }}>🔗 {sub.classesCount || 0} classes</span>
+                <span className="badge badge-purple" style={{ fontSize: 11 }}>🔗 {sub.classesCount || sub.classes?.length || 0} classes</span>
               </div>
 
               {/* Classes Using */}

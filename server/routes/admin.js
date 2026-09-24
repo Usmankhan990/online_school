@@ -84,8 +84,18 @@ router.post('/notifications', adminController.sendNotification);
 router.put('/notifications/:id/read', adminController.markNotificationRead);
 router.put('/notifications/read-all', adminController.markAllNotificationsRead);
 
+const jobController = require('../controllers/jobController');
+
 // System Settings
 router.get('/settings', adminController.getSettings);
 router.post('/settings', adminController.updateSettings);
+
+// Careers & Job Postings Management
+router.get('/jobs', jobController.getAllJobs);
+router.post('/jobs', jobController.createJob);
+router.put('/jobs/:id', jobController.updateJob);
+router.delete('/jobs/:id', jobController.deleteJob);
+router.patch('/jobs/:id/toggle-status', jobController.toggleJobStatus);
+router.patch('/jobs/:id/toggle-featured', jobController.toggleJobFeatured);
 
 module.exports = router;

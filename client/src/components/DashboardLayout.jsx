@@ -47,6 +47,7 @@ const Icons = {
   moon: <Icon d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />,
   close: <Icon d="M18 6L6 18 M6 6l12 12" />,
   timetable: <Icon d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z M9 15h2 M13 15h2 M9 18h2 M13 18h2" />,
+  careers: <Icon d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2 M12 12v3 M8 12h8" />,
 };
 
 /* Navigation config by role */
@@ -58,6 +59,7 @@ const NAV_CONFIG = {
     { section: 'Management' },
     { label: 'Students', path: '/admin/students', icon: 'students' },
     { label: 'Teachers', path: '/admin/teachers', icon: 'teachers' },
+    { label: 'Careers', path: '/admin/careers', icon: 'careers' },
     { label: 'Parents', path: '/admin/parents', icon: 'parents' },
     { label: 'Classes', path: '/admin/classes', icon: 'classes' },
     { label: 'Subjects', path: '/admin/subjects', icon: 'subjects' },

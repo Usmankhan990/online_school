@@ -115,6 +115,8 @@ export default function AdminBooks() {
       resetForm();
       fetchData();
     } catch (err) {
+      setShowAddModal(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed to add book'), 'danger');
     } finally {
       setUploading(false);
@@ -159,6 +161,8 @@ export default function AdminBooks() {
       resetForm();
       fetchData();
     } catch (err) {
+      setShowEditModal(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showMessage('❌ ' + (err.response?.data?.error || 'Failed to update book'), 'danger');
     } finally {
       setUploading(false);
