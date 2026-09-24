@@ -169,9 +169,9 @@ export default function ParentAttendance() {
                             borderRadius: 8,
                             fontSize: 12,
                             fontWeight: 500,
-                            background: '#f8fafc',
-                            color: '#64748b',
-                            border: '1px solid #e2e8f0'
+                            background: 'var(--bg-surface-2)',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border-light)'
                           }}>
                             ✍️ Manual (Teacher)
                           </span>

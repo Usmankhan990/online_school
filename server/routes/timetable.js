@@ -151,8 +151,8 @@ router.put('/', authenticate, requireRole('super_admin'), async (req, res) => {
     return res.json({ message: 'Timetable updated successfully!', timetable });
   } catch (err) {
     console.error('Update timetable error:', err);
-    return res.status(500).json({ error: 'Failed to update timetable' });
   }
 });
 
+router.DEFAULT_TIMETABLE = DEFAULT_TIMETABLE;
 module.exports = router;

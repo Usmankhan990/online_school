@@ -504,12 +504,12 @@ export default function CareersPage() {
     <div style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh', color: 'var(--text-primary, #1C1917)' }}>
       <PublicNav />
 
-      <div style={{ paddingTop: 70, paddingBottom: 60 }}>
+      <div style={{ paddingBottom: 60 }}>
         {/* ═════════ Hero Section ═════════ */}
         <section
           className="gradient-bg-hero"
           style={{
-            padding: '56px 20px 48px',
+            padding: 'clamp(90px, 11vh, 120px) 20px 48px',
             textAlign: 'center',
             position: 'relative',
             overflow: 'hidden',
@@ -640,16 +640,16 @@ export default function CareersPage() {
                 style={{
                   padding: 20,
                   borderRadius: 16,
-                  background: 'var(--bg-card, #ffffff)',
-                  border: '1px solid var(--border-color, #E7DFD5)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.04)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-medium)',
+                  boxShadow: 'var(--shadow-sm)',
                 }}
               >
                 <div style={{ fontSize: 28, marginBottom: 10 }}>{perk.icon}</div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #1C1917)', marginBottom: 6 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
                   {t(perk.title)}
                 </h3>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary, #78716C)', lineHeight: 1.5, margin: 0 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
                   {t(perk.desc)}
                 </p>
               </div>
@@ -708,13 +708,14 @@ export default function CareersPage() {
                 type="button"
                 onClick={() => setActiveCategory(tab.id)}
                 style={{
-                  padding: '8px 16px',
+                  padding: '8px 18px',
                   borderRadius: 20,
                   fontSize: 13,
                   fontWeight: activeCategory === tab.id ? 700 : 500,
-                  background: activeCategory === tab.id ? '#1C1917' : 'var(--bg-card, #ffffff)',
-                  color: activeCategory === tab.id ? '#FFCC4D' : 'var(--text-secondary, #78716C)',
-                  border: activeCategory === tab.id ? '1px solid #1C1917' : '1px solid var(--border-color, #E7DFD5)',
+                  background: activeCategory === tab.id ? '#FFCC4D' : 'var(--bg-surface)',
+                  color: activeCategory === tab.id ? '#1C1917' : 'var(--text-primary)',
+                  border: activeCategory === tab.id ? '1px solid #FFCC4D' : '1px solid var(--border-medium)',
+                  boxShadow: activeCategory === tab.id ? '0 4px 14px rgba(255, 204, 77, 0.3)' : 'none',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                   transition: 'all 0.2s ease',
@@ -734,8 +735,8 @@ export default function CareersPage() {
                 style={{
                   borderRadius: 18,
                   padding: 24,
-                  background: 'var(--bg-card, #ffffff)',
-                  border: (selectedPosition?.id === job.id && isFormOpen) ? '2px solid #FFCC4D' : '1px solid var(--border-color, #E7DFD5)',
+                  background: 'var(--bg-surface)',
+                  border: (selectedPosition?.id === job.id && isFormOpen) ? '2px solid #FFCC4D' : '1px solid var(--border-medium)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -813,11 +814,11 @@ export default function CareersPage() {
                         key={idx}
                         style={{
                           fontSize: 11,
-                          background: 'var(--bg-body, #FAF6EE)',
-                          color: 'var(--text-primary, #44403C)',
+                          background: 'var(--bg-surface-2)',
+                          color: 'var(--text-primary)',
                           padding: '3px 8px',
                           borderRadius: 6,
-                          border: '1px solid var(--border-color, #E7DFD5)',
+                          border: '1px solid var(--border-medium)',
                         }}
                       >
                         {s}
@@ -850,10 +851,10 @@ export default function CareersPage() {
           </div>
 
           {filteredJobs.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--bg-card, #ffffff)', borderRadius: 16, border: '1px solid var(--border-color, #E7DFD5)' }}>
+            <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--bg-surface)', borderRadius: 16, border: '1px solid var(--border-medium)' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #1C1917)' }}>{t('No specific position found')}</h3>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary, #78716C)', marginBottom: 16 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{t('No specific position found')}</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
                 {t('You can still submit a general faculty registration below and specify your expertise.')}
               </p>
               <button
@@ -981,9 +982,9 @@ export default function CareersPage() {
               style={{
                 borderRadius: 24,
                 overflow: 'hidden',
-                border: '1px solid var(--border-color, #E7DFD5)',
-                background: 'var(--bg-card, #ffffff)',
-                boxShadow: '0 12px 40px rgba(0,0,0,0.06)',
+                border: '1px solid var(--border-medium)',
+                background: 'var(--bg-surface)',
+                boxShadow: 'var(--shadow-md)',
               }}
             >
               {/* Form Title & Top Banner */}
@@ -1095,15 +1096,15 @@ export default function CareersPage() {
                         width: 110,
                         height: 130,
                         borderRadius: 12,
-                        border: '2px dashed var(--border-color, #E7DFD5)',
-                        background: photoPreview ? 'transparent' : 'var(--bg-body, #FAF6EE)',
+                        border: '2px dashed var(--border-medium)',
+                        background: photoPreview ? 'transparent' : 'var(--bg-surface-2)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         overflow: 'hidden',
                         position: 'relative',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                        boxShadow: 'var(--shadow-sm)',
                       }}
                     >
                       {photoPreview ? (
@@ -1327,7 +1328,7 @@ export default function CareersPage() {
                     <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{t('CNIC Front & Back Document')} *</h3>
                   </div>
 
-                  <div style={{ border: '2px dashed var(--border-color, #E7DFD5)', borderRadius: 16, padding: 20, background: 'var(--bg-body, #FAF6EE)', textAlign: 'center' }}>
+                  <div style={{ border: '2px dashed var(--border-medium)', borderRadius: 16, padding: 20, background: 'var(--bg-surface-2)', textAlign: 'center' }}>
                     <input
                       type="file"
                       id="cnicUpload"
@@ -1341,17 +1342,17 @@ export default function CareersPage() {
                     {cnicPreviews.length < 2 ? (
                       <label
                         htmlFor="cnicUpload"
+                        className="btn btn-secondary"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 8,
                           padding: '10px 20px',
-                          background: 'var(--bg-card, #ffffff)',
-                          border: '1px solid var(--border-color, #E7DFD5)',
                           borderRadius: 10,
                           cursor: 'pointer',
                           fontWeight: 600,
                           fontSize: 13,
+                          color: 'var(--text-primary)',
                         }}
                       >
                         🪪 {t('Upload CNIC Front / Back')} ({cnicPreviews.length}/2)
@@ -1373,9 +1374,9 @@ export default function CareersPage() {
                           <div
                             key={idx}
                             style={{
-                              border: '1px solid #cbd5e1',
+                              border: '1px solid var(--border-medium)',
                               borderRadius: 10,
-                              background: '#ffffff',
+                              background: 'var(--bg-surface)',
                               padding: 8,
                               width: 140,
                               textAlign: 'center',
@@ -1388,7 +1389,7 @@ export default function CareersPage() {
                             {doc.type === 'image' && doc.url ? (
                               <img src={doc.url} alt="CNIC" style={{ width: '100%', height: 75, objectFit: 'cover', borderRadius: 6 }} />
                             ) : (
-                              <div style={{ height: 75, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: 6, fontSize: 11, color: '#64748b' }}>
+                              <div style={{ height: 75, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-surface-2)', borderRadius: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
                                 📄 PDF Document
                               </div>
                             )}
@@ -1397,9 +1398,9 @@ export default function CareersPage() {
                               onClick={() => removeCnicFile(idx)}
                               style={{
                                 marginTop: 6,
-                                background: '#fee2e2',
-                                border: 'none',
-                                color: '#b91c1c',
+                                background: 'rgba(239, 68, 68, 0.15)',
+                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                color: '#ef4444',
                                 padding: '3px 8px',
                                 borderRadius: 6,
                                 fontSize: 11,
@@ -1422,7 +1423,7 @@ export default function CareersPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                     <span style={{ width: 26, height: 26, borderRadius: '50%', background: '#1C1917', color: '#FFCC4D', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>5</span>
                     <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{t('Upload CV & Degree Documents')}</h3>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary, #78716C)', background: 'var(--bg-body, #FAF6EE)', padding: '2px 8px', borderRadius: 6 }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary, #78716C)', background: 'var(--bg-surface-2)', padding: '2px 8px', borderRadius: 6 }}>
                       {t('Recommended')}
                     </span>
                   </div>
@@ -1431,10 +1432,10 @@ export default function CareersPage() {
                     {/* CV / Resume Upload Box */}
                     <div
                       style={{
-                        border: '2px dashed var(--border-color, #E7DFD5)',
+                        border: '2px dashed var(--border-medium)',
                         borderRadius: 16,
                         padding: 20,
-                        background: 'var(--bg-body, #FAF6EE)',
+                        background: 'var(--bg-surface-2)',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -1453,8 +1454,8 @@ export default function CareersPage() {
                       {cvFile ? (
                         <div
                           style={{
-                            background: '#ffffff',
-                            border: '1px solid #93c5fd',
+                            background: 'var(--bg-surface)',
+                            border: '1px solid var(--border-medium)',
                             borderRadius: 10,
                             padding: '10px 14px',
                             display: 'flex',
@@ -1466,10 +1467,10 @@ export default function CareersPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
                             <span style={{ fontSize: 18 }}>📄</span>
                             <div style={{ overflow: 'hidden' }}>
-                              <span style={{ fontSize: 12, fontWeight: 600, color: '#1e3a8a', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', display: 'block', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                 {cvFile.name}
                               </span>
-                              <span style={{ fontSize: 11, color: '#64748b' }}>
+                              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                                 {(cvFile.size / (1024 * 1024)).toFixed(2)} MB
                               </span>
                             </div>
@@ -1478,9 +1479,9 @@ export default function CareersPage() {
                             type="button"
                             onClick={removeCvFile}
                             style={{
-                              background: '#fee2e2',
-                              border: 'none',
-                              color: '#b91c1c',
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              color: '#ef4444',
                               padding: '4px 8px',
                               borderRadius: 6,
                               fontSize: 11,
@@ -1527,10 +1528,10 @@ export default function CareersPage() {
                     {/* Degree & Certificates Upload Box */}
                     <div
                       style={{
-                        border: '2px dashed var(--border-color, #E7DFD5)',
+                        border: '2px dashed var(--border-medium)',
                         borderRadius: 16,
                         padding: 20,
-                        background: 'var(--bg-body, #FAF6EE)',
+                        background: 'var(--bg-surface-2)',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -1588,8 +1589,8 @@ export default function CareersPage() {
                               <div
                                 key={idx}
                                 style={{
-                                  background: '#ffffff',
-                                  border: '1px solid #cbd5e1',
+                                  background: 'var(--bg-surface)',
+                                  border: '1px solid var(--border-medium)',
                                   borderRadius: 8,
                                   padding: '6px 12px',
                                   display: 'flex',
@@ -1600,7 +1601,7 @@ export default function CareersPage() {
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden' }}>
                                   <span style={{ fontSize: 14 }}>{doc.type === 'image' ? '🖼️' : '📄'}</span>
-                                  <span style={{ fontSize: 11, fontWeight: 600, color: '#334155', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                                     {doc.name} ({doc.size} MB)
                                   </span>
                                 </div>
@@ -1608,9 +1609,9 @@ export default function CareersPage() {
                                   type="button"
                                   onClick={() => removeDegreeFile(idx)}
                                   style={{
-                                    background: '#fee2e2',
-                                    border: 'none',
-                                    color: '#b91c1c',
+                                    background: 'rgba(239, 68, 68, 0.15)',
+                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                    color: '#ef4444',
                                     padding: '2px 6px',
                                     borderRadius: 4,
                                     fontSize: 10,

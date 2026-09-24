@@ -19,15 +19,15 @@ export default function FeaturesPage() {
   return (
     <div style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh', color: 'var(--text-primary, #1C1917)' }}>
       <PublicNav />
-      <div style={{ paddingTop: 90 }}>
-        <section className="gradient-bg-hero" style={{ padding: '60px 24px' }}>
-          <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-            <h1 style={{ color: 'white', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Platform Features</h1>
-            <p style={{ color: '#D8CEBD', fontSize: 18 }}>Everything a school needs — now digital, accessible, and beautiful.</p>
-          </div>
-        </section>
+      <section className="gradient-bg-hero" style={{ paddingTop: 'clamp(90px, 11vh, 120px)', paddingBottom: 'clamp(40px, 6vh, 60px)', paddingLeft: 24, paddingRight: 24 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h1 style={{ color: 'white', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, marginBottom: 14 }}>Platform Features</h1>
+          <p style={{ color: '#FFCC4D', fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Everything a school needs — now digital, accessible, and beautiful.</p>
+          <p style={{ color: '#D8CEBD', fontSize: 15.5, lineHeight: 1.6, margin: '0 auto', maxWidth: 650 }}>From admission to report cards — a complete digital school experience for students, teachers, and parents.</p>
+        </div>
+      </section>
 
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
             {modules.map(m => (
               <div
@@ -89,7 +89,6 @@ export default function FeaturesPage() {
             ))}
           </div>
         </section>
-      </div>
       <Footer />
     </div>
   );

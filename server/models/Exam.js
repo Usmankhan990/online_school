@@ -27,11 +27,11 @@ const Exam = sequelize.define('Exam', {
     defaultValue: 'quiz',
   },
   total_marks: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
   },
   passing_marks: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
   },
   duration_minutes: {
     type: DataTypes.INTEGER,

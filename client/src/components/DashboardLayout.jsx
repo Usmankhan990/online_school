@@ -171,6 +171,7 @@ export default function DashboardLayout({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [studentLiveCount, setStudentLiveCount] = useState(0);
   const [liveClassAlert, setLiveClassAlert] = useState(null);
+  const [examAlert, setExamAlert] = useState(null);
   const [, setLang] = useState(() => getCurrentLanguage());
 
   useEffect(() => {
@@ -373,6 +374,30 @@ export default function DashboardLayout({ children }) {
           if (unnotified) {
             setLiveClassAlert(unnotified);
           }
+
+          // Exams & popup alert (Works for both online realtime checks and offline students on login)
+          const examsRes = await api.get('/student/exams-list').catch(() => null);
+          const studentExams = examsRes?.data?.exams || [];
+          const activeExams = studentExams.filter(ex => {
+            const attempt = ex.attempts?.[0];
+            const isCompleted = attempt?.status === 'graded' || attempt?.status === 'submitted';
+            const isExpired = new Date(ex.end_time) < now;
+            return !isCompleted && !isExpired;
+          });
+
+          if (activeExams.length > 0) {
+            badges['/student/exams'] = { count: activeExams.length, variant: 'purple' };
+          }
+
+          let seenExamIds = [];
+          try {
+            seenExamIds = JSON.parse(localStorage.getItem(`seen_exams_${user.id}`) || '[]');
+          } catch {}
+
+          const unnotifiedExam = activeExams.find(ex => !seenExamIds.includes(ex.id));
+          if (unnotifiedExam) {
+            setExamAlert(unnotifiedExam);
+          }
         } 
         // 3. Teacher Portal stats
         else if (user.role === 'teacher') {
@@ -460,6 +485,23 @@ export default function DashboardLayout({ children }) {
     }
   };
 
+  const handleDismissExamAlert = (view = false) => {
+    if (examAlert && user) {
+      try {
+        const key = `seen_exams_${user.id}`;
+        const seen = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!seen.includes(examAlert.id)) {
+          seen.push(examAlert.id);
+          localStorage.setItem(key, JSON.stringify(seen));
+        }
+      } catch {}
+      setExamAlert(null);
+      if (view) {
+        navigate('/student/exams');
+      }
+    }
+  };
+
   const navRef = useRef(null);
 
   // Preserve sidebar scroll position or scroll active item into view
@@ -499,7 +541,7 @@ export default function DashboardLayout({ children }) {
           <img src={logoImg} alt="Taleem Ghar" className="sidebar-brand-icon" style={{ objectFit: 'cover', background: '#ffffff', padding: 1 }} />
           <div className="sidebar-brand-text">
             <h2>Taleem Ghar</h2>
-            <p>KG to 8th Punjab Board</p>
+            <p>Apka Ghar, Apka School</p>
           </div>
         </div>
 
@@ -1239,6 +1281,95 @@ export default function DashboardLayout({ children }) {
                 }}
               >
                 Got it
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        {/* Exam Popup Alert for Students (Works Online & Offline upon login) */}
+        {examAlert && !liveClassAlert && user?.role === 'student' && createPortal(
+          <div 
+            className="animate-slide-up"
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              zIndex: 99999,
+              maxWidth: 390,
+              width: 'calc(100% - 48px)',
+              background: 'var(--bg-card, #ffffff)',
+              borderRadius: 16,
+              boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.35), 0 0 0 1.5px rgba(99, 102, 241, 0.3)',
+              padding: 18,
+              border: '2px solid #6366f1',
+              boxSizing: 'border-box',
+              fontFamily: 'inherit'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                  📝
+                </div>
+                <div>
+                  <div style={{ display: 'inline-block', fontSize: 10.5, fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: 0.6, background: 'rgba(99, 102, 241, 0.15)', padding: '1px 7px', borderRadius: 6 }}>
+                    New Exam Alert!
+                  </div>
+                  <h4 style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text-primary, #0f172a)', margin: '3px 0 0 0', lineHeight: 1.3 }}>
+                    {examAlert.title}
+                  </h4>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleDismissExamAlert(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary, #94a3b8)', fontSize: 16, padding: 2 }}
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: 12.5, color: 'var(--text-secondary, #475569)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
+              {examAlert.course?.subject?.name && <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{examAlert.course.subject.name} • </span>}
+              <span>⏱ {examAlert.duration_minutes} Mins • 📊 {examAlert.total_marks} Marks</span>
+            </p>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => handleDismissExamAlert(true)}
+                style={{
+                  flex: 1,
+                  padding: '9px 14px',
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  color: '#ffffff',
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)'
+                }}
+              >
+                Attempt / View Exam →
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDismissExamAlert(false)}
+                style={{
+                  padding: '9px 14px',
+                  borderRadius: 10,
+                  background: 'var(--bg-surface-2, #f1f5f9)',
+                  color: 'var(--text-secondary, #475569)',
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                Later
               </button>
             </div>
           </div>,

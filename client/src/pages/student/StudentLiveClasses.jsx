@@ -8,14 +8,19 @@ export default function StudentLiveClasses() {
   const [previewClass, setPreviewClass] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
 
+  const [nowTime, setNowTime] = useState(Date.now());
+
   useEffect(() => {
     api.get('/student/live-classes')
       .then(r => setLiveClasses(r.data.liveClasses || []))
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    const timer = setInterval(() => setNowTime(Date.now()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const now = new Date();
+  const now = new Date(nowTime);
   const filtered = liveClasses.filter(lc => {
     if (filter === 'upcoming') return new Date(lc.scheduled_at) > now && lc.status === 'scheduled';
     if (filter === 'completed') return lc.status === 'completed';
@@ -212,8 +217,10 @@ export default function StudentLiveClasses() {
               width: '100%',
               padding: 26,
               borderRadius: 18,
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-light)'
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-medium)',
+              boxShadow: 'var(--shadow-xl)',
+              color: 'var(--text-primary)'
             }}
           >
             {/* Header */}
@@ -224,7 +231,7 @@ export default function StudentLiveClasses() {
                   <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
                     {previewClass.title}
                   </h3>
-                  <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                     Live Online Class Details
                   </span>
                 </div>
@@ -233,15 +240,18 @@ export default function StudentLiveClasses() {
                 type="button"
                 onClick={() => setPreviewClass(null)}
                 style={{
-                  border: 'none',
-                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-light)',
+                  background: 'var(--bg-surface-2)',
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
                   fontSize: 16,
                   cursor: 'pointer',
                   fontWeight: 700,
-                  color: 'var(--text-primary)'
+                  color: 'var(--text-primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 ✕
@@ -249,7 +259,7 @@ export default function StudentLiveClasses() {
             </div>
 
             {/* Class Info Box */}
-            <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: 16, marginBottom: 18, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
+            <div style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border-light)', borderRadius: 12, padding: 16, marginBottom: 18, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-secondary)' }}>📚 <b>Subject:</b></span>
                 <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -281,7 +291,7 @@ export default function StudentLiveClasses() {
                 <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
                   📝 Topics / Description:
                 </span>
-                <p style={{ fontSize: 13, color: 'var(--text-primary)', background: 'var(--bg-card)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-light)', margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-primary)', background: 'var(--bg-surface-2)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-light)', margin: 0, lineHeight: 1.5 }}>
                   {previewClass.description}
                 </p>
               </div>
@@ -290,7 +300,7 @@ export default function StudentLiveClasses() {
             {/* Meeting Link Section */}
             {previewClass.meeting_url ? (
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: 6 }}>
                   🔗 Direct Meeting Link (Zoom / Google Meet):
                 </label>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -302,8 +312,8 @@ export default function StudentLiveClasses() {
                       flex: 1,
                       padding: '10px 12px',
                       borderRadius: 8,
-                      border: '1px solid var(--border-light)',
-                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-medium)',
+                      background: 'var(--bg-surface-2)',
                       color: 'var(--text-primary)',
                       fontSize: 13,
                       fontFamily: 'monospace'
@@ -315,9 +325,9 @@ export default function StudentLiveClasses() {
                     style={{
                       padding: '10px 16px',
                       borderRadius: 8,
-                      border: 'none',
-                      background: copiedId === 'modal' ? '#10b981' : 'var(--color-primary-600, #7c3aed)',
-                      color: 'white',
+                      border: '1px solid #FFCC4D',
+                      background: copiedId === 'modal' ? '#10b981' : '#FFCC4D',
+                      color: '#1C1917',
                       fontWeight: 700,
                       fontSize: 13,
                       cursor: 'pointer',
@@ -354,9 +364,9 @@ export default function StudentLiveClasses() {
                     style={{
                       padding: '12px 20px',
                       borderRadius: 10,
-                      border: '1px solid var(--border-light)',
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-secondary)',
+                      border: '1px solid var(--border-medium)',
+                      background: 'var(--bg-surface-2)',
+                      color: 'var(--text-primary)',
                       fontWeight: 600,
                       fontSize: 14,
                       cursor: 'pointer'
@@ -366,7 +376,7 @@ export default function StudentLiveClasses() {
                   </button>
                 </div>
 
-                <p style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginTop: 12, textAlign: 'center' }}>
+                <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 12, textAlign: 'center' }}>
                   💡 Tip: You can copy this link and open it in Google Meet or Zoom app on mobile, tablet, or laptop.
                 </p>
               </div>

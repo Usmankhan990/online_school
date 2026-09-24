@@ -272,7 +272,7 @@ export default function AdminNotifications() {
           <div 
             className="hide-scrollbar"
             style={{ 
-              background: '#ffffff', 
+              background: 'var(--bg-surface)', 
               borderRadius: 16, 
               padding: '24px 28px', 
               maxWidth: 480, 
@@ -281,25 +281,25 @@ export default function AdminNotifications() {
               overflowY: 'auto',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid #e2e8f0',
+              boxShadow: 'var(--shadow-xl)',
+              border: '1px solid var(--border-light)',
               boxSizing: 'border-box'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', margin: 0 }}>📢 New Announcement</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>📢 New Announcement</h2>
               <button 
                 type="button" 
                 onClick={() => setShowAnnouncementModal(false)} 
                 style={{ 
-                  background: '#f1f5f9', 
+                  background: 'var(--bg-surface-2)', 
                   border: 'none', 
                   width: 32, 
                   height: 32, 
                   borderRadius: '50%', 
                   fontSize: 16, 
                   cursor: 'pointer', 
-                  color: '#64748b',
+                  color: 'var(--text-tertiary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -310,7 +310,7 @@ export default function AdminNotifications() {
             </div>
             <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>Send To</label>
+                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Send To</label>
                 <select name="role" value={formData.role} onChange={handleChange} className="form-input" style={{ width: '100%' }}>
                   <option value="all">All Active Users</option>
                   <option value="student">Students</option>
@@ -319,7 +319,7 @@ export default function AdminNotifications() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>Type</label>
+                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Type</label>
                 <select name="type" value={formData.type} onChange={handleChange} className="form-input" style={{ width: '100%' }}>
                   <option value="info">Info</option>
                   <option value="success">Success</option>
@@ -328,11 +328,11 @@ export default function AdminNotifications() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>Title</label>
+                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Title</label>
                 <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="E.g. Holiday Announcement" className="form-input" style={{ width: '100%' }} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: '#334155' }}>Message</label>
+                <label style={{ display: 'block', marginBottom: 5, fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>Message</label>
                 <textarea name="message" value={formData.message} onChange={handleChange} placeholder="Type announcement details..." rows="3" className="form-input resize-y" style={{ width: '100%' }}></textarea>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 6 }}>

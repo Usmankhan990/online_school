@@ -116,7 +116,7 @@ exports.approveStudent = async (req, res) => {
         });
       }
 
-      // Generate first month fee (PKR 1000)
+      // Generate first month fee (PKR 500)
       const currentMonth = new Date().toISOString().slice(0, 7); // e.g. 2026-04
       const existingFee = await Fee.findOne({ where: { student_id: id, month: currentMonth } });
       if (!existingFee) {
@@ -126,7 +126,7 @@ exports.approveStudent = async (req, res) => {
           student_id: id,
           class_id: profile.class_id,
           month: currentMonth,
-          amount: 1000,
+          amount: 500,
           due_date: dueDate.toISOString().split('T')[0],
           status: 'pending',
         });

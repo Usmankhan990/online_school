@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <img src={logoImg} alt="Taleem Ghar" style={{ width: 88, height: 88, borderRadius: 22, objectFit: 'cover', background: '#ffffff', padding: 2, margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }} />
           <h1 style={{ color: 'white', fontSize: 28, fontWeight: 800, marginBottom: 8, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Taleem Ghar</h1>
-          <p style={{ color: '#D8CEBD', fontSize: 15, marginBottom: 40, textShadow: '0 1px 6px rgba(0,0,0,0.5)' }}>KG to 8th • Punjab Board • PCTB 2026</p>
+          <p style={{ color: '#D8CEBD', fontSize: 15, marginBottom: 40, textShadow: '0 1px 6px rgba(0,0,0,0.5)' }}>Apka Ghar, Apka School</p>
           <div style={{ background: 'rgba(28,25,23,0.75)', backdropFilter: 'blur(10px)', borderRadius: 16, padding: '20px 24px', border: '1px solid rgba(255,204,77,0.3)', maxWidth: 360, textAlign: 'left', boxShadow: '0 8px 24px rgba(0,0,0,0.25)' }}>
             <div style={{ color: '#FFCC4D', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>🔒 Account Recovery</div>
             <div style={{ color: '#EBE4D5', fontSize: 13, lineHeight: 1.5 }}>

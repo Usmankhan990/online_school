@@ -137,71 +137,7 @@ export default function RegisterPage() {
     });
   };
 
-  const performOcr = async (file, type) => {
-    if (!file || !file.type.startsWith('image/')) return;
-    setOcrStatus({ loading: true, message: `⚡ Scanning ${type} & auto-filling details...` });
-    setOcrProgress(0);
-    try {
-      const parsed = await scanCnicDocument(file, type, (prog) => {
-        setOcrProgress(prog);
-      });
-      let filledCount = 0;
-
-      setForm(f => {
-        const next = { ...f };
-
-        if (type.includes('Back')) {
-          // CNIC Back focuses on address; switch step to parent and tab to current address
-          setCurrentStep(2);
-          setAddressTab('current');
-        } else if (type.includes('Parent') || type.includes('Father')) {
-          // Parent CNIC Front: fills Parent / Guardian details
-          setCurrentStep(2);
-          const parentName = parsed.full_name || parsed.father_name;
-          if (parentName) {
-            next.father_name = parentName;
-            filledCount++;
-          }
-          if (parsed.cnic) {
-            next.father_cnic = parsed.cnic;
-            filledCount++;
-          }
-        } else {
-          // Student Smart CNIC / B-Form: fills Student details
-          if (parsed.full_name && !next.full_name) { next.full_name = parsed.full_name; filledCount++; }
-          if (parsed.father_name && !next.father_name) { next.father_name = parsed.father_name; filledCount++; }
-          if (parsed.mother_name && !next.mother_name) { next.mother_name = parsed.mother_name; filledCount++; }
-          if (parsed.gender) { next.gender = parsed.gender; filledCount++; }
-          if (parsed.date_of_birth && !next.date_of_birth) { next.date_of_birth = parsed.date_of_birth; filledCount++; }
-        }
-
-        return next;
-      });
-
-      if (parsed.current_address || parsed.current_city || parsed.permanent_address || parsed.permanent_city) {
-        setAddressTab('current');
-        setAddressForm(prev => ({
-          ...prev,
-          current_address: parsed.current_address || prev.current_address,
-          current_city: parsed.current_city || prev.current_city,
-          current_province: parsed.current_province || prev.current_province,
-          permanent_address: parsed.permanent_address || (parsed.current_address && prev.sameAsCurrent ? parsed.current_address : prev.permanent_address),
-          permanent_city: parsed.permanent_city || (parsed.current_city && prev.sameAsCurrent ? parsed.current_city : prev.permanent_city),
-          permanent_province: parsed.permanent_province || (parsed.current_province && prev.sameAsCurrent ? parsed.current_province : prev.permanent_province),
-        }));
-        filledCount++;
-      }
-
-      if (filledCount > 0) {
-        setOcrStatus({ loading: false, message: `✨ Address & details successfully detected and filled! Please verify.` });
-      } else {
-        setOcrStatus({ loading: false, message: '' });
-      }
-    } catch (err) {
-      console.warn('OCR error:', err);
-      setOcrStatus({ loading: false, message: '' });
-    }
-  };
+  const performOcr = async () => {};
 
   const handleBFormChange = (e) => {
     const file = e.target.files?.[0];
@@ -224,7 +160,6 @@ export default function RegisterPage() {
     }
 
     setBFormDoc(file);
-    performOcr(file, 'Student Smart CNIC / B-Form');
     e.target.value = '';
   };
 
@@ -249,7 +184,6 @@ export default function RegisterPage() {
     }
 
     setParentCnicFront(file);
-    performOcr(file, 'Parent CNIC Front');
     e.target.value = '';
   };
 
@@ -274,7 +208,6 @@ export default function RegisterPage() {
     }
 
     setParentCnicBack(file);
-    performOcr(file, 'Parent CNIC Back');
     e.target.value = '';
   };
 
@@ -350,12 +283,22 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <main className="auth-page">
-        <section className="auth-success-card">
-          <HiOutlineCheckCircle className="auth-success-icon" />
-          <h1>Registration Submitted</h1>
-          <p>{success}</p>
-          <Link to="/login" className="btn btn-primary">Go to Login</Link>
+      <main className="auth-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '24px', background: 'var(--bg-body, #FAF6EE)' }}>
+        <section className="auth-success-card" style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '20px',
+          boxShadow: 'var(--shadow-xl)',
+          padding: '40px 32px',
+          maxWidth: '480px',
+          width: '100%',
+          textAlign: 'center',
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          <HiOutlineCheckCircle className="auth-success-icon" style={{ width: 64, height: 64, color: '#10b981', margin: '0 auto 16px' }} />
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '10px' }}>Registration Submitted</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>{success}</p>
+          <Link to="/login" className="btn btn-primary" style={{ padding: '10px 28px', fontSize: '14px', fontWeight: 700, borderRadius: '10px', display: 'inline-block' }}>Go to Login</Link>
         </section>
       </main>
     );
@@ -410,7 +353,7 @@ export default function RegisterPage() {
           {/* Bottom Heading & Description matching screenshot */}
           <div style={{ position: 'relative', zIndex: 1, marginTop: 'auto', paddingTop: 16 }}>
             <h2 style={{ color: '#FFFFFF', fontSize: 'clamp(20px, 2.2vw, 26px)', fontWeight: 800, lineHeight: 1.25, marginBottom: 8 }}>
-              KG to 8th Punjab<br />Board admissions
+              Apka Ghar, Apka School<br />Admissions
             </h2>
             <p style={{ color: '#D6D3D1', fontSize: 13.5, lineHeight: 1.5, maxWidth: 330, margin: 0, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
               Fill the student and guardian details carefully. Your application will be reviewed by the school admin.
@@ -876,7 +819,7 @@ export default function RegisterPage() {
                   <Field label="Contact Number 1 *">
                     <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" required />
                   </Field>
-                  <Field label="Contact Number 2 *">
+                  <Field label="Contact Number 2">
                     <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="Optional" />
                   </Field>
                   <Field label="Parent Email *" wide>
@@ -1264,31 +1207,31 @@ export default function RegisterPage() {
 
                 {/* Review & Summary Card */}
                 <div style={{
-                  background: 'var(--bg-surface-2, #f8fafc)',
-                  border: '1px solid var(--border-color, #e2e8f0)',
+                  background: 'var(--bg-surface-2)',
+                  border: '1px solid var(--border-light)',
                   borderRadius: '12px',
-                  padding: '10px 14px',
+                  padding: '12px 16px',
                   marginTop: '10px'
                 }}>
-                  <p style={{ fontWeight: 700, fontSize: '13px', color: '#0f172a', marginBottom: '6px' }}>
+                  <p style={{ fontWeight: 800, fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}>
                     📋 Application Summary
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '6px', fontSize: '12.5px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '12.5px' }}>
                     <div>
-                      <span style={{ color: 'var(--text-tertiary, #64748b)' }}>Student: </span>
-                      <strong>{form.full_name || '—'}</strong>
+                      <span style={{ color: 'var(--text-secondary)' }}>Student: </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{form.full_name || '—'}</strong>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--text-tertiary, #64748b)' }}>Father: </span>
-                      <strong>{form.father_name || '—'}</strong>
+                      <span style={{ color: 'var(--text-secondary)' }}>Father: </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{form.father_name || '—'}</strong>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--text-tertiary, #64748b)' }}>City: </span>
-                      <strong>{addressForm.current_city || addressForm.permanent_city || '—'}</strong>
+                      <span style={{ color: 'var(--text-secondary)' }}>City: </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{addressForm.current_city || addressForm.permanent_city || '—'}</strong>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--text-tertiary, #64748b)' }}>Selected Class: </span>
-                      <strong>{classes.find(c => String(c.id) === String(form.class_id))?.display_name || 'Not selected'}</strong>
+                      <span style={{ color: 'var(--text-secondary)' }}>Selected Class: </span>
+                      <strong style={{ color: 'var(--text-primary)' }}>{classes.find(c => String(c.id) === String(form.class_id))?.display_name || 'Not selected'}</strong>
                     </div>
                   </div>
                 </div>

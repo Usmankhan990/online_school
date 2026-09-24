@@ -10,6 +10,7 @@ import { getCurrentLanguage, setLanguage, triggerLanguage } from './utils/transl
 import LandingPage from './pages/public/LandingPage';
 import AboutPage from './pages/public/AboutPage';
 import FeaturesPage from './pages/public/FeaturesPage';
+import AdmissionsPage from './pages/public/AdmissionsPage';
 import ContactPage from './pages/public/ContactPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import TermsPage from './pages/public/TermsPage';
@@ -148,6 +149,8 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/admissions" element={<AdmissionsPage />} />
+            <Route path="/admission" element={<AdmissionsPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/career" element={<CareersPage />} />

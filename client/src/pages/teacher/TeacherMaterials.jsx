@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api, { FILE_BASE } from '../../services/api';
 
 const TYPE_CONFIGS = {
@@ -38,8 +38,23 @@ export default function TeacherMaterials() {
   const [file, setFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
+  const msgRef = useRef(null);
 
   useEffect(() => { fetchData(); }, []);
+
+  useEffect(() => {
+    if (msg) {
+      if (msgRef.current) {
+        msgRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      const timer = setTimeout(() => {
+        setMsg('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [msg]);
 
   const fetchData = async () => {
     try {
@@ -151,7 +166,20 @@ export default function TeacherMaterials() {
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>{showForm ? '✕ Cancel' : '+ Upload Material'}</button>
       </div>
 
-      {msg && <div className="alert" style={{ background: msg.startsWith('✅') ? '#ecfdf5' : '#fef2f2', color: msg.startsWith('✅') ? '#059669' : '#dc2626', border: `1px solid ${msg.startsWith('✅') ? '#a7f3d0' : '#fecaca'}` }}>{msg}</div>}
+      {msg && (
+        <div
+          ref={msgRef}
+          className="alert"
+          style={{
+            background: msg.startsWith('✅') ? '#ecfdf5' : '#fef2f2',
+            color: msg.startsWith('✅') ? '#059669' : '#dc2626',
+            border: `1px solid ${msg.startsWith('✅') ? '#a7f3d0' : '#fecaca'}`,
+            scrollMarginTop: '90px'
+          }}
+        >
+          {msg}
+        </div>
+      )}
 
       {showForm && (
         <div className="card" style={{ padding: 24 }}>
@@ -235,31 +263,33 @@ export default function TeacherMaterials() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: 12 }}>
-        {materials.length === 0 ? (
-          <div className="card" style={{ padding: 48, textAlign: 'center', color: 'var(--text-tertiary)' }}>
-            <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📦</span>
-            <p style={{ fontSize: 16, fontWeight: 600 }}>No materials uploaded yet</p></div>
-        ) : materials.map(m => (
-          <div key={m.id} className="card" style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, minWidth: 200 }}>
-              <span style={{ fontSize: 28 }}>{typeIcons[m.type] || '📄'}</span>
-              <div>
-                <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{m.title}</h4>
-                <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
-                  {m.course?.class?.display_name} • {m.course?.subject?.name} • <span className="badge badge-info">{m.type}</span>
-                </p>
-                {m.content && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{m.content.slice(0, 100)}</p>}
+      {!showForm && (
+        <div style={{ display: 'grid', gap: 12 }}>
+          {materials.length === 0 ? (
+            <div className="card" style={{ padding: 48, textAlign: 'center', color: 'var(--text-tertiary)' }}>
+              <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>📦</span>
+              <p style={{ fontSize: 16, fontWeight: 600 }}>No materials uploaded yet</p></div>
+          ) : materials.map(m => (
+            <div key={m.id} className="card" style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center', flex: 1, minWidth: 200 }}>
+                <span style={{ fontSize: 28 }}>{typeIcons[m.type] || '📄'}</span>
+                <div>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{m.title}</h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+                    {m.course?.class?.display_name} • {m.course?.subject?.name} • <span className="badge badge-info">{m.type}</span>
+                  </p>
+                  {m.content && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{m.content.slice(0, 100)}</p>}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {m.file_path && <a href={`${FILE_BASE}/uploads/${m.file_path}`} target="_blank" className="btn btn-sm btn-secondary">📥 Download</a>}
+                {m.external_url && <a href={m.external_url} target="_blank" className="btn btn-sm btn-secondary">🔗 Link</a>}
+                <button onClick={() => handleDelete(m.id)} className="btn btn-sm btn-danger">🗑</button>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {m.file_path && <a href={`${FILE_BASE}/uploads/${m.file_path}`} target="_blank" className="btn btn-sm btn-secondary">📥 Download</a>}
-              {m.external_url && <a href={m.external_url} target="_blank" className="btn btn-sm btn-secondary">🔗 Link</a>}
-              <button onClick={() => handleDelete(m.id)} className="btn btn-sm btn-danger">🗑</button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

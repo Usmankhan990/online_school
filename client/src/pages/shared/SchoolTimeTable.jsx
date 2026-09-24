@@ -474,8 +474,8 @@ export default function SchoolTimeTable() {
                   <tr
                     key={row.class}
                     style={{
-                      background: rowIdx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                      borderBottom: '1px solid #e2e8f0',
+                      background: rowIdx % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-surface-2)',
+                      borderBottom: '1px solid var(--border-light)',
                       transition: 'background 0.15s ease',
                     }}
                   >
@@ -484,9 +484,9 @@ export default function SchoolTimeTable() {
                       style={{
                         padding: '12px 10px',
                         fontWeight: 900,
-                        color: '#0f766e',
-                        background: rowIdx % 2 === 0 ? '#f0fdfa' : '#e6fffa',
-                        borderRight: '2px solid #cbd5e1',
+                        color: '#14b8a6',
+                        background: rowIdx % 2 === 0 ? 'rgba(20, 184, 166, 0.12)' : 'rgba(20, 184, 166, 0.06)',
+                        borderRight: '2px solid var(--border-light)',
                         whiteSpace: 'nowrap',
                       }}
                     >
@@ -501,7 +501,7 @@ export default function SchoolTimeTable() {
 
                       if (editing && isSuperAdmin && colKey !== 'class') {
                         return (
-                          <td key={colKey} style={{ padding: 6, borderRight: '1px solid #e2e8f0' }}>
+                          <td key={colKey} style={{ padding: 6, borderRight: '1px solid var(--border-light)' }}>
                             <input
                               type="text"
                               value={cellVal}
@@ -512,9 +512,9 @@ export default function SchoolTimeTable() {
                                 fontSize: 12,
                                 fontWeight: 700,
                                 borderRadius: 6,
-                                border: '1px solid #94a3b8',
-                                background: '#ffffff',
-                                color: '#0f172a',
+                                border: '1px solid var(--border-input)',
+                                background: 'var(--bg-input)',
+                                color: 'var(--text-primary)',
                                 textAlign: 'center',
                               }}
                             />
@@ -527,9 +527,9 @@ export default function SchoolTimeTable() {
                           key={colKey}
                           style={{
                             padding: '10px 8px',
-                            borderRight: '1px solid #e2e8f0',
+                            borderRight: '1px solid var(--border-light)',
                             verticalAlign: 'middle',
-                            background: isHighlighted ? '#fef08a' : (colKey === 'break' ? '#fef3c7' : undefined),
+                            background: isHighlighted ? 'rgba(250, 204, 21, 0.3)' : (colKey === 'break' ? 'rgba(245, 158, 11, 0.15)' : undefined),
                           }}
                         >
                           <span

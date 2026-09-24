@@ -125,14 +125,14 @@ export default function ManageTeachers() {
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3" style={{ marginBottom: 20 }}>
         {/* Status Tabs */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           {[
             { key: 'all', label: 'All Teachers', count: teachers.length },
-            { key: 'pending', label: 'Pending Applications', count: pendingCount, color: '#f59e0b' },
-            { key: 'active', label: 'Active Staff', count: activeCount, color: '#10b981' },
-            { key: 'rejected', label: 'Rejected', count: rejectedCount, color: '#ef4444' },
+            { key: 'pending', label: 'Pending Applications', count: pendingCount },
+            { key: 'active', label: 'Active Staff', count: activeCount },
+            { key: 'rejected', label: 'Rejected', count: rejectedCount },
           ].map(tab => {
             const isActive = statusFilter === tab.key;
             return (
@@ -146,20 +146,21 @@ export default function ManageTeachers() {
                   gap: 8,
                   padding: '8px 14px',
                   borderRadius: 10,
-                  border: isActive ? '2px solid #1e3a5f' : '1px solid #e2e8f0',
-                  background: isActive ? '#eff6ff' : '#ffffff',
-                  color: isActive ? '#1e3a5f' : '#64748b',
+                  border: isActive ? '1px solid var(--color-primary-500, #ffcc4d)' : '1px solid var(--border-light)',
+                  background: isActive ? 'var(--color-primary-500, #ffcc4d)' : 'var(--bg-surface)',
+                  color: isActive ? '#1c1917' : 'var(--text-secondary)',
                   fontWeight: 700,
                   fontSize: 13,
                   cursor: 'pointer',
+                  boxShadow: isActive ? '0 0 14px rgba(255, 204, 77, 0.35)' : 'none',
                   transition: 'all 0.15s ease'
                 }}
               >
                 <span>{tab.label}</span>
                 <span
                   style={{
-                    background: isActive ? (tab.color || '#1e3a5f') : '#f1f5f9',
-                    color: isActive ? '#ffffff' : '#64748b',
+                    background: isActive ? 'rgba(0, 0, 0, 0.15)' : 'var(--bg-surface-2)',
+                    color: isActive ? '#1c1917' : 'var(--text-tertiary)',
                     padding: '2px 8px',
                     borderRadius: 999,
                     fontSize: 11,
@@ -181,11 +182,11 @@ export default function ManageTeachers() {
             style={{
               padding: '8px 12px',
               borderRadius: 10,
-              border: '1px solid #e2e8f0',
-              background: '#ffffff',
+              border: '1px solid var(--border-input)',
+              background: 'var(--bg-input)',
               fontSize: 13,
               fontWeight: 600,
-              color: '#334155'
+              color: 'var(--text-primary)'
             }}
           >
             <option value="all">All Genders</option>
@@ -194,7 +195,7 @@ export default function ManageTeachers() {
           </select>
 
           <div style={{ position: 'relative', minWidth: 200 }}>
-            <HiOutlineSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={16} />
+            <HiOutlineSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} size={16} />
             <input
               type="text"
               placeholder="Search teacher..."
@@ -204,8 +205,9 @@ export default function ManageTeachers() {
                 width: '100%',
                 padding: '8px 12px 8px 32px',
                 borderRadius: 10,
-                border: '1px solid #e2e8f0',
-                background: '#ffffff',
+                border: '1px solid var(--border-input)',
+                background: 'var(--bg-input)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 outline: 'none'
               }}
@@ -216,28 +218,28 @@ export default function ManageTeachers() {
 
       {/* Teachers Table Card */}
       {filteredTeachers.length === 0 ? (
-        <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12 }}>
-          <HiOutlineUser size={44} style={{ color: '#94a3b8', margin: '0 auto 12px', opacity: 0.6 }} />
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>No Teachers Found</h3>
-          <p style={{ color: '#64748b', fontSize: 13.5 }}>
+        <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: 12 }}>
+          <HiOutlineUser size={44} style={{ color: 'var(--text-tertiary)', margin: '0 auto 12px', opacity: 0.6 }} />
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>No Teachers Found</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 13.5 }}>
             {statusFilter === 'pending'
               ? 'No pending teacher applications waiting for approval.'
               : 'No teacher records match the current filter or search criteria.'}
           </p>
         </div>
       ) : (
-        <div className="card" style={{ border: '1px solid #e2e8f0', borderRadius: 12, background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
+        <div className="card" style={{ border: '1px solid var(--border-light)', borderRadius: 12, background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
           <div className="table-responsive" style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: 800 }}>
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Teacher</th>
-                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qualification & Spec</th>
-                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>City & Location</th>
-                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salary Account (Easypaisa)</th>
-                  <th style={{ padding: '12px 8px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Documents</th>
-                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Status</th>
-                  <th style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Actions</th>
+                <tr style={{ background: 'var(--bg-surface-2)', borderBottom: '1.5px solid var(--border-light)' }}>
+                  <th style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Teacher</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qualification & Spec</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>City & Location</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salary Account (Easypaisa)</th>
+                  <th style={{ padding: '12px 8px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Documents</th>
+                  <th style={{ padding: '12px 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Status</th>
+                  <th style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,9 +259,9 @@ export default function ManageTeachers() {
                   return (
                     <tr
                       key={teacher.id}
-                      style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}
-                      onMouseOver={e => e.currentTarget.style.background = '#f8fafc'}
-                      onMouseOut={e => e.currentTarget.style.background = '#ffffff'}
+                      style={{ borderBottom: '1px solid var(--border-light)', transition: 'background 0.15s' }}
+                      onMouseOver={e => e.currentTarget.style.background = 'var(--bg-surface-2)'}
+                      onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                     >
                       {/* Teacher overview */}
                       <td style={{ padding: '12px 14px' }}>
@@ -268,7 +270,7 @@ export default function ManageTeachers() {
                             <img
                               src={`${FILE_BASE}/uploads/${photo}`}
                               alt={teacher.full_name}
-                              style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                              style={{ width: 38, height: 38, borderRadius: 10, objectFit: 'cover', border: '1px solid var(--border-light)', flexShrink: 0 }}
                             />
                           ) : (
                             <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
@@ -277,16 +279,16 @@ export default function ManageTeachers() {
                           )}
                           <div style={{ minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>{teacher.full_name}</span>
+                              <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>{teacher.full_name}</span>
                               {teacher.gender && (
-                                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700, background: teacher.gender === 'female' ? '#fdf2f8' : '#eff6ff', color: teacher.gender === 'female' ? '#db2777' : '#2563eb', border: `1px solid ${teacher.gender === 'female' ? '#fbcfe8' : '#bfdbfe'}` }}>
+                                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700, background: teacher.gender === 'female' ? 'rgba(219, 39, 119, 0.15)' : 'rgba(37, 99, 235, 0.15)', color: teacher.gender === 'female' ? '#f472b6' : '#60a5fa', border: `1px solid ${teacher.gender === 'female' ? 'rgba(219, 39, 119, 0.3)' : 'rgba(37, 99, 235, 0.3)'}` }}>
                                   {teacher.gender === 'female' ? 'F' : 'M'}
                                 </span>
                               )}
                             </div>
-                            <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{teacher.email}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>{teacher.email}</div>
                             {teacher.phone && (
-                              <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, marginTop: 1 }}>📞 {teacher.phone}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600, marginTop: 1 }}>📞 {teacher.phone}</div>
                             )}
                           </div>
                         </div>
@@ -294,18 +296,18 @@ export default function ManageTeachers() {
 
                       {/* Qualification */}
                       <td style={{ padding: '12px 10px', fontSize: 12.5 }}>
-                        <div style={{ fontWeight: 700, color: '#0f172a' }}>{profile.qualification || '-'}</div>
-                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{profile.specialization || 'General'}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{profile.qualification || '-'}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>{profile.specialization || 'General'}</div>
                         {profile.experience_years !== undefined && profile.experience_years !== null && (
-                          <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 1 }}>Exp: {profile.experience_years} Year(s)</div>
+                          <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', marginTop: 1 }}>Exp: {profile.experience_years} Year(s)</div>
                         )}
                       </td>
 
                       {/* Location */}
                       <td style={{ padding: '12px 10px', fontSize: 12.5 }}>
-                        <div style={{ fontWeight: 700, color: '#0f172a' }}>{profile.city || '-'}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{profile.city || '-'}</div>
                         {profile.address && (
-                          <div style={{ fontSize: 11, color: '#64748b', marginTop: 1, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={profile.address}>
+                          <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={profile.address}>
                             {profile.address}
                           </div>
                         )}
@@ -315,13 +317,13 @@ export default function ManageTeachers() {
                       <td style={{ padding: '12px 10px', fontSize: 12.5 }}>
                         {profile.easypaisa_number ? (
                           <div>
-                            <div style={{ fontWeight: 700, color: '#059669', fontSize: 12 }}>📱 {profile.easypaisa_number}</div>
+                            <div style={{ fontWeight: 700, color: '#10b981', fontSize: 12 }}>📱 {profile.easypaisa_number}</div>
                             {profile.account_holder_name && (
-                              <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>👤 {profile.account_holder_name}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 }}>👤 {profile.account_holder_name}</div>
                             )}
                           </div>
                         ) : (
-                          <span style={{ fontSize: 11.5, color: '#94a3b8', fontStyle: 'italic' }}>Not provided</span>
+                          <span style={{ fontSize: 11.5, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Not provided</span>
                         )}
                       </td>
 
@@ -336,9 +338,9 @@ export default function ManageTeachers() {
                               gap: 4,
                               fontSize: 11,
                               fontWeight: 700,
-                              color: '#0284c7',
-                              background: '#f0f9ff',
-                              border: '1px solid #bae6fd',
+                              color: '#38bdf8',
+                              background: 'rgba(56, 189, 248, 0.15)',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
                               padding: '3px 8px',
                               borderRadius: 999,
                               cursor: 'pointer'
@@ -348,24 +350,24 @@ export default function ManageTeachers() {
                             📎 {docCount} Doc{docCount > 1 ? 's' : ''}
                           </span>
                         ) : (
-                          <span style={{ fontSize: 11, color: '#cbd5e1' }}>-</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>-</span>
                         )}
                       </td>
 
                       {/* Status */}
                       <td style={{ padding: '12px 10px', textAlign: 'center' }}>
                         {isPending && (
-                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}>
+                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                             ⏳ Pending
                           </span>
                         )}
                         {isActive && (
-                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                             ✅ Active
                           </span>
                         )}
                         {isRejected && (
-                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }} title={teacher.rejection_reason || 'Rejected'}>
+                          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }} title={teacher.rejection_reason || 'Rejected'}>
                             ❌ Rejected
                           </span>
                         )}
@@ -380,12 +382,12 @@ export default function ManageTeachers() {
                             style={{
                               display: 'inline-flex', alignItems: 'center', gap: 4,
                               padding: '5px 9px', borderRadius: 7,
-                              background: '#f8fafc', color: '#475569',
-                              border: '1px solid #e2e8f0', fontSize: 11, fontWeight: 700,
+                              background: 'var(--bg-surface-2)', color: 'var(--text-primary)',
+                              border: '1px solid var(--border-light)', fontSize: 11, fontWeight: 700,
                               cursor: 'pointer', transition: 'all 0.15s'
                             }}
-                            onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
-                            onMouseOut={e => e.currentTarget.style.background = '#f8fafc'}
+                            onMouseOver={e => e.currentTarget.style.background = 'var(--border-light)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'var(--bg-surface-2)'}
                             title="View Full Profile & Application"
                           >
                             <HiOutlineEye size={13} /> View
@@ -399,12 +401,12 @@ export default function ManageTeachers() {
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 3,
                                 padding: '5px 9px', borderRadius: 7,
-                                background: '#ecfdf5', color: '#059669',
-                                border: '1px solid #a7f3d0', fontSize: 11, fontWeight: 700,
+                                background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
+                                border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: 11, fontWeight: 700,
                                 cursor: 'pointer', transition: 'all 0.15s'
                               }}
-                              onMouseOver={e => e.currentTarget.style.background = '#d1fae5'}
-                              onMouseOut={e => e.currentTarget.style.background = '#ecfdf5'}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)'}
                               title="Approve Teacher Application"
                             >
                               <HiOutlineCheck size={13} /> Approve
@@ -419,12 +421,12 @@ export default function ManageTeachers() {
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 3,
                                 padding: '5px 9px', borderRadius: 7,
-                                background: '#fef2f2', color: '#dc2626',
-                                border: '1px solid #fecaca', fontSize: 11, fontWeight: 700,
+                                background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444',
+                                border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: 11, fontWeight: 700,
                                 cursor: 'pointer', transition: 'all 0.15s'
                               }}
-                              onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
-                              onMouseOut={e => e.currentTarget.style.background = '#fef2f2'}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'}
                               title="Reject Teacher Application"
                             >
                               <HiOutlineX size={13} /> Reject
@@ -437,12 +439,12 @@ export default function ManageTeachers() {
                             style={{
                               display: 'inline-flex', alignItems: 'center',
                               padding: '5px 7px', borderRadius: 7,
-                              background: '#fff', color: '#ef4444',
-                              border: '1px solid #fee2e2', fontSize: 11,
+                              background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444',
+                              border: '1px solid rgba(239, 68, 68, 0.25)', fontSize: 11,
                               cursor: 'pointer', transition: 'all 0.15s'
                             }}
-                            onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
-                            onMouseOut={e => e.currentTarget.style.background = '#fff'}
+                            onMouseOver={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.22)'}
+                            onMouseOut={e => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)'}
                             title="Delete Teacher Record"
                           >
                             <HiOutlineTrash size={13} />
@@ -460,46 +462,47 @@ export default function ManageTeachers() {
 
       {/* ── FULL TEACHER APPLICATION PREVIEW MODAL ── */}
       {viewModal && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'var(--bg-overlay, rgba(12, 10, 9, 0.85))', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
           <div style={{
-            background: '#fff',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-light)',
             borderRadius: 16,
             width: '100%',
             maxWidth: 680,
             maxHeight: 'min(90vh, 720px)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)',
+            boxShadow: 'var(--shadow-xl)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
           }}>
             {/* Modal Header */}
-            <div style={{ padding: '16px 22px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', flexShrink: 0 }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a' }}>👨‍🏫 Teacher Application & Profile</h2>
+                  <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>👨‍🏫 Teacher Application & Profile</h2>
                   {viewModal.status === 'pending' && (
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#fffbeb', color: '#b45309', border: '1px solid #fde68a' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                       ⏳ Pending Approval
                     </span>
                   )}
                   {viewModal.status === 'active' && (
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                       ✅ Active Teacher
                     </span>
                   )}
                   {viewModal.status === 'rejected' && (
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
                       ❌ Rejected
                     </span>
                   )}
                 </div>
-                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: '#64748b' }}>
+                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: 'var(--text-secondary)' }}>
                   Registered on: {new Date(viewModal.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
               <button
                 onClick={() => setViewModal(null)}
-                style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#94a3b8', padding: 4, borderRadius: 6, lineHeight: 1 }}
+                style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4, borderRadius: 6, lineHeight: 1 }}
               >
                 ✕
               </button>
@@ -515,14 +518,14 @@ export default function ManageTeachers() {
             }}>
               {/* Rejection Alert Banner */}
               {viewModal.status === 'rejected' && viewModal.rejection_reason && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '12px 14px' }}>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#dc2626' }}>❌ Rejection Reason:</p>
-                  <p style={{ margin: '4px 0 0', fontSize: 13, color: '#7f1d1d' }}>{viewModal.rejection_reason}</p>
+                <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 10, padding: '12px 14px' }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#f87171' }}>❌ Rejection Reason:</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-primary)' }}>{viewModal.rejection_reason}</p>
                 </div>
               )}
 
               {/* Section 1: Profile & Contact */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--border-light)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   {viewModal.avatar || viewModal.teacherProfile?.photo ? (
                     <img
@@ -537,70 +540,70 @@ export default function ManageTeachers() {
                   )}
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0f172a', margin: 0 }}>{viewModal.full_name}</h3>
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{viewModal.full_name}</h3>
                       {viewModal.gender && (
-                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: viewModal.gender === 'female' ? '#fdf2f8' : '#eff6ff', color: viewModal.gender === 'female' ? '#db2777' : '#2563eb', border: `1px solid ${viewModal.gender === 'female' ? '#fbcfe8' : '#bfdbfe'}` }}>
+                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999, fontWeight: 700, background: viewModal.gender === 'female' ? 'rgba(219, 39, 119, 0.15)' : 'rgba(37, 99, 235, 0.15)', color: viewModal.gender === 'female' ? '#f472b6' : '#60a5fa', border: `1px solid ${viewModal.gender === 'female' ? 'rgba(219, 39, 119, 0.3)' : 'rgba(37, 99, 235, 0.3)'}` }}>
                           {viewModal.gender === 'female' ? 'Female Teacher' : 'Male Teacher'}
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: 12.5, color: '#64748b', margin: '3px 0 0' }}>✉️ {viewModal.email}</p>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '3px 0 0' }}>✉️ {viewModal.email}</p>
                     {viewModal.phone && (
-                      <p style={{ fontSize: 12.5, color: '#0f172a', fontWeight: 600, margin: '2px 0 0' }}>📞 {viewModal.phone}</p>
+                      <p style={{ fontSize: 12.5, color: 'var(--text-primary)', fontWeight: 600, margin: '2px 0 0' }}>📞 {viewModal.phone}</p>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Section 2: Location Information */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>📍</span> Location & Address
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, fontSize: 12.5 }}>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>City:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.city || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>City:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.city || '-'}</p>
                   </div>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Address (as per CNIC):</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.address || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Address (as per CNIC):</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.address || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Section 3: Academic & Experience */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>🎓</span> Qualification & Experience
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 12.5 }}>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Qualification:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.qualification || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Qualification:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.qualification || '-'}</p>
                   </div>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Subject Specialization:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.specialization || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Subject Specialization:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.specialization || '-'}</p>
                   </div>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Experience:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Experience:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {viewModal.teacherProfile?.experience_years ? `${viewModal.teacherProfile.experience_years} Year(s)` : 'Fresh'}
                     </p>
                   </div>
                 </div>
                 {viewModal.teacherProfile?.bio && (
-                  <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px dashed #cbd5e1' }}>
-                    <span style={{ color: '#64748b', fontWeight: 600, fontSize: 12 }}>Short Bio / Introduction:</span>
-                    <p style={{ margin: '3px 0 0', fontSize: 12.5, color: '#334155', fontStyle: 'italic' }}>"{viewModal.teacherProfile.bio}"</p>
+                  <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px dashed var(--border-light)' }}>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: 12 }}>Short Bio / Introduction:</span>
+                    <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-primary)', fontStyle: 'italic' }}>"{viewModal.teacherProfile.bio}"</p>
                   </div>
                 )}
               </div>
 
               {/* Section 4: Uploaded Official Documents */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>🪪</span> Official Attached Documents
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -608,14 +611,14 @@ export default function ManageTeachers() {
                   {viewModal.teacherProfile?.cnic_file ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {viewModal.teacherProfile.cnic_file.split(',').map((fname, idx, arr) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '10px 14px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-light)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <span style={{ fontSize: 20 }}>🪪</span>
                             <div>
-                              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>
+                              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
                                 {arr.length > 1 ? (idx === 0 ? 'CNIC Front Side' : 'CNIC Back Side') : 'CNIC Document'}
                               </p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#64748b' }}>{fname.trim()}</p>
+                              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)' }}>{fname.trim()}</p>
                             </div>
                           </div>
                           <a
@@ -624,8 +627,8 @@ export default function ManageTeachers() {
                             rel="noreferrer"
                             style={{
                               display: 'inline-flex', alignItems: 'center', gap: 5,
-                              padding: '6px 12px', borderRadius: 8, background: '#f0fdf4',
-                              color: '#16a34a', border: '1px solid #bbf7d0', fontSize: 12, fontWeight: 700, textDecoration: 'none'
+                              padding: '6px 12px', borderRadius: 8, background: 'rgba(16, 185, 129, 0.15)',
+                              color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', fontSize: 12, fontWeight: 700, textDecoration: 'none'
                             }}
                           >
                             <HiOutlineExternalLink size={14} /> Open
@@ -634,17 +637,17 @@ export default function ManageTeachers() {
                       ))}
                     </div>
                   ) : (
-                    <p style={{ margin: 0, fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>No CNIC document attached.</p>
+                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No CNIC document attached.</p>
                   )}
 
                   {/* CV Document */}
                   {viewModal.teacherProfile?.cv_file && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '10px 14px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-light)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontSize: 20 }}>📄</span>
                         <div>
-                          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>Resume / CV</p>
-                          <p style={{ margin: 0, fontSize: 11, color: '#64748b' }}>{viewModal.teacherProfile.cv_file}</p>
+                          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Resume / CV</p>
+                          <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)' }}>{viewModal.teacherProfile.cv_file}</p>
                         </div>
                       </div>
                       <a
@@ -653,8 +656,8 @@ export default function ManageTeachers() {
                         rel="noreferrer"
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: 5,
-                          padding: '6px 12px', borderRadius: 8, background: '#eff6ff',
-                          color: '#2563eb', border: '1px solid #bfdbfe', fontSize: 12, fontWeight: 700, textDecoration: 'none'
+                          padding: '6px 12px', borderRadius: 8, background: 'rgba(59, 130, 246, 0.15)',
+                          color: '#60a5fa', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: 12, fontWeight: 700, textDecoration: 'none'
                         }}
                       >
                         <HiOutlineDocumentDownload size={14} /> View CV
@@ -666,12 +669,12 @@ export default function ManageTeachers() {
                   {viewModal.teacherProfile?.degree_files && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {viewModal.teacherProfile.degree_files.split(',').map((df, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '10px 14px', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border-light)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <span style={{ fontSize: 20 }}>📜</span>
                             <div>
-                              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>Degree / Certificate {idx + 1}</p>
-                              <p style={{ margin: 0, fontSize: 11, color: '#64748b' }}>{df.trim()}</p>
+                              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>Degree / Certificate {idx + 1}</p>
+                              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)' }}>{df.trim()}</p>
                             </div>
                           </div>
                           <a
@@ -680,8 +683,8 @@ export default function ManageTeachers() {
                             rel="noreferrer"
                             style={{
                               display: 'inline-flex', alignItems: 'center', gap: 5,
-                              padding: '6px 12px', borderRadius: 8, background: '#f8fafc',
-                              color: '#475569', border: '1px solid #cbd5e1', fontSize: 12, fontWeight: 700, textDecoration: 'none'
+                              padding: '6px 12px', borderRadius: 8, background: 'var(--bg-surface-2)',
+                              color: 'var(--text-primary)', border: '1px solid var(--border-light)', fontSize: 12, fontWeight: 700, textDecoration: 'none'
                             }}
                           >
                             <HiOutlineExternalLink size={14} /> Open
@@ -694,35 +697,35 @@ export default function ManageTeachers() {
               </div>
 
               {/* Section 5: Salary & Easypaisa */}
-              <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#1e3a5f', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 12, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>💳</span> Salary Account Details (Easypaisa)
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 12.5 }}>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Easypaisa Number:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 800, color: '#059669', fontSize: 13 }}>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Easypaisa Number:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 800, color: '#10b981', fontSize: 13 }}>
                       {viewModal.teacherProfile?.easypaisa_number || '-'}
                     </p>
                   </div>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Account Title:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.account_title || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Account Title:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.account_title || '-'}</p>
                   </div>
                   <div>
-                    <span style={{ color: '#64748b', fontWeight: 600 }}>Account Holder Name:</span>
-                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: '#0f172a' }}>{viewModal.teacherProfile?.account_holder_name || '-'}</p>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Account Holder Name:</span>
+                    <p style={{ margin: '2px 0 0', fontWeight: 700, color: 'var(--text-primary)' }}>{viewModal.teacherProfile?.account_holder_name || '-'}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer Actions */}
-            <div style={{ padding: '14px 22px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', flexShrink: 0 }}>
+            <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-surface-2)', flexShrink: 0 }}>
               <button
                 type="button"
                 onClick={() => setViewModal(null)}
-                style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--bg-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-light)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
               >
                 Close
               </button>
@@ -735,7 +738,7 @@ export default function ManageTeachers() {
                       setRejectModal(id);
                     }}
                     disabled={actionLoading}
-                    style={{ padding: '8px 16px', borderRadius: 8, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    style={{ padding: '8px 16px', borderRadius: 8, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   >
                     <HiOutlineX size={15} /> Reject Application
                   </button>
@@ -745,7 +748,7 @@ export default function ManageTeachers() {
                     type="button"
                     onClick={() => handleApprove(viewModal.id)}
                     disabled={actionLoading}
-                    style={{ padding: '8px 18px', borderRadius: 8, background: '#10b981', color: '#ffffff', border: 'none', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    style={{ padding: '8px 18px', borderRadius: 8, background: 'linear-gradient(135deg, #10b981, #059669)', color: '#ffffff', border: 'none', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   >
                     <HiOutlineCheck size={15} /> Approve Teacher
                   </button>
@@ -759,12 +762,12 @@ export default function ManageTeachers() {
 
       {/* ── REJECT REASON MODAL ── */}
       {rejectModal && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, padding: '22px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)' }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999999, background: 'var(--bg-overlay, rgba(12, 10, 9, 0.85))', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: 16, width: '100%', maxWidth: 440, padding: '22px', boxShadow: 'var(--shadow-xl)' }}>
+            <h3 style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>⚠️</span> Reject Teacher Application
             </h3>
-            <p style={{ margin: '0 0 14px', fontSize: 13, color: '#64748b' }}>
+            <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-secondary)' }}>
               Please provide the reason for rejecting this application (the applicant will see this notification).
             </p>
             <textarea
@@ -776,7 +779,9 @@ export default function ManageTeachers() {
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: 8,
-                border: '1px solid #cbd5e1',
+                border: '1px solid var(--border-input)',
+                background: 'var(--bg-input)',
+                color: 'var(--text-primary)',
                 fontSize: 13,
                 outline: 'none',
                 resize: 'none',
@@ -787,7 +792,7 @@ export default function ManageTeachers() {
               <button
                 type="button"
                 onClick={() => { setRejectModal(null); setRejectReason(''); }}
-                style={{ padding: '8px 16px', borderRadius: 8, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '8px 16px', borderRadius: 8, background: 'var(--bg-surface)', color: 'var(--text-secondary)', border: '1px solid var(--border-light)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
               >
                 Cancel
               </button>

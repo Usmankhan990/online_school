@@ -156,8 +156,8 @@ export default function StudentDashboard() {
                     <div style={{ fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 600 }}>{s.end_time}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{s.Subject?.name || s.subject_name || 'Subject'}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Instructor: <span style={{ fontWeight: 600 }}>{s.Teacher?.full_name || 'Staff'}</span></div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{s.subject_name || s.subject?.name || s.Subject?.name || 'Subject'}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>Instructor: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.teacher_name || s.teacher?.full_name || s.Teacher?.full_name || 'Faculty Staff'}</span></div>
                   </div>
                   <div style={{ marginLeft: 'auto' }}>
                     <Link to="/student/live-classes" className="btn btn-primary btn-sm">Join Live</Link>

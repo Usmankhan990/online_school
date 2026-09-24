@@ -73,15 +73,15 @@ export default function AdminStudents() {
 
   const field = (label, value, onChange, type = 'text', opts = null, maxLength = undefined) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b' }}>{label}</label>
+      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</label>
       {opts ? (
         <select value={value || ''} onChange={e => onChange(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, background: '#fff', color: '#0f172a' }}>
+          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-input)', fontSize: 13, background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
           {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : (
         <input type={type} maxLength={maxLength} value={value || ''} onChange={e => onChange(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13, color: '#0f172a', background: '#fff' }} />
+          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-input)', fontSize: 13, color: 'var(--text-primary)', background: 'var(--bg-input)' }} />
       )}
     </div>
   );
@@ -208,27 +208,28 @@ export default function AdminStudents() {
 
       {/* ── FULL STUDENT ADMISSION DOSSIER VIEW MODAL ── */}
       {viewModal && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'var(--bg-overlay, rgba(12, 10, 9, 0.85))', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
           <div style={{
-            background: '#fff',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-light)',
             borderRadius: 16,
             width: '100%',
             maxWidth: 680,
             maxHeight: 'min(90vh, 700px)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)',
+            boxShadow: 'var(--shadow-xl)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
           }}>
             {/* Modal Header */}
-            <div style={{ padding: '16px 22px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', flexShrink: 0 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a' }}>📋 Student Admission Profile</h2>
-                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: '#64748b' }}>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>📋 Student Admission Profile</h2>
+                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: 'var(--text-secondary)' }}>
                   Roll No: <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{viewModal.studentProfile?.roll_number || 'N/A'}</span> • Status: <span style={{ textTransform: 'capitalize', fontWeight: 700 }}>{viewModal.status}</span>
                 </p>
               </div>
-              <button onClick={() => setViewModal(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#94a3b8', padding: 4, borderRadius: 6, lineHeight: 1 }}>✕</button>
+              <button onClick={() => setViewModal(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4, borderRadius: 6, lineHeight: 1 }}>✕</button>
             </div>
 
             {/* Modal Body */}
@@ -246,70 +247,70 @@ export default function AdminStudents() {
               `}</style>
 
               {/* Section 1: Student Information */}
-              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>👤</span> Student Information
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 13 }}>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Full Name</span><strong style={{ color: '#0f172a' }}>{viewModal.full_name}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Login Email</span><strong style={{ color: '#0f172a' }}>{viewModal.email}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Phone</span><strong style={{ color: '#0f172a', fontFamily: 'monospace' }}>{viewModal.phone || viewModal.studentProfile?.contact_number_1 || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Gender</span><strong style={{ color: '#0f172a' }}>{viewModal.gender || viewModal.studentProfile?.gender || 'Male'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Date of Birth</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.date_of_birth || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Class</span><span style={{ fontWeight: 800, color: '#1d4ed8' }}>{viewModal.studentProfile?.class?.display_name || 'N/A'}</span></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Medium</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.medium || 'English'}</strong></div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px 14px', fontSize: 13 }}>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Full Name</span><strong style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{viewModal.full_name}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Login Email</span><strong style={{ color: 'var(--text-primary)', wordBreak: 'break-all', overflowWrap: 'anywhere', display: 'block' }}>{viewModal.email}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Phone</span><strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace', wordBreak: 'break-word' }}>{viewModal.phone || viewModal.studentProfile?.contact_number_1 || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Gender</span><strong style={{ color: 'var(--text-primary)' }}>{viewModal.gender || viewModal.studentProfile?.gender || 'Male'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Date of Birth</span><strong style={{ color: 'var(--text-primary)' }}>{viewModal.studentProfile?.date_of_birth || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Class</span><span style={{ fontWeight: 800, color: '#3b82f6', display: 'block' }}>{viewModal.studentProfile?.class?.display_name || 'N/A'}</span></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Medium</span><strong style={{ color: 'var(--text-primary)' }}>{viewModal.studentProfile?.medium || 'English'}</strong></div>
                 </div>
               </div>
 
               {/* Section 2: Parent & Guardian Details */}
-              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>👨‍👩‍👦</span> Parent / Guardian Details
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, fontSize: 13 }}>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Guardian Relation</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.guardian_relation || 'Father'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Father Name</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.father_name || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Mother Name</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.mother_name || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Father / Parent CNIC</span><strong style={{ color: '#0f172a', fontFamily: 'monospace' }}>{viewModal.studentProfile?.father_cnic || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Parent Email</span><strong style={{ color: '#0f172a' }}>{viewModal.studentProfile?.parent_email || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Contact Number 1</span><strong style={{ color: '#0f172a', fontFamily: 'monospace' }}>{viewModal.studentProfile?.contact_number_1 || viewModal.phone || '-'}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: 11, display: 'block' }}>Contact Number 2</span><strong style={{ color: '#0f172a', fontFamily: 'monospace' }}>{viewModal.studentProfile?.contact_number_2 || 'None'}</strong></div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px 14px', fontSize: 13 }}>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Guardian Relation</span><strong style={{ color: 'var(--text-primary)' }}>{viewModal.studentProfile?.guardian_relation || 'Father'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Father Name</span><strong style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{viewModal.studentProfile?.father_name || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Mother Name</span><strong style={{ color: 'var(--text-primary)', wordBreak: 'break-word' }}>{viewModal.studentProfile?.mother_name || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Father / Parent CNIC</span><strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{viewModal.studentProfile?.father_cnic || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Parent Email</span><strong style={{ color: 'var(--text-primary)', wordBreak: 'break-all', overflowWrap: 'anywhere', display: 'block' }}>{viewModal.studentProfile?.parent_email || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Contact Number 1</span><strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{viewModal.studentProfile?.contact_number_1 || viewModal.phone || '-'}</strong></div>
+                  <div style={{ minWidth: 0 }}><span style={{ color: 'var(--text-secondary)', fontSize: 11, display: 'block' }}>Contact Number 2</span><strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{viewModal.studentProfile?.contact_number_2 || 'None'}</strong></div>
                 </div>
               </div>
 
               {/* Section 3: Residential Address */}
-              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>📍</span> Residential Address
                 </h3>
-                <p style={{ margin: 0, fontSize: 13, color: '#1e293b', lineHeight: 1.5, fontWeight: 500 }}>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5, fontWeight: 500 }}>
                   {viewModal.studentProfile?.address || 'No detailed address provided.'}
                 </p>
               </div>
 
               {/* Section 4: Attached Verification Documents */}
-              <div style={{ background: 'var(--bg-surface-2, #F4EFE6)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
-                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary, #1C1917)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ background: 'var(--bg-surface-2)', padding: 16, borderRadius: 16, border: '1px solid var(--border-light)' }}>
+                <h3 style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>📎</span> Uploaded Verification Documents ({viewModal.documents?.length || 0})
                 </h3>
                 {(!viewModal.documents || viewModal.documents.length === 0) ? (
-                  <p style={{ margin: 0, fontSize: 12.5, color: '#94a3b8', fontStyle: 'italic' }}>No documents attached.</p>
+                  <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No documents attached.</p>
                 ) : (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
                     {viewModal.documents.map((doc, idx) => {
                       const fileUrl = doc.file_path ? `${FILE_BASE}/uploads/${doc.file_path}` : null;
                       return (
-                        <div key={doc.id || idx} style={{ padding: '10px 12px', background: '#fff', borderRadius: 8, border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <div key={doc.id || idx} style={{ padding: '10px 12px', background: 'var(--bg-surface)', borderRadius: 8, border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.title || `Document ${idx + 1}`}</div>
-                            <div style={{ fontSize: 10.5, color: '#64748b' }}>{doc.type || 'Attachment'}</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.title || `Document ${idx + 1}`}</div>
+                            <div style={{ fontSize: 10.5, color: 'var(--text-secondary)' }}>{doc.type || 'Attachment'}</div>
                           </div>
                           {fileUrl && (
                             <a
                               href={fileUrl}
                               target="_blank"
                               rel="noreferrer"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: '#eff6ff', color: '#2563eb', fontSize: 11, fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', fontSize: 11, fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}
                             >
                               <HiOutlineExternalLink size={12} /> Open
                             </a>
@@ -325,15 +326,15 @@ export default function AdminStudents() {
             {/* Modal Footer */}
             <div style={{
               padding: '14px 22px',
-              borderTop: '1px solid #f1f5f9',
+              borderTop: '1px solid var(--border-light)',
               display: 'flex',
               gap: 10,
               justifyContent: 'flex-end',
-              background: '#f8fafc',
+              background: 'var(--bg-surface-2)',
               flexShrink: 0,
             }}>
               <button type="button" onClick={() => setViewModal(null)}
-                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-surface)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Close
               </button>
             </div>
@@ -344,26 +345,27 @@ export default function AdminStudents() {
 
       {/* ── EDIT MODAL ── */}
       {editModal && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'var(--bg-overlay, rgba(12, 10, 9, 0.85))', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 12px' }}>
           <div style={{
-            background: '#fff',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-light)',
             borderRadius: 16,
             width: '100%',
             maxWidth: 640,
             maxHeight: 'min(90vh, 660px)',
-            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-xl)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             animation: 'fadeIn 0.2s ease-out',
           }}>
             {/* Modal header - Fixed Top */}
-            <div style={{ padding: '16px 22px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', flexShrink: 0 }}>
+            <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-surface)', flexShrink: 0 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Edit Student</h2>
-                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: '#64748b' }}>{editModal.full_name}</p>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>Edit Student</h2>
+                <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: 'var(--text-secondary)' }}>{editModal.full_name}</p>
               </div>
-              <button onClick={() => setEditModal(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#94a3b8', padding: 4, borderRadius: 6, lineHeight: 1 }}>✕</button>
+              <button onClick={() => setEditModal(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: 'var(--text-tertiary)', padding: 4, borderRadius: 6, lineHeight: 1 }}>✕</button>
             </div>
 
             {/* Modal Form - Scrollable without visible scrollbar */}
@@ -440,25 +442,25 @@ export default function AdminStudents() {
                   {field('Address', editModal.studentProfile?.address, v => setProfile('address', v))}
                 </div>
 
-                {msg && <p style={{ margin: 0, fontSize: 13, color: msg.startsWith('✅') ? '#059669' : '#dc2626', fontWeight: 600 }}>{msg}</p>}
+                {msg && <p style={{ margin: 0, fontSize: 13, color: msg.startsWith('✅') ? '#10b981' : '#ef4444', fontWeight: 600 }}>{msg}</p>}
               </div>
 
               {/* Modal footer - Fixed Bottom */}
               <div style={{
                 padding: '14px 22px',
-                borderTop: '1px solid #f1f5f9',
+                borderTop: '1px solid var(--border-light)',
                 display: 'flex',
                 gap: 10,
                 justifyContent: 'flex-end',
-                background: '#f8fafc',
+                background: 'var(--bg-surface-2)',
                 flexShrink: 0,
               }}>
                 <button type="button" onClick={() => setEditModal(null)}
-                  style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                  style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-surface)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  style={{ padding: '8px 22px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #1e3a5f, #10b981)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+                  style={{ padding: '8px 22px', borderRadius: 8, border: 'none', background: 'var(--color-primary-500, #ffcc4d)', color: '#1c1917', fontSize: 13, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
                   {saving ? 'Saving…' : 'Save Changes'}
                 </button>
               </div>
@@ -470,16 +472,16 @@ export default function AdminStudents() {
 
       {/* ── DELETE CONFIRM MODAL ── */}
       {deleteModal && createPortal(
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 400, padding: 28, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, background: 'var(--bg-overlay, rgba(12, 10, 9, 0.85))', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-light)', borderRadius: 16, width: '100%', maxWidth: 400, padding: 28, boxShadow: 'var(--shadow-xl)', textAlign: 'center' }}>
             <div style={{ fontSize: 44, marginBottom: 10 }}>⚠️</div>
-            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#0f172a' }}>Remove Student?</h2>
-            <p style={{ margin: '8px 0 20px', fontSize: 13.5, color: '#64748b', lineHeight: 1.5 }}>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>Remove Student?</h2>
+            <p style={{ margin: '8px 0 20px', fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               You are about to permanently delete <strong>{deleteModal.full_name}</strong>. This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button onClick={() => setDeleteModal(null)}
-                style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#64748b', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid var(--border-light)', background: 'var(--bg-surface-2)', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
                 Cancel
               </button>
               <button onClick={handleDelete} disabled={saving}

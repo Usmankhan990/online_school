@@ -125,6 +125,8 @@ textarea,
   --bg-body:       #FAF6EE;
   --bg-surface:    #FFFFFF;
   --bg-surface-2:  #F4EFE6;
+  --bg-card:       #FFFFFF;
+  --bg-secondary:  #F4EFE6;
   --bg-sidebar:    #1C1917;
   --bg-sidebar-hover: #292524;
   --bg-overlay:    rgba(28, 25, 23, 0.65);
@@ -139,6 +141,7 @@ textarea,
 
   --border-light:   #EBE4D5;
   --border-medium:  #D8CEBD;
+  --border-color:   #EBE4D5;
   --border-input:   #E2D8C7;
   --border-focus:   #FFCC4D;
 
@@ -169,6 +172,8 @@ textarea,
   --bg-body:       #12100E;
   --bg-surface:    #1C1917;
   --bg-surface-2:  #26221E;
+  --bg-card:       #1C1917;
+  --bg-secondary:  #26221E;
   --bg-sidebar:    #0C0A09;
   --bg-sidebar-hover: #1F1B17;
   --bg-overlay:    rgba(12, 10, 9, 0.85);
@@ -183,6 +188,7 @@ textarea,
 
   --border-light:   #2E2822;
   --border-medium:  #3E362E;
+  --border-color:   #2E2822;
   --border-input:   #342D26;
   --border-focus:   #FFCC4D;
 
@@ -1474,6 +1480,7 @@ select, .form-select, select.form-input {
 .auth-success-card h1 {
   font-size: 24px;
   margin-bottom: 8px;
+  color: var(--text-primary);
 }
 .auth-success-card p {
   color: var(--text-secondary);

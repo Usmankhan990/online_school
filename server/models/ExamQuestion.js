@@ -28,7 +28,7 @@ const ExamQuestion = sequelize.define('ExamQuestion', {
     comment: 'Correct answer or expected answer',
   },
   marks: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     allowNull: false,
     defaultValue: 1,
   },

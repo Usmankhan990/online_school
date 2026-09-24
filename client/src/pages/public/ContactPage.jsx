@@ -8,53 +8,51 @@ export default function ContactPage() {
   return (
     <div style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh', color: 'var(--text-primary, #1C1917)' }}>
       <PublicNav />
-      <div style={{ paddingTop: 90 }}>
-        <section className="gradient-bg-hero" style={{ padding: '60px 24px' }}>
-          <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
-            <h1 style={{ color: 'white', fontSize: 40, fontWeight: 800, marginBottom: 16 }}>Contact Us</h1>
-            <p style={{ color: '#D8CEBD', fontSize: 18 }}>Have questions? We'd love to hear from you.</p>
-          </div>
-        </section>
+      <section className="gradient-bg-hero" style={{ paddingTop: 'clamp(90px, 11vh, 120px)', paddingBottom: 'clamp(40px, 6vh, 60px)', paddingLeft: 24, paddingRight: 24 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h1 style={{ color: 'white', fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 800, marginBottom: 16 }}>Contact Us</h1>
+          <p style={{ color: '#D8CEBD', fontSize: 18 }}>Have questions? We'd love to hear from you.</p>
+        </div>
+      </section>
 
-        <section style={{ maxWidth: 900, margin: '0 auto', padding: '64px 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32 }}>
-            <div className="card" style={{ padding: 32, borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)' }}>
-              <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Send a Message</h3>
-              {sent ? (
-                <div className="alert-success" style={{ padding: 20, borderRadius: 16, textAlign: 'center' }}>
-                  <span style={{ fontSize: 36, display: 'block', marginBottom: 8 }}>✅</span>
-                  <p style={{ fontWeight: 600 }}>Message sent successfully!</p>
-                  <p style={{ fontSize: 14, marginTop: 4 }}>We'll get back to you within 24 hours.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Full Name</label><input className="form-input" required placeholder="Your name" /></div>
-                  <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Email</label><input className="form-input" type="email" required placeholder="your@email.com" /></div>
-                  <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Subject</label><input className="form-input" required placeholder="What is this about?" /></div>
-                  <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Message</label><textarea className="form-input" rows={4} required placeholder="Your message..." style={{ resize: 'vertical' }} /></div>
-                  <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', borderRadius: 9999 }}>Send Message</button>
-                </form>
-              )}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {[
-                { icon: '📧', title: 'Email', value: 'info@usmanonlineschool.com' },
-                { icon: '📞', title: 'Phone', value: '+92 300 1234567' },
-                { icon: '📍', title: 'Address', value: 'Lahore, Punjab, Pakistan' },
-                { icon: '⏰', title: 'Office Hours', value: 'Mon-Sat: 9:00 AM - 5:00 PM' },
-              ].map(c => (
-                <div key={c.title} className="card" style={{ padding: 20, display: 'flex', gap: 14, alignItems: 'center', borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
-                  <span style={{ fontSize: 28 }}>{c.icon}</span>
-                  <div>
-                    <p style={{ fontSize: 12, color: 'var(--text-tertiary, #8C827A)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</p>
-                    <p style={{ color: 'var(--text-primary, #1C1917)', fontWeight: 600, fontSize: 15 }}>{c.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '64px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32 }}>
+          <div className="card" style={{ padding: 32, borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)' }}>
+            <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Send a Message</h3>
+            {sent ? (
+              <div className="alert-success" style={{ padding: 20, borderRadius: 16, textAlign: 'center' }}>
+                <span style={{ fontSize: 36, display: 'block', marginBottom: 8 }}>✅</span>
+                <p style={{ fontWeight: 600 }}>Message sent successfully!</p>
+                <p style={{ fontSize: 14, marginTop: 4 }}>We'll get back to you within 24 hours.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Full Name</label><input className="form-input" required placeholder="Your name" /></div>
+                <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Email</label><input className="form-input" type="email" required placeholder="your@email.com" /></div>
+                <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Subject</label><input className="form-input" required placeholder="What is this about?" /></div>
+                <div><label className="form-label" style={{ color: 'var(--text-primary)' }}>Message</label><textarea className="form-input" rows={4} required placeholder="Your message..." style={{ resize: 'vertical' }} /></div>
+                <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', borderRadius: 9999 }}>Send Message</button>
+              </form>
+            )}
           </div>
-        </section>
-      </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[
+              { icon: '📧', title: 'Email', value: 'info@usmanonlineschool.com' },
+              { icon: '📞', title: 'Phone', value: '+92 300 1234567' },
+              { icon: '📍', title: 'Address', value: 'Lahore, Punjab, Pakistan' },
+              { icon: '⏰', title: 'Office Hours', value: 'Mon-Sat: 9:00 AM - 5:00 PM' },
+            ].map(c => (
+              <div key={c.title} className="card" style={{ padding: 20, display: 'flex', gap: 14, alignItems: 'center', borderRadius: 16, border: '1px solid var(--border-light, #EBE4D5)' }}>
+                <span style={{ fontSize: 28 }}>{c.icon}</span>
+                <div>
+                  <p style={{ fontSize: 12, color: 'var(--text-tertiary, #8C827A)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</p>
+                  <p style={{ color: 'var(--text-primary, #1C1917)', fontWeight: 600, fontSize: 15 }}>{c.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <Footer />
     </div>
   );

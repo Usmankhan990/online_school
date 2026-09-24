@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { useSearch } from '../../contexts/SearchContext';
 import { HiOutlinePlus, HiOutlineBookOpen } from 'react-icons/hi';
@@ -10,6 +10,8 @@ export default function TeacherCourses() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ class_id: '', subject_id: '', title: '', description: '' });
   const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState('');
+  const msgRef = useRef(null);
   const { searchQuery } = useSearch();
 
   const fetchCourses = () => {
@@ -20,6 +22,20 @@ export default function TeacherCourses() {
     fetchCourses();
     api.get('/classes').then(res => setClasses(res.data.classes)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (msg) {
+      if (msgRef.current) {
+        msgRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      const timer = setTimeout(() => {
+        setMsg('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [msg]);
 
   const handleClassChange = async (e) => {
     const class_id = e.target.value;
@@ -38,13 +54,15 @@ export default function TeacherCourses() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    setMsg('');
     try {
       await api.post('/teacher/courses', form);
+      setMsg('✅ Course created successfully!');
       setShowForm(false);
       setForm({ class_id: '', subject_id: '', title: '', description: '' });
       fetchCourses();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed');
+      setMsg('❌ ' + (err.response?.data?.error || 'Failed to create course.'));
     }
   };
 
@@ -65,9 +83,24 @@ export default function TeacherCourses() {
           <p className="text-dark-400 text-sm mt-1">Create and manage your courses</p>
         </div>
         <button onClick={() => setShowForm(!showForm)} className="btn btn-primary btn-sm flex items-center gap-2">
-          <HiOutlinePlus className="w-4 h-4" /> Add Course
+          <HiOutlinePlus className="w-4 h-4" /> {showForm ? '✕ Cancel' : 'Add Course'}
         </button>
       </div>
+
+      {msg && (
+        <div
+          ref={msgRef}
+          className="alert"
+          style={{
+            background: msg.startsWith('✅') ? '#ecfdf5' : '#fef2f2',
+            color: msg.startsWith('✅') ? '#059669' : '#dc2626',
+            border: `1px solid ${msg.startsWith('✅') ? '#a7f3d0' : '#fecaca'}`,
+            scrollMarginTop: '90px'
+          }}
+        >
+          {msg}
+        </div>
+      )}
 
       {showForm && (
         <div className="glass-card p-6 animate-slide-up">
@@ -91,52 +124,54 @@ export default function TeacherCourses() {
         </div>
       )}
 
-      <div className="glass-card table-responsive">
-        <table className="table-dark">
-          <thead>
-            <tr>
-              <th>Course Title</th>
-              <th>Class</th>
-              <th>Subject</th>
-              <th>Students</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCourses.length === 0 && !loading ? (
+      {!showForm && (
+        <div className="glass-card table-responsive">
+          <table className="table-dark">
+            <thead>
               <tr>
-                <td colSpan="5" className="text-center p-8 text-dark-400">
-                  <HiOutlineBookOpen className="w-8 h-8 text-dark-600 mx-auto mb-2" />
-                  {q ? `No courses matching "${searchQuery}"` : 'No courses yet. Click "Add Course" to start!'}
-                </td>
+                <th>Course Title</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Students</th>
+                <th>Status</th>
               </tr>
-            ) : (
-              filteredCourses.map(course => (
-                <tr key={course.id}>
-                  <td>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                        <HiOutlineBookOpen className="w-4 h-4" />
-                      </div>
-                      <span className="font-semibold text-gray-900">{course.title}</span>
-                    </div>
-                  </td>
-                  <td className="text-dark-300 text-sm">{course.class?.display_name || '-'}</td>
-                  <td className="text-dark-300 text-sm">{course.subject?.name || '-'}</td>
-                  <td>
-                    <span className="badge badge-info">{course.enrollments?.length || 0} students</span>
-                  </td>
-                  <td>
-                    <span className={`badge ${course.is_active ? 'badge-success' : 'badge-danger'}`}>
-                      {course.is_active ? 'Active' : 'Inactive'}
-                    </span>
+            </thead>
+            <tbody>
+              {filteredCourses.length === 0 && !loading ? (
+                <tr>
+                  <td colSpan="5" className="text-center p-8 text-dark-400">
+                    <HiOutlineBookOpen className="w-8 h-8 text-dark-600 mx-auto mb-2" />
+                    {q ? `No courses matching "${searchQuery}"` : 'No courses yet. Click "Add Course" to start!'}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filteredCourses.map(course => (
+                  <tr key={course.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                          <HiOutlineBookOpen className="w-4 h-4" />
+                        </div>
+                        <span className="font-semibold text-gray-900">{course.title}</span>
+                      </div>
+                    </td>
+                    <td className="text-dark-300 text-sm">{course.class?.display_name || '-'}</td>
+                    <td className="text-dark-300 text-sm">{course.subject?.name || '-'}</td>
+                    <td>
+                      <span className="badge badge-info">{course.enrollments?.length || 0} students</span>
+                    </td>
+                    <td>
+                      <span className={`badge ${course.is_active ? 'badge-success' : 'badge-danger'}`}>
+                        {course.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -129,14 +129,115 @@ exports.getStudentDashboard = async (req, res) => {
       },
     });
 
+    // Build Subject -> Teacher Name map for student's class
+    const subjectTeacherMap = {};
+    const classCourses = await Course.findAll({
+      where: { class_id: resolvedProfile.class_id },
+      include: [
+        { model: Subject, as: 'subject' },
+        { model: User, as: 'teacher', attributes: ['id', 'full_name', 'email'] },
+      ],
+    });
+    for (const c of classCourses) {
+      if (c.subject?.name && c.teacher?.full_name) {
+        subjectTeacherMap[c.subject.name.toLowerCase().trim()] = c.teacher.full_name;
+      }
+    }
+    for (const e of enrollments) {
+      if (e.course?.subject?.name && e.course?.teacher?.full_name) {
+        subjectTeacherMap[e.course.subject.name.toLowerCase().trim()] = e.course.teacher.full_name;
+      }
+    }
+
     // Today's timetable
+    let todaySchedule = [];
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const todayDay = dayNames[new Date().getDay()];
-    const todaySchedule = await Timetable.findAll({
+    const dbSchedule = await Timetable.findAll({
       where: { class_id: resolvedProfile.class_id, day_of_week: todayDay },
-      include: [{ model: Subject, as: 'subject' }],
+      include: [
+        { model: Subject, as: 'subject' },
+      ],
       order: [['start_time', 'ASC']],
     });
+
+    if (dbSchedule && dbSchedule.length > 0) {
+      todaySchedule = dbSchedule.map(s => {
+        const subName = s.subject?.name || 'Subject';
+        let teacherName = subjectTeacherMap[subName.toLowerCase().trim()];
+        if (!teacherName) {
+          const cleanSub = subName.toLowerCase().trim();
+          for (const [k, v] of Object.entries(subjectTeacherMap)) {
+            if (cleanSub.includes(k) || k.includes(cleanSub)) {
+              teacherName = v;
+              break;
+            }
+          }
+        }
+        return {
+          start_time: s.start_time,
+          end_time: s.end_time,
+          subject_name: subName,
+          teacher_name: teacherName || 'Assigned Faculty',
+        };
+      });
+    } else {
+      // Fallback to master school timetable
+      const { Settings } = require('../models');
+      const timetableRoute = require('../routes/timetable');
+      let masterTt = timetableRoute.DEFAULT_TIMETABLE;
+      const ttRow = await Settings.findOne({ where: { key: 'master_school_timetable' } });
+      if (ttRow && ttRow.value) {
+        try { masterTt = JSON.parse(ttRow.value); } catch (e) {}
+      }
+
+      const classDisplayName = resolvedProfile.class?.display_name || '';
+      const className = resolvedProfile.class?.name || '';
+      const gradeLevel = resolvedProfile.class?.grade_level;
+
+      const classRow = (masterTt?.scheduleData || []).find(r => {
+        const rClass = (r.class || '').toLowerCase().trim();
+        const cDisplay = classDisplayName.toLowerCase().trim();
+        const cName = className.toLowerCase().trim();
+        const cGrade = gradeLevel !== undefined ? `class ${gradeLevel}` : '';
+        
+        return rClass === cDisplay ||
+               rClass === cName ||
+               (cGrade && rClass === cGrade) ||
+               rClass.replace(/\s+/g, '') === cDisplay.replace(/\s+/g, '') ||
+               rClass.replace(/\s+/g, '') === cName.replace(/\s+/g, '') ||
+               (cDisplay && (rClass.includes(cDisplay) || cDisplay.includes(rClass)));
+      });
+
+      if (classRow && Array.isArray(masterTt?.columns)) {
+        for (const col of masterTt.columns) {
+          if (col.key === 'class' || col.key === 'break') continue;
+          const rawSubName = classRow[col.key];
+          if (!rawSubName || rawSubName.toUpperCase() === 'RECESS' || rawSubName.toUpperCase() === 'BREAK') continue;
+
+          const timeParts = (col.time || '').split('-').map(t => t.trim());
+          const startTime = timeParts[0] || '';
+          const endTime = timeParts[1] || '';
+
+          let teacherName = null;
+          const cleanSub = rawSubName.toLowerCase().trim();
+          for (const [subjKey, tName] of Object.entries(subjectTeacherMap)) {
+            if (cleanSub.includes(subjKey) || subjKey.includes(cleanSub)) {
+              teacherName = tName;
+              break;
+            }
+          }
+
+          todaySchedule.push({
+            start_time: startTime,
+            end_time: endTime,
+            subject_name: rawSubName,
+            teacher_name: teacherName || 'Assigned Faculty',
+            period: col.label || col.key,
+          });
+        }
+      }
+    }
 
     res.json({
       profile: resolvedProfile,

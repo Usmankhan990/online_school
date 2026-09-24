@@ -13,24 +13,36 @@ export default function StudentExams() {
   const [reviewAttempt, setReviewAttempt] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(null);
 
+  const [now, setNow] = useState(Date.now());
+
   useEffect(() => {
     const fetch = async () => {
       try { const r = await api.get('/student/exams-list'); setExams(r.data.exams || []); }
       catch (err) { console.error(err); } finally { setLoading(false); }
     };
     fetch();
+
+    const timer = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const getStatus = (exam) => {
     const attempt = exam.attempts?.[0];
-    const now = new Date();
+    const nowDate = new Date(now);
     const start = new Date(exam.start_time);
     const end = new Date(exam.end_time);
 
     if (attempt?.status === 'graded') return { label: `Graded: ${attempt.grade}`, color: '#10b981', canAttempt: false };
     if (attempt?.status === 'submitted') return { label: 'Submitted', color: '#3b82f6', canAttempt: false };
-    if (now < start) return { label: `Starts ${start.toLocaleDateString('en-PK', { dateStyle: 'medium' })}`, color: '#6b7280', canAttempt: false };
-    if (now > end && !attempt) return { label: 'Expired', color: '#ef4444', canAttempt: false };
+    if (nowDate < start) {
+      const isToday = nowDate.toDateString() === start.toDateString();
+      const timeStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      const label = isToday ? `Starts Today at ${timeStr}` : `Starts ${start.toLocaleDateString('en-PK', { dateStyle: 'medium' })} ${timeStr}`;
+      return { label, color: '#6b7280', canAttempt: false };
+    }
+    if (nowDate > end && !attempt) return { label: 'Expired', color: '#ef4444', canAttempt: false };
     if (attempt) return { label: 'In Progress', color: '#f59e0b', canAttempt: true };
     return { label: 'Available', color: '#10b981', canAttempt: true };
   };
@@ -175,29 +187,29 @@ export default function StudentExams() {
 
       {/* Exam Modal (Taking Exam) */}
       {activeExam && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(6px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', boxSizing: 'border-box' }}>
-          <div className="card animate-slide-up hide-scrollbar" style={{ width: '100%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto', padding: 32, background: '#fff', borderRadius: 18, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: 16, marginBottom: 24 }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(6px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 16px', boxSizing: 'border-box' }}>
+          <div className="card animate-slide-up hide-scrollbar" style={{ width: '100%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto', padding: 32, background: 'var(--bg-card, #ffffff)', borderRadius: 18, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)', border: '1px solid var(--border-light, #e2e8f0)', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light, #e2e8f0)', paddingBottom: 16, marginBottom: 24 }}>
               <div>
-                <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{activeExam.title}</h2>
-                <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Time Limit: {activeExam.duration_minutes} minutes • Total Marks: {activeExam.total_marks}</p>
+                <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary, #1e293b)' }}>{activeExam.title}</h2>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary, #64748b)', marginTop: 4 }}>Time Limit: {activeExam.duration_minutes} minutes • Total Marks: {activeExam.total_marks}</p>
               </div>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {activeExam.questions?.map((q, i) => (
-                <div key={q.id} style={{ background: '#f8fafc', padding: 24, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                <div key={q.id} style={{ background: 'var(--bg-surface-2, #f8fafc)', padding: 24, borderRadius: 12, border: '1px solid var(--border-light, #e2e8f0)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <h4 style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>Q{i + 1}. {q.question_text}</h4>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#64748b' }}>{q.marks} Marks</span>
+                    <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary, #334155)' }}>Q{i + 1}. {q.question_text}</h4>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>{q.marks} Marks</span>
                   </div>
 
                   {q.question_type === 'mcq' && q.options && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginTop: 16 }}>
                       {JSON.parse(q.options).map((opt, oi) => (
-                        <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: answers[q.id] === opt ? '#eff6ff' : '#fff', border: `1px solid ${answers[q.id] === opt ? '#3b82f6' : '#cbd5e1'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
-                          <input type="radio" name={`q_${q.id}`} value={opt} checked={answers[q.id] === opt} onChange={(e) => handleSaveAnswer(q.id, e.target.value)} style={{ width: 16, height: 16, accentColor: '#3b82f6' }} />
-                          <span style={{ fontSize: 14, color: '#1e293b' }}>{opt}</span>
+                        <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: answers[q.id] === opt ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-card, #ffffff)', border: `1px solid ${answers[q.id] === opt ? 'var(--color-primary-500, #3b82f6)' : 'var(--border-medium, #cbd5e1)'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                          <input type="radio" name={`q_${q.id}`} value={opt} checked={answers[q.id] === opt} onChange={(e) => handleSaveAnswer(q.id, e.target.value)} style={{ width: 16, height: 16, accentColor: 'var(--color-primary-500, #3b82f6)' }} />
+                          <span style={{ fontSize: 14, color: 'var(--text-primary, #1e293b)' }}>{opt}</span>
                         </label>
                       ))}
                     </div>
@@ -206,9 +218,9 @@ export default function StudentExams() {
                   {q.question_type === 'true_false' && (
                     <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
                       {['True', 'False'].map(opt => (
-                        <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: answers[q.id] === opt ? '#eff6ff' : '#fff', border: `1px solid ${answers[q.id] === opt ? '#3b82f6' : '#cbd5e1'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
-                          <input type="radio" name={`q_${q.id}`} value={opt} checked={answers[q.id] === opt} onChange={(e) => handleSaveAnswer(q.id, e.target.value)} style={{ width: 16, height: 16, accentColor: '#3b82f6' }} />
-                          <span style={{ fontSize: 14, color: '#1e293b' }}>{opt}</span>
+                        <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: answers[q.id] === opt ? 'rgba(59, 130, 246, 0.15)' : 'var(--bg-card, #ffffff)', border: `1px solid ${answers[q.id] === opt ? 'var(--color-primary-500, #3b82f6)' : 'var(--border-medium, #cbd5e1)'}`, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s' }}>
+                          <input type="radio" name={`q_${q.id}`} value={opt} checked={answers[q.id] === opt} onChange={(e) => handleSaveAnswer(q.id, e.target.value)} style={{ width: 16, height: 16, accentColor: 'var(--color-primary-500, #3b82f6)' }} />
+                          <span style={{ fontSize: 14, color: 'var(--text-primary, #1e293b)' }}>{opt}</span>
                         </label>
                       ))}
                     </div>
@@ -217,22 +229,22 @@ export default function StudentExams() {
                   {q.question_type === 'subjective' && (
                     <div style={{ marginTop: 16 }}>
                       <textarea
-                        style={{ width: '100%', minHeight: 120, padding: 16, borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }}
+                        style={{ width: '100%', minHeight: 120, padding: 16, borderRadius: 8, border: '1px solid var(--border-medium, #cbd5e1)', background: 'var(--bg-card, #ffffff)', color: 'var(--text-primary, #1e293b)', fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }}
                         placeholder="Type your answer here..."
                         value={answers[q.id] || ''}
                         onChange={(e) => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
                         onBlur={(e) => handleSaveAnswer(q.id, e.target.value)}
                       />
-                      <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 8 }}>Answer is auto-saved when you click outside the text box.</p>
+                      <p style={{ fontSize: 12, color: 'var(--text-tertiary, #94a3b8)', marginTop: 8 }}>Answer is auto-saved when you click outside the text box.</p>
                     </div>
                   )}
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16, marginTop: 32, borderTop: '1px solid #e2e8f0', paddingTop: 24 }}>
-              <button onClick={() => { if(window.confirm('Save progress and close?')) setActiveExam(null); }} style={{ padding: '10px 24px', background: '#fff', border: '1px solid #cbd5e1', color: '#475569', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Save & Close</button>
-              <button onClick={handleSubmitExam} disabled={submitting} style={{ padding: '10px 32px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>{submitting ? 'Submitting...' : 'Submit Exam'}</button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16, marginTop: 32, borderTop: '1px solid var(--border-light, #e2e8f0)', paddingTop: 24 }}>
+              <button onClick={() => { if(window.confirm('Save progress and close?')) setActiveExam(null); }} style={{ padding: '10px 24px', background: 'var(--bg-surface-2, #ffffff)', border: '1px solid var(--border-medium, #cbd5e1)', color: 'var(--text-secondary, #475569)', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}>Save & Close</button>
+              <button onClick={handleSubmitExam} disabled={submitting} style={{ padding: '10px 32px', background: 'var(--color-primary-600, #10b981)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer' }}>{submitting ? 'Submitting...' : 'Submit Exam'}</button>
             </div>
           </div>
         </div>,
@@ -380,23 +392,23 @@ export default function StudentExams() {
                         {q.question_text}
                       </h4>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary, #64748b)', background: '#f1f5f9', padding: '4px 10px', borderRadius: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary, #64748b)', background: 'var(--bg-surface-2, #f1f5f9)', padding: '4px 10px', borderRadius: 6 }}>
                           {q.marks} {q.marks === 1 ? 'Mark' : 'Marks'}
                         </span>
                         
                         {isAutoGraded && (
                           hasAnswered ? (
                             isCorrect ? (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
                                 ✓ Correct (+{marksObtained})
                               </span>
                             ) : (
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
                                 ✗ Incorrect (0/{q.marks})
                               </span>
                             )
                           ) : (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f1f5f9', color: '#64748b', border: '1px solid #cbd5e1', padding: '4px 10px', borderRadius: 999, fontWeight: 700, fontSize: 12 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'var(--bg-surface-2, #f1f5f9)', color: 'var(--text-secondary, #64748b)', border: '1px solid var(--border-medium, #cbd5e1)', padding: '4px 10px', borderRadius: 999, fontWeight: 700, fontSize: 12 }}>
                               ⚠️ Unanswered (0/{q.marks})
                             </span>
                           )
@@ -404,11 +416,11 @@ export default function StudentExams() {
 
                         {isSubjective && (
                           reviewAttempt.status === 'graded' ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 800, fontSize: 12 }}>
                               {marksObtained} / {q.marks} Marks
                             </span>
                           ) : (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', padding: '4px 10px', borderRadius: 999, fontWeight: 700, fontSize: 12 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 700, fontSize: 12 }}>
                               ⏳ Pending Review
                             </span>
                           )
@@ -421,31 +433,31 @@ export default function StudentExams() {
                       let parsedOpts = [];
                       try { parsedOpts = JSON.parse(q.options); } catch (e) { parsedOpts = []; }
                       return (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 14 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginTop: 14 }}>
                           {parsedOpts.map((opt, oi) => {
                             const isStudentChoice = studentAnsText.toLowerCase() === opt.trim().toLowerCase();
                             const isCorrectChoice = correctAnsText.toLowerCase() === opt.trim().toLowerCase();
                             
-                            let optBg = '#ffffff';
-                            let optBorder = '1.5px solid #e2e8f0';
-                            let optColor = '#334155';
+                            let optBg = 'var(--bg-surface-2, #f8fafc)';
+                            let optBorder = '1.5px solid var(--border-light, #e2e8f0)';
+                            let optColor = 'var(--text-primary, #334155)';
                             let badge = null;
 
                             if (isStudentChoice && isCorrectChoice) {
-                              optBg = '#ecfdf5';
+                              optBg = 'rgba(16, 185, 129, 0.12)';
                               optBorder = '2px solid #10b981';
-                              optColor = '#065f46';
-                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#d1fae5', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
+                              optColor = '#10b981';
+                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
                             } else if (isStudentChoice && !isCorrectChoice) {
-                              optBg = '#fef2f2';
+                              optBg = 'rgba(239, 68, 68, 0.12)';
                               optBorder = '2px solid #ef4444';
-                              optColor = '#991b1b';
-                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✗ Your Choice (Wrong)</span>;
+                              optColor = '#ef4444';
+                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#ef4444', background: 'rgba(239, 68, 68, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✗ Your Choice (Wrong)</span>;
                             } else if (!isStudentChoice && isCorrectChoice) {
-                              optBg = '#f0fdf4';
+                              optBg = 'rgba(16, 185, 129, 0.08)';
                               optBorder = '2px solid #10b981';
-                              optColor = '#15803d';
-                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
+                              optColor = '#10b981';
+                              badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
                             }
 
                             return (
@@ -467,7 +479,7 @@ export default function StudentExams() {
                                 }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                  <span style={{ width: 18, height: 18, borderRadius: '50%', border: isStudentChoice ? `5px solid ${isCorrectChoice ? '#10b981' : '#ef4444'}` : '1.5px solid #cbd5e1', display: 'inline-block', flexShrink: 0 }} />
+                                  <span style={{ width: 18, height: 18, borderRadius: '50%', border: isStudentChoice ? `5px solid ${isCorrectChoice ? '#10b981' : '#ef4444'}` : '1.5px solid var(--border-medium, #cbd5e1)', display: 'inline-block', flexShrink: 0 }} />
                                   <span>{opt}</span>
                                 </div>
                                 {badge}
@@ -485,26 +497,26 @@ export default function StudentExams() {
                           const isStudentChoice = studentAnsText.toLowerCase() === opt.toLowerCase();
                           const isCorrectChoice = correctAnsText.toLowerCase() === opt.toLowerCase();
 
-                          let optBg = '#ffffff';
-                          let optBorder = '1.5px solid #e2e8f0';
-                          let optColor = '#334155';
+                          let optBg = 'var(--bg-surface-2, #f8fafc)';
+                          let optBorder = '1.5px solid var(--border-light, #e2e8f0)';
+                          let optColor = 'var(--text-primary, #334155)';
                           let badge = null;
 
                           if (isStudentChoice && isCorrectChoice) {
-                            optBg = '#ecfdf5';
+                            optBg = 'rgba(16, 185, 129, 0.12)';
                             optBorder = '2px solid #10b981';
-                            optColor = '#065f46';
-                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#d1fae5', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Your Choice</span>;
+                            optColor = '#10b981';
+                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Your Choice</span>;
                           } else if (isStudentChoice && !isCorrectChoice) {
-                            optBg = '#fef2f2';
+                            optBg = 'rgba(239, 68, 68, 0.12)';
                             optBorder = '2px solid #ef4444';
-                            optColor = '#991b1b';
-                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#dc2626', background: '#fee2e2', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✗ Your Choice</span>;
+                            optColor = '#ef4444';
+                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#ef4444', background: 'rgba(239, 68, 68, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✗ Your Choice</span>;
                           } else if (!isStudentChoice && isCorrectChoice) {
-                            optBg = '#f0fdf4';
+                            optBg = 'rgba(16, 185, 129, 0.08)';
                             optBorder = '2px solid #10b981';
-                            optColor = '#15803d';
-                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#15803d', background: '#dcfce7', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
+                            optColor = '#10b981';
+                            badge = <span style={{ fontSize: 11, fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>✓ Correct Answer</span>;
                           }
 
                           return (
@@ -526,7 +538,7 @@ export default function StudentExams() {
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ width: 18, height: 18, borderRadius: '50%', border: isStudentChoice ? `5px solid ${isCorrectChoice ? '#10b981' : '#ef4444'}` : '1.5px solid #cbd5e1', display: 'inline-block', flexShrink: 0 }} />
+                                <span style={{ width: 18, height: 18, borderRadius: '50%', border: isStudentChoice ? `5px solid ${isCorrectChoice ? '#10b981' : '#ef4444'}` : '1.5px solid var(--border-medium, #cbd5e1)', display: 'inline-block', flexShrink: 0 }} />
                                 <span>{opt}</span>
                               </div>
                               {badge}
@@ -539,20 +551,20 @@ export default function StudentExams() {
                     {/* MCQ & True/False Detailed Answer Comparison Box */}
                     {isAutoGraded && (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginTop: 14 }}>
-                        <div style={{ padding: '10px 14px', borderRadius: 8, background: hasAnswered ? (isCorrect ? '#ecfdf5' : '#fef2f2') : '#f8fafc', border: `1px solid ${hasAnswered ? (isCorrect ? '#a7f3d0' : '#fecaca') : '#e2e8f0'}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#065f46' : '#991b1b') : '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <div style={{ padding: '10px 14px', borderRadius: 8, background: hasAnswered ? (isCorrect ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)') : 'var(--bg-surface-2, #f8fafc)', border: `1px solid ${hasAnswered ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--border-light, #e2e8f0)'}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--text-secondary, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             {hasAnswered ? (isCorrect ? '✓ Your Answer (Correct)' : '✗ Your Answer (Incorrect)') : '⚠️ Your Answer'}
                           </div>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#047857' : '#b91c1c') : '#94a3b8', marginTop: 4 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--text-tertiary, #94a3b8)', marginTop: 4 }}>
                             {studentAnsText || '<No Answer Submitted>'}
                           </div>
                         </div>
 
-                        <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(16, 185, 129, 0.12)', border: '1px solid #10b981' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             ✓ Correct Answer
                           </div>
-                          <div style={{ fontSize: 14, fontWeight: 800, color: '#166534', marginTop: 4 }}>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981', marginTop: 4 }}>
                             {correctAnsText || 'N/A'}
                           </div>
                         </div>
@@ -562,32 +574,32 @@ export default function StudentExams() {
                     {/* Subjective / Long Answer Preview */}
                     {isSubjective && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
-                        <div style={{ padding: '12px 16px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+                        <div style={{ padding: '12px 16px', borderRadius: 8, background: 'var(--bg-surface-2, #f8fafc)', border: '1px solid var(--border-light, #e2e8f0)' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary, #475569)', textTransform: 'uppercase' }}>
                             Your Submitted Answer:
                           </div>
-                          <div style={{ fontSize: 14, color: '#1e293b', marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                          <div style={{ fontSize: 14, color: 'var(--text-primary, #1e293b)', marginTop: 6, whiteSpace: 'pre-wrap' }}>
                             {studentAnsText || '<No answer submitted>'}
                           </div>
                         </div>
 
                         {correctAnsText && (
-                          <div style={{ padding: '12px 16px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>
+                          <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(16, 185, 129, 0.12)', border: '1px solid #10b981' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#10b981', textTransform: 'uppercase' }}>
                               ✓ Model / Correct Answer:
                             </div>
-                            <div style={{ fontSize: 14, color: '#166534', marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                            <div style={{ fontSize: 14, color: '#10b981', marginTop: 6, whiteSpace: 'pre-wrap' }}>
                               {correctAnsText}
                             </div>
                           </div>
                         )}
 
                         {ans?.teacher_feedback && (
-                          <div style={{ padding: '12px 16px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase' }}>
+                          <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(59, 130, 246, 0.12)', border: '1px solid #3b82f6' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase' }}>
                               💬 Teacher Feedback:
                             </div>
-                            <div style={{ fontSize: 14, color: '#1e40af', marginTop: 6 }}>
+                            <div style={{ fontSize: 14, color: 'var(--text-primary, #1e40af)', marginTop: 6 }}>
                               {ans.teacher_feedback}
                             </div>
                           </div>

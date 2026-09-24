@@ -720,20 +720,20 @@ export default function StudentResults() {
                     {/* MCQ & True/False Detailed Answer Comparison Box */}
                     {isAutoGraded && (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginTop: 14 }}>
-                        <div style={{ padding: '10px 14px', borderRadius: 8, background: hasAnswered ? (isCorrect ? '#ecfdf5' : '#fef2f2') : '#f8fafc', border: `1px solid ${hasAnswered ? (isCorrect ? '#a7f3d0' : '#fecaca') : '#e2e8f0'}` }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#065f46' : '#991b1b') : '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <div style={{ padding: '10px 14px', borderRadius: 8, background: hasAnswered ? (isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)') : 'var(--bg-surface-2)', border: `1px solid ${hasAnswered ? (isCorrect ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)') : 'var(--border-light)'}` }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#34d399' : '#f87171') : 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             {hasAnswered ? (isCorrect ? '✓ Your Answer (Correct)' : '✗ Your Answer (Incorrect)') : '⚠️ Your Answer'}
                           </div>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#047857' : '#b91c1c') : '#94a3b8', marginTop: 4 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: hasAnswered ? (isCorrect ? '#10b981' : '#ef4444') : 'var(--text-tertiary)', marginTop: 4 }}>
                             {studentAnsText || '<No Answer Submitted>'}
                           </div>
                         </div>
 
-                        <div style={{ padding: '10px 14px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             ✓ Correct Answer
                           </div>
-                          <div style={{ fontSize: 14, fontWeight: 800, color: '#166534', marginTop: 4 }}>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: '#10b981', marginTop: 4 }}>
                             {correctAnsText || 'N/A'}
                           </div>
                         </div>
@@ -743,29 +743,29 @@ export default function StudentResults() {
                     {/* Subjective / Long Answer Preview */}
                     {isSubjective && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
-                        <div style={{ padding: '12px 16px', borderRadius: 8, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
+                        <div style={{ padding: '12px 16px', borderRadius: 8, background: 'var(--bg-surface-2)', border: '1px solid var(--border-light)' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
                             Your Submitted Answer:
                           </div>
-                          <div style={{ fontSize: 14, color: '#1e293b', marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                          <div style={{ fontSize: 14, color: 'var(--text-primary)', marginTop: 6, whiteSpace: 'pre-wrap' }}>
                             {studentAnsText || '<No answer submitted>'}
                           </div>
                         </div>
 
                         {correctAnsText && (
-                          <div style={{ padding: '12px 16px', borderRadius: 8, background: '#f0fdf4', border: '1px solid #86efac' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>
+                          <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#34d399', textTransform: 'uppercase' }}>
                               ✓ Model / Correct Answer:
                             </div>
-                            <div style={{ fontSize: 14, color: '#166534', marginTop: 6, whiteSpace: 'pre-wrap' }}>
+                            <div style={{ fontSize: 14, color: '#10b981', marginTop: 6, whiteSpace: 'pre-wrap' }}>
                               {correctAnsText}
                             </div>
                           </div>
                         )}
 
                         {ans?.teacher_feedback && (
-                          <div style={{ padding: '12px 16px', borderRadius: 8, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#1d4ed8', textTransform: 'uppercase' }}>
+                          <div style={{ padding: '12px 16px', borderRadius: 8, background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase' }}>
                               💬 Teacher Feedback:
                             </div>
                             <div style={{ fontSize: 14, color: '#1e40af', marginTop: 6 }}>

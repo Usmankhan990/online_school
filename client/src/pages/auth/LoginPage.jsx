@@ -119,7 +119,7 @@ export default function LoginPage() {
             }}
           />
           <h1 style={{ color: '#FFFFFF', fontSize: 32, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.02em' }}>Taleem Ghar</h1>
-          <p style={{ color: '#A8A29E', fontSize: 14.5, marginBottom: 40 }}>KG to 8th • Punjab Board • PCTB 2026</p>
+          <p style={{ color: '#A8A29E', fontSize: 14.5, marginBottom: 40 }}>Apka Ghar, Apka School</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', maxWidth: 380 }}>
             {['📚 66+ Books', '📝 Exams', '📊 Results', '👨‍👩‍👧 Parent Portal'].map(t => (
               <span key={t} style={{ background: 'rgba(255,255,255,0.08)', color: '#FAF6EE', fontSize: 12.5, padding: '7px 15px', borderRadius: 9999, border: '1px solid rgba(255,255,255,0.12)', fontWeight: 500 }}>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               }}
             />
             <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 20, fontWeight: 800 }}>Taleem Ghar</h2>
-            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 12 }}>KG to 8th • Punjab Board • PCTB 2026</p>
+            <p style={{ color: 'var(--text-secondary, #78716C)', fontSize: 12 }}>Apka Ghar, Apka School</p>
           </div>
 
           <div style={{ marginBottom: 26 }}>
