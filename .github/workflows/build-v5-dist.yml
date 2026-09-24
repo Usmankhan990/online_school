@@ -1,0 +1,46 @@
+name: Build v5 Frontend
+
+on:
+  push:
+    branches:
+      - v-5
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v-5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install
+        working-directory: client
+        run: npm ci
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+      - name: Commit dist
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -f client/dist
+
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+
+          git commit -m "Build v-5 frontend dist [skip ci]"
+          git push
