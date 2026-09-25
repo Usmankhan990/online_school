@@ -503,7 +503,7 @@ export default function LandingPage() {
 
         {/* Bottom Stats bar at bottom of 100vh viewport */}
         <div style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: '0 clamp(16px, 3.5vw, 48px)', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <div className="hero-stats-grid">
             {STATS.map(s => (
               <div key={s.label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: '14px 12px', textAlign: 'center', border: '1.5px solid rgba(255,255,255,0.07)' }}>
                 <div style={{ color: '#10b981', fontSize: 'clamp(20px, 2.8vw, 26px)', fontWeight: 800, lineHeight: 1.2 }}>{s.value}</div>

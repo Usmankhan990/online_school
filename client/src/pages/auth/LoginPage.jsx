@@ -51,15 +51,15 @@ export default function LoginPage() {
         to="/"
         style={{
           position: 'absolute',
-          top: 20,
-          left: 24,
+          top: 'clamp(12px, 2vh, 20px)',
+          left: 'clamp(12px, 3vw, 24px)',
           zIndex: 50,
           display: 'flex',
           alignItems: 'center',
           gap: 7,
-          padding: '7px 18px',
+          padding: '6px 14px',
           borderRadius: 9999,
-          fontSize: 13,
+          fontSize: 12.5,
           fontWeight: 700,
           textDecoration: 'none',
           background: 'rgba(28, 25, 23, 0.72)',
@@ -82,12 +82,12 @@ export default function LoginPage() {
           e.currentTarget.style.transform = 'translateY(0)';
         }}
       >
-        <span style={{ color: '#FFCC4D', fontSize: 14, fontWeight: 800 }}>←</span>
+        <span style={{ color: '#FFCC4D', fontSize: 13, fontWeight: 800 }}>←</span>
         <span>{t('Home')}</span>
       </Link>
 
       {/* Top right controls */}
-      <div style={{ position: 'absolute', top: 20, right: 24, zIndex: 50, display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ position: 'absolute', top: 'clamp(12px, 2vh, 20px)', right: 'clamp(12px, 3vw, 24px)', zIndex: 50, display: 'flex', alignItems: 'center', gap: 8 }}>
         <ThemeToggle />
         <LanguageToggle style={{ background: 'var(--bg-surface, #FFFFFF)', border: '1.5px solid var(--border-light, #EBE4D5)', color: 'var(--text-primary, #1C1917)', boxShadow: '0 2px 8px rgba(44,39,32,0.06)' }} />
       </div>
@@ -131,7 +131,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Panel — Form */}
-      <div className="flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh' }}>
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 pt-16 sm:pt-6" style={{ background: 'var(--bg-body, #FAF6EE)', minHeight: '100vh' }}>
         <div style={{ width: '100%', maxWidth: 460 }} className="animate-fade-in">
           {/* Mobile logo */}
           <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 28 }}>

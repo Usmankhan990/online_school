@@ -146,10 +146,24 @@ export default function DashboardLayout({ children }) {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== 'undefined') {
-      return window.innerWidth > 768;
+      return window.innerWidth > 1024;
     }
     return true;
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth <= 1024) {
+          setSidebarOpen(false);
+        } else {
+          setSidebarOpen(true);
+        }
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [profileOpen, setProfileOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -535,7 +549,7 @@ export default function DashboardLayout({ children }) {
     <div className="flex min-h-screen" style={{ background: 'var(--bg-body)' }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 md:hidden" style={{ background: 'var(--bg-overlay)' }} onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-30 lg:hidden" style={{ background: 'var(--bg-overlay)' }} onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
@@ -567,7 +581,11 @@ export default function DashboardLayout({ children }) {
 
             return (
               <Link key={i} to={item.path} className={`sidebar-link ${isActive ? 'active' : ''}`}
-                onClick={() => setSidebarOpen(false)}>
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+                    setSidebarOpen(false);
+                  }
+                }}>
                 <span className="link-icon">{Icons[item.icon]}</span>
                 <span style={{ flex: 1 }}>{t(item.label)}</span>
                 {badge && badge.count !== undefined && (
@@ -827,7 +845,7 @@ export default function DashboardLayout({ children }) {
               style={{ 
                 background: 'var(--bg-surface, #ffffff)', 
                 borderRadius: 20, 
-                padding: '32px 36px', 
+                padding: 'clamp(18px, 4vw, 32px) clamp(16px, 4vw, 36px)', 
                 maxWidth: 680, 
                 width: '100%', 
                 maxHeight: 'calc(100vh - 40px)',
@@ -1397,7 +1415,9 @@ function AvatarCropModal({ imageSrc, onClose, onCropComplete }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imgRef = useRef(null);
-  const cropSize = 260; // diameter of circular frame in px
+  const cropSize = typeof window !== 'undefined' 
+    ? Math.min(260, Math.max(160, window.innerWidth - 80)) 
+    : 240; // responsive diameter of circular frame in px
 
   const handleMouseDown = (e) => {
     setIsDragging(true);

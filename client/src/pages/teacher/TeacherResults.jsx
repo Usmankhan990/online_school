@@ -156,7 +156,7 @@ export default function TeacherResults() {
     return (
       <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="skeleton" style={{ height: 40, width: 250, borderRadius: 10 }} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div className="grid-responsive-4">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="skeleton" style={{ height: 80, borderRadius: 14 }} />
           ))}
@@ -344,7 +344,7 @@ export default function TeacherResults() {
       </div>
 
       {/* Summary Statistics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
+      <div className="grid-responsive-4">
         {[
           { label: 'Total Attempts', value: totalCount, icon: '📝', color: '#3b82f6', bg: '#eff6ff' },
           { label: 'Graded Results', value: gradedCount, icon: '✅', color: '#10b981', bg: '#ecfdf5' },
@@ -363,7 +363,7 @@ export default function TeacherResults() {
 
       {/* Filter and Search Bar */}
       <div className="card" style={{ padding: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ flex: 1, minWidth: 220, position: 'relative' }}>
+        <div style={{ flex: '1 1 200px', minWidth: 0, position: 'relative' }}>
           <input
             type="text"
             placeholder="🔍 Search student name, exam title or subject..."
@@ -422,7 +422,7 @@ export default function TeacherResults() {
             return (
               <div key={r.id} className="card" style={{ padding: 20, transition: 'all 0.15s ease' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 260 }}>
+                  <div style={{ flex: '1 1 240px', minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
                       <div style={{
                         width: 34,
@@ -494,11 +494,12 @@ export default function TeacherResults() {
                   {/* Score & Grade Display */}
                   <div style={{
                     textAlign: 'center',
-                    minWidth: 100,
+                    minWidth: 80,
                     padding: '8px 16px',
                     borderRadius: 12,
                     background: 'var(--bg-surface-2)',
-                    border: '1px solid var(--border-light)'
+                    border: '1px solid var(--border-light)',
+                    flexShrink: 0
                   }}>
                     <div style={{ fontSize: 26, fontWeight: 900, color: gradeColor(r.grade), lineHeight: 1.1 }}>
                       {r.grade || '-'}
@@ -534,7 +535,7 @@ export default function TeacherResults() {
                             gap: 8
                           }}
                         >
-                          <div style={{ fontSize: 13, color: 'var(--text-primary)', flex: 1, minWidth: 200 }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-primary)', flex: '1 1 180px', minWidth: 0 }}>
                             <strong>Answer:</strong> {a.answer_text?.slice(0, 120) || '(File submission attached)'}
                           </div>
                           <button
@@ -562,7 +563,7 @@ export default function TeacherResults() {
       {/* Grading Modal */}
       {grading && (
         <div className="modal-overlay" onClick={() => setGrading(null)}>
-          <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 460 }}>
+          <div className="modal-panel" onClick={e => e.stopPropagation()} style={{ maxWidth: 460, width: '100%' }}>
             <div className="modal-header">
               <h2>✍️ Grade Subjective Answer</h2>
               <button className="btn btn-icon btn-ghost" onClick={() => setGrading(null)}>✕</button>

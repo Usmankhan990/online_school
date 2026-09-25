@@ -101,8 +101,8 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Right Panel — Form */}
-      <div className="flex-1 flex items-center justify-center p-6" style={{ background: 'var(--bg-body, #FAF6EE)' }}>
-        <div style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface, #FFFFFF)', padding: '36px 32px', borderRadius: 28, border: '1px solid var(--border-light, #EBE4D5)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} className="animate-fade-in">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 pt-16 sm:pt-6" style={{ background: 'var(--bg-body, #FAF6EE)' }}>
+        <div style={{ width: '100%', maxWidth: 440, background: 'var(--bg-surface, #FFFFFF)', padding: 'clamp(20px, 4vw, 36px) clamp(16px, 4vw, 32px)', borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} className="animate-fade-in">
           {/* Mobile logo */}
           <div className="lg:hidden" style={{ textAlign: 'center', marginBottom: 32 }}>
             <img src={logoImg} alt="Taleem Ghar" style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'cover', background: '#ffffff', padding: 2, display: 'inline-block', marginBottom: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />

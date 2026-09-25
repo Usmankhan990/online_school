@@ -16,7 +16,7 @@ export default function ContactPage() {
       </section>
 
       <section style={{ maxWidth: 1400, width: '100%', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 32 }}>
           <div className="card" style={{ padding: 32, borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)' }}>
             <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 20, fontWeight: 700, marginBottom: 24 }}>Send a Message</h3>
             {sent ? (
