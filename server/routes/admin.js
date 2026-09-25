@@ -61,6 +61,8 @@ router.put('/fees/:id/verify', adminController.verifyPayment);
 // Courses & Exams Management
 router.get('/courses', adminController.getCourses);
 router.get('/exams', adminController.getExams);
+router.get('/live-classes', adminController.getAllLiveClasses);
+router.delete('/live-classes/:id', adminController.deleteLiveClass);
 
 // Books Management
 router.get('/books', adminController.getAllBooks);

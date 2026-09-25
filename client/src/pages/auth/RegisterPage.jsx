@@ -65,6 +65,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [ocrStatus, setOcrStatus] = useState({ loading: false, message: '' });
   const [ocrProgress, setOcrProgress] = useState(0);
   const navigate = useNavigate();
@@ -77,6 +78,14 @@ export default function RegisterPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
 
     if (name === 'father_cnic') {
       let v = value.replace(/[^0-9]/g, '');
@@ -113,6 +122,14 @@ export default function RegisterPage() {
 
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+
     setAddressForm(prev => {
       const updated = { ...prev, [name]: value };
 
@@ -160,6 +177,13 @@ export default function RegisterPage() {
     }
 
     setBFormDoc(file);
+    if (fieldErrors.bFormDoc) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next.bFormDoc;
+        return next;
+      });
+    }
     e.target.value = '';
   };
 
@@ -184,6 +208,13 @@ export default function RegisterPage() {
     }
 
     setParentCnicFront(file);
+    if (fieldErrors.parentCnicFront) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next.parentCnicFront;
+        return next;
+      });
+    }
     e.target.value = '';
   };
 
@@ -208,6 +239,13 @@ export default function RegisterPage() {
     }
 
     setParentCnicBack(file);
+    if (fieldErrors.parentCnicBack) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next.parentCnicBack;
+        return next;
+      });
+    }
     e.target.value = '';
   };
 
@@ -227,30 +265,198 @@ export default function RegisterPage() {
   const firstUnmetRule = passwordRules.find(r => !r.valid);
   const isPasswordValid = !firstUnmetRule;
 
+  const validateStep = (step) => {
+    const errs = {};
+
+    if (step === 1) {
+      if (!form.full_name || !form.full_name.trim()) {
+        errs.full_name = 'Full name is required';
+      }
+      if (!form.email || !form.email.trim()) {
+        errs.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+        errs.email = 'Please enter a valid email address';
+      }
+      if (!form.password) {
+        errs.password = 'Password is required';
+      } else if (!isPasswordValid) {
+        errs.password = firstUnmetRule?.label || 'Password must meet all 4 requirements';
+      }
+      if (!form.confirm_password) {
+        errs.confirm_password = 'Confirm password is required';
+      } else if (form.password !== form.confirm_password) {
+        errs.confirm_password = 'Passwords do not match';
+      }
+      if (!form.date_of_birth) {
+        errs.date_of_birth = 'Date of birth is required';
+      }
+      if (!form.gender) {
+        errs.gender = 'Gender is required';
+      }
+      if (!form.student_phone) {
+        errs.student_phone = 'Student contact number is required';
+      } else if (form.student_phone.length !== 11) {
+        errs.student_phone = `Phone number must be exactly 11 digits (${form.student_phone.length}/11)`;
+      }
+      if (!form.address || !form.address.trim()) {
+        errs.address = 'Current address is required';
+      }
+      if (!bFormDoc) {
+        errs.bFormDoc = 'CNIC / B-Form document is required';
+      }
+    }
+
+    if (step === 2) {
+      if (!form.guardian_relation) {
+        errs.guardian_relation = 'Guardian relation is required';
+      }
+      if (!form.father_name || !form.father_name.trim()) {
+        errs.father_name = "Father's name is required";
+      }
+      if (!form.mother_name || !form.mother_name.trim()) {
+        errs.mother_name = "Mother's name is required";
+      }
+      if (!form.father_cnic) {
+        errs.father_cnic = `${form.guardian_relation || 'Parent'} CNIC is required`;
+      } else if (!/^\d{5}-\d{7}-\d{1}$/.test(form.father_cnic)) {
+        errs.father_cnic = 'CNIC format must be: 00000-0000000-0';
+      }
+      if (!form.contact_number_1) {
+        errs.contact_number_1 = 'Contact number 1 is required';
+      } else if (form.contact_number_1.length !== 11) {
+        errs.contact_number_1 = `Contact number 1 must be exactly 11 digits (${form.contact_number_1.length}/11)`;
+      }
+      if (form.contact_number_2 && form.contact_number_2.length !== 11) {
+        errs.contact_number_2 = `Contact number 2 must be exactly 11 digits (${form.contact_number_2.length}/11)`;
+      }
+      if (!form.parent_email || !form.parent_email.trim()) {
+        errs.parent_email = 'Parent email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.parent_email.trim())) {
+        errs.parent_email = 'Please enter a valid email address';
+      }
+      if (!parentCnicFront) {
+        errs.parentCnicFront = 'CNIC front side document is required';
+      }
+      if (!parentCnicBack) {
+        errs.parentCnicBack = 'CNIC back side document is required';
+      }
+
+      if (!addressForm.current_city || !addressForm.current_city.trim()) {
+        errs.current_city = 'Current city is required';
+      }
+      if (!addressForm.current_address || !addressForm.current_address.trim()) {
+        errs.current_address = 'Current street / house address is required';
+      }
+
+      if (!addressForm.sameAsCurrent) {
+        if (!addressForm.permanent_city || !addressForm.permanent_city.trim()) {
+          errs.permanent_city = 'Permanent city is required';
+        }
+        if (!addressForm.permanent_address || !addressForm.permanent_address.trim()) {
+          errs.permanent_address = 'Permanent street / house address is required';
+        }
+      }
+    }
+
+    if (step === 3) {
+      if (!form.class_id) {
+        errs.class_id = 'Please select a class';
+      }
+      if (!form.medium) {
+        errs.medium = 'Please select a medium';
+      }
+    }
+
+    return errs;
+  };
+
+  const handleNextStep = (targetStep) => {
+    setError('');
+    const currentErrs = validateStep(currentStep);
+    if (Object.keys(currentErrs).length > 0) {
+      setFieldErrors(prev => ({ ...prev, ...currentErrs }));
+      setError('Please fill all required fields properly before proceeding.');
+      if (currentStep === 2) {
+        if (currentErrs.current_city || currentErrs.current_address) {
+          setAddressTab('current');
+        } else if (currentErrs.permanent_city || currentErrs.permanent_address) {
+          setAddressTab('permanent');
+        }
+      }
+      return false;
+    }
+    setFieldErrors({});
+    setError('');
+    setCurrentStep(targetStep);
+    return true;
+  };
+
+  const handleTabClick = (targetStep) => {
+    if (targetStep <= currentStep) {
+      setError('');
+      setCurrentStep(targetStep);
+      return;
+    }
+    for (let s = 1; s < targetStep; s++) {
+      const errs = validateStep(s);
+      if (Object.keys(errs).length > 0) {
+        setCurrentStep(s);
+        setFieldErrors(errs);
+        setError(`Please complete Step ${s} before proceeding.`);
+        if (s === 2) {
+          if (errs.current_city || errs.current_address) {
+            setAddressTab('current');
+          } else if (errs.permanent_city || errs.permanent_address) {
+            setAddressTab('permanent');
+          }
+        }
+        return;
+      }
+    }
+    setFieldErrors({});
+    setError('');
+    setCurrentStep(targetStep);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!isPasswordValid) {
-      return setError('Password must meet all 4 requirements: at least 6 characters, uppercase, lowercase, and a number.');
+    const s1 = validateStep(1);
+    if (Object.keys(s1).length > 0) {
+      setCurrentStep(1);
+      setFieldErrors(s1);
+      setError('Please correct the errors in Step 1 (Personal Details).');
+      return;
     }
-    if (form.password !== form.confirm_password) {
-      return setError('Passwords do not match.');
+    const s2 = validateStep(2);
+    if (Object.keys(s2).length > 0) {
+      setCurrentStep(2);
+      setFieldErrors(s2);
+      if (s2.current_city || s2.current_address) setAddressTab('current');
+      else if (s2.permanent_city || s2.permanent_address) setAddressTab('permanent');
+      setError('Please correct the errors in Step 2 (Parent Details).');
+      return;
     }
-    if (!/^\d{5}-\d{7}-\d{1}$/.test(form.father_cnic)) {
-      return setError(`${form.guardian_relation || 'Parent'} CNIC format must be: 00000-0000000-0`);
-    }
-    if (!form.parent_email || !form.parent_email.trim()) {
-      return setError('Parent email is required.');
+    const s3 = validateStep(3);
+    if (Object.keys(s3).length > 0) {
+      setFieldErrors(s3);
+      setError('Please select a class in Step 3 (Educational Details).');
+      return;
     }
 
     setLoading(true);
     try {
       const currentPart = [addressForm.current_address, addressForm.current_city, addressForm.current_province].filter(Boolean).join(', ');
       const permPart = [addressForm.permanent_address, addressForm.permanent_city, addressForm.permanent_province].filter(Boolean).join(', ');
-      const fullAddress = addressForm.sameAsCurrent
+      const parentAddress = addressForm.sameAsCurrent
         ? `Current & Permanent: ${currentPart}`
         : `Current: ${currentPart}${permPart ? ` | Permanent: ${permPart}` : ''}`;
+
+      const studentAddress = form.address ? form.address.trim() : '';
+      const fullAddress = studentAddress
+        ? (studentAddress === currentPart ? parentAddress : `Student: ${studentAddress} | Guardian: ${parentAddress}`)
+        : parentAddress;
 
       const formData = new FormData();
       Object.entries(form).forEach(([key, val]) => {
@@ -450,7 +656,7 @@ export default function RegisterPage() {
             {/* Step 1: Personal Details */}
             <button
               type="button"
-              onClick={() => setCurrentStep(1)}
+              onClick={() => handleTabClick(1)}
               style={{
                 background: currentStep === 1 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
@@ -500,7 +706,7 @@ export default function RegisterPage() {
             {/* Step 2: Parent / Guarantor Details */}
             <button
               type="button"
-              onClick={() => setCurrentStep(2)}
+              onClick={() => handleTabClick(2)}
               style={{
                 background: currentStep === 2 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
@@ -549,7 +755,7 @@ export default function RegisterPage() {
             {/* Step 3: Educational Institution Detail */}
             <button
               type="button"
-              onClick={() => setCurrentStep(3)}
+              onClick={() => handleTabClick(3)}
               style={{
                 background: currentStep === 3 ? 'rgba(255, 204, 77, 0.15)' : 'none',
                 border: 'none',
@@ -601,18 +807,40 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
             {/* STEP 1: Personal Details */}
             {currentStep === 1 && (
               <>
                 <FormSection title="Student Information" tone="primary">
-                  <Field label="Full Name *">
-                    <input name="full_name" value={form.full_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Student full name" required />
+                  <Field label="Full Name *" error={fieldErrors.full_name}>
+                    <input
+                      name="full_name"
+                      value={form.full_name}
+                      onChange={handleChange}
+                      autoCapitalize="words"
+                      className="form-input"
+                      placeholder="Student full name"
+                      style={{
+                        borderColor: fieldErrors.full_name ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.full_name ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Email *">
-                    <input name="email" type="email" value={form.email} onChange={handleChange} className="form-input" placeholder="student@email.com" required />
+                  <Field label="Email *" error={fieldErrors.email}>
+                    <input
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="student@email.com"
+                      style={{
+                        borderColor: fieldErrors.email ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.email ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Password *">
+                  <Field label="Password *" error={fieldErrors.password}>
                     <div style={{ position: 'relative' }}>
                       <input
                         name="password"
@@ -621,11 +849,10 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         className="form-input"
                         placeholder="Min 6 characters"
-                        required
                         style={{
                           paddingRight: 40,
-                          borderColor: form.password && !isPasswordValid ? '#ef4444' : undefined,
-                          boxShadow: form.password && !isPasswordValid ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
+                          borderColor: (form.password && !isPasswordValid) || fieldErrors.password ? '#ef4444' : undefined,
+                          boxShadow: (form.password && !isPasswordValid) || fieldErrors.password ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
                         }}
                       />
                       <button
@@ -644,7 +871,7 @@ export default function RegisterPage() {
                       </p>
                     )}
                   </Field>
-                  <Field label="Confirm Password *">
+                  <Field label="Confirm Password *" error={fieldErrors.confirm_password}>
                     <div style={{ position: 'relative' }}>
                       <input
                         name="confirm_password"
@@ -653,11 +880,10 @@ export default function RegisterPage() {
                         onChange={handleChange}
                         className="form-input"
                         placeholder="Confirm password"
-                        required
                         style={{
                           paddingRight: 40,
-                          borderColor: form.confirm_password && form.password !== form.confirm_password ? '#ef4444' : undefined,
-                          boxShadow: form.confirm_password && form.password !== form.confirm_password ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
+                          borderColor: (form.confirm_password && form.password !== form.confirm_password) || fieldErrors.confirm_password ? '#ef4444' : undefined,
+                          boxShadow: (form.confirm_password && form.password !== form.confirm_password) || fieldErrors.confirm_password ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : undefined,
                         }}
                       />
                       <button
@@ -676,7 +902,7 @@ export default function RegisterPage() {
                       </p>
                     )}
                   </Field>
-                  <Field label="Date of Birth *">
+                  <Field label="Date of Birth *" error={fieldErrors.date_of_birth}>
                     <input
                       name="date_of_birth"
                       type="date"
@@ -685,19 +911,44 @@ export default function RegisterPage() {
                       value={form.date_of_birth}
                       onChange={handleChange}
                       className="form-input"
+                      style={{
+                        borderColor: fieldErrors.date_of_birth ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.date_of_birth ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
                     />
                   </Field>
-                  <Field label="Gender *">
-                    <select name="gender" value={form.gender} onChange={handleChange} className="form-select" required>
+                  <Field label="Gender *" error={fieldErrors.gender}>
+                    <select
+                      name="gender"
+                      value={form.gender}
+                      onChange={handleChange}
+                      className="form-select"
+                      style={{
+                        borderColor: fieldErrors.gender ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.gender ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    >
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
                       <option value="Other">Other</option>
                     </select>
                   </Field>
-                  <Field label="Student Contact No *">
-                    <input name="student_phone" value={form.student_phone} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" />
+                  <Field label="Student Contact No *" error={fieldErrors.student_phone}>
+                    <input
+                      name="student_phone"
+                      value={form.student_phone}
+                      onChange={handleChange}
+                      maxLength={11}
+                      inputMode="numeric"
+                      className="form-input"
+                      placeholder="03001234567"
+                      style={{
+                        borderColor: fieldErrors.student_phone ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.student_phone ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Upload CNIC / B-Form">
+                  <Field label="Upload CNIC / B-Form *" error={fieldErrors.bFormDoc}>
                     {!bFormDoc ? (
                       <div>
                         <input
@@ -710,9 +961,25 @@ export default function RegisterPage() {
                         <label
                           htmlFor="bform-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
+                          style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            border: `1px dashed ${fieldErrors.bFormDoc ? '#ef4444' : 'var(--border-color, #cbd5e1)'}`,
+                            background: fieldErrors.bFormDoc ? '#fef2f2' : 'var(--bg-surface-2, #f8fafc)',
+                            color: fieldErrors.bFormDoc ? '#ef4444' : 'var(--text-primary)',
+                            boxShadow: fieldErrors.bFormDoc ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            width: '100%',
+                            transition: 'all 0.15s ease'
+                          }}
                         >
-                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC / B-Form
+                          <HiOutlineUpload size={16} color={fieldErrors.bFormDoc ? '#ef4444' : 'var(--primary-color, #2563eb)'} /> Upload CNIC / B-Form
                         </label>
                       </div>
                     ) : (
@@ -781,12 +1048,25 @@ export default function RegisterPage() {
                       </div>
                     )}
                   </Field>
+                  <Field label="Current Address *" wide error={fieldErrors.address}>
+                    <input
+                      name="address"
+                      value={form.address}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="House #, Street #, Sector / Area, City"
+                      style={{
+                        borderColor: fieldErrors.address ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.address ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
+                  </Field>
                 </FormSection>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => handleNextStep(2)}
                     className="btn btn-primary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', fontSize: '13.5px', fontWeight: 600 }}
                   >
@@ -800,33 +1080,109 @@ export default function RegisterPage() {
             {currentStep === 2 && (
               <>
                 <FormSection title="Parent / Guardian Information" tone="accent">
-                  <Field label="Parent / Guardian *">
-                    <select name="guardian_relation" value={form.guardian_relation} onChange={handleChange} className="form-select" required>
+                  <Field label="Parent / Guardian *" error={fieldErrors.guardian_relation}>
+                    <select
+                      name="guardian_relation"
+                      value={form.guardian_relation}
+                      onChange={handleChange}
+                      className="form-select"
+                      style={{
+                        borderColor: fieldErrors.guardian_relation ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.guardian_relation ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    >
                       <option value="Father">Father</option>
                       <option value="Mother">Mother</option>
                     </select>
                   </Field>
-                  <Field label="Father Name *">
-                    <input name="father_name" value={form.father_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Father's full name" required />
+                  <Field label="Father Name *" error={fieldErrors.father_name}>
+                    <input
+                      name="father_name"
+                      value={form.father_name}
+                      onChange={handleChange}
+                      autoCapitalize="words"
+                      className="form-input"
+                      placeholder="Father's full name"
+                      style={{
+                        borderColor: fieldErrors.father_name ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.father_name ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Mother Name *">
-                    <input name="mother_name" value={form.mother_name} onChange={handleChange} autoCapitalize="words" className="form-input" placeholder="Mother's full name" required />
+                  <Field label="Mother Name *" error={fieldErrors.mother_name}>
+                    <input
+                      name="mother_name"
+                      value={form.mother_name}
+                      onChange={handleChange}
+                      autoCapitalize="words"
+                      className="form-input"
+                      placeholder="Mother's full name"
+                      style={{
+                        borderColor: fieldErrors.mother_name ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.mother_name ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label={`${form.guardian_relation || 'Father'} CNIC *`}>
-                    <input name="father_cnic" value={form.father_cnic} onChange={handleChange} className="form-input" placeholder="00000-0000000-0" required />
+                  <Field label={`${form.guardian_relation || 'Father'} CNIC *`} error={fieldErrors.father_cnic}>
+                    <input
+                      name="father_cnic"
+                      value={form.father_cnic}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="00000-0000000-0"
+                      style={{
+                        borderColor: fieldErrors.father_cnic ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.father_cnic ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                     <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>Fill this form as per CNIC</span>
                   </Field>
-                  <Field label="Contact Number 1 *">
-                    <input name="contact_number_1" value={form.contact_number_1} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="03001234567" required />
+                  <Field label="Contact Number 1 *" error={fieldErrors.contact_number_1}>
+                    <input
+                      name="contact_number_1"
+                      value={form.contact_number_1}
+                      onChange={handleChange}
+                      maxLength={11}
+                      inputMode="numeric"
+                      className="form-input"
+                      placeholder="03001234567"
+                      style={{
+                        borderColor: fieldErrors.contact_number_1 ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.contact_number_1 ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Contact Number 2">
-                    <input name="contact_number_2" value={form.contact_number_2} onChange={handleChange} maxLength={11} inputMode="numeric" className="form-input" placeholder="Optional" />
+                  <Field label="Contact Number 2" error={fieldErrors.contact_number_2}>
+                    <input
+                      name="contact_number_2"
+                      value={form.contact_number_2}
+                      onChange={handleChange}
+                      maxLength={11}
+                      inputMode="numeric"
+                      className="form-input"
+                      placeholder="Optional"
+                      style={{
+                        borderColor: fieldErrors.contact_number_2 ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.contact_number_2 ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
-                  <Field label="Parent Email *" wide>
-                    <input name="parent_email" type="email" value={form.parent_email} onChange={handleChange} className="form-input" placeholder="parent@email.com" required />
+                  <Field label="Parent Email *" wide error={fieldErrors.parent_email}>
+                    <input
+                      name="parent_email"
+                      type="email"
+                      value={form.parent_email}
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder="parent@email.com"
+                      style={{
+                        borderColor: fieldErrors.parent_email ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.parent_email ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    />
                   </Field>
 
-                  <Field label="CNIC Front Side">
+                  <Field label="CNIC Front Side *" error={fieldErrors.parentCnicFront}>
                     {!parentCnicFront ? (
                       <div>
                         <input
@@ -839,9 +1195,25 @@ export default function RegisterPage() {
                         <label
                           htmlFor="parent-cnic-front-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
+                          style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            border: `1px dashed ${fieldErrors.parentCnicFront ? '#ef4444' : 'var(--border-color, #cbd5e1)'}`,
+                            background: fieldErrors.parentCnicFront ? '#fef2f2' : 'var(--bg-surface-2, #f8fafc)',
+                            color: fieldErrors.parentCnicFront ? '#ef4444' : 'var(--text-primary)',
+                            boxShadow: fieldErrors.parentCnicFront ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            width: '100%',
+                            transition: 'all 0.15s ease'
+                          }}
                         >
-                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC Front
+                          <HiOutlineUpload size={16} color={fieldErrors.parentCnicFront ? '#ef4444' : 'var(--primary-color, #2563eb)'} /> Upload CNIC Front
                         </label>
                       </div>
                     ) : (
@@ -911,7 +1283,7 @@ export default function RegisterPage() {
                     )}
                   </Field>
 
-                  <Field label="CNIC Back Side">
+                  <Field label="CNIC Back Side *" error={fieldErrors.parentCnicBack}>
                     {!parentCnicBack ? (
                       <div>
                         <input
@@ -924,9 +1296,25 @@ export default function RegisterPage() {
                         <label
                           htmlFor="parent-cnic-back-upload"
                           className="auth-upload-box"
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', border: '1px dashed var(--border-color, #cbd5e1)', background: 'var(--bg-surface-2, #f8fafc)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', width: '100%' }}
+                          style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            border: `1px dashed ${fieldErrors.parentCnicBack ? '#ef4444' : 'var(--border-color, #cbd5e1)'}`,
+                            background: fieldErrors.parentCnicBack ? '#fef2f2' : 'var(--bg-surface-2, #f8fafc)',
+                            color: fieldErrors.parentCnicBack ? '#ef4444' : 'var(--text-primary)',
+                            boxShadow: fieldErrors.parentCnicBack ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : 'none',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            width: '100%',
+                            transition: 'all 0.15s ease'
+                          }}
                         >
-                          <HiOutlineUpload size={16} color="var(--primary-color, #2563eb)" /> Upload CNIC Back
+                          <HiOutlineUpload size={16} color={fieldErrors.parentCnicBack ? '#ef4444' : 'var(--primary-color, #2563eb)'} /> Upload CNIC Back
                         </label>
                       </div>
                     ) : (
@@ -1070,14 +1458,13 @@ export default function RegisterPage() {
                           value={addressForm.current_province}
                           onChange={handleAddressChange}
                           className="form-select"
-                          required
                         >
                           {Object.keys(PROVINCE_CITIES).map(p => (
                             <option key={p} value={p}>{p}</option>
                           ))}
                         </select>
                       </Field>
-                      <Field label="City (Type / Search) *">
+                      <Field label="City (Type / Search) *" error={fieldErrors.current_city}>
                         <input
                           type="text"
                           name="current_city"
@@ -1087,17 +1474,23 @@ export default function RegisterPage() {
                           className="form-input"
                           placeholder="Type or select city (e.g. Gujranwala, Lahore)..."
                           autoComplete="off"
-                          required
+                          style={{
+                            borderColor: fieldErrors.current_city ? '#ef4444' : undefined,
+                            boxShadow: fieldErrors.current_city ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                          }}
                         />
                       </Field>
-                      <Field label="Current Street / House Address *" wide>
+                      <Field label="Current Street / House Address *" wide error={fieldErrors.current_address}>
                         <input
                           name="current_address"
                           value={addressForm.current_address}
                           onChange={handleAddressChange}
                           className="form-input"
                           placeholder="House #, Street #, Sector / Area"
-                          required
+                          style={{
+                            borderColor: fieldErrors.current_address ? '#ef4444' : undefined,
+                            boxShadow: fieldErrors.current_address ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                          }}
                         />
                       </Field>
                     </>
@@ -1117,6 +1510,14 @@ export default function RegisterPage() {
                                 permanent_city: checked ? prev.current_city : prev.permanent_city,
                                 permanent_address: checked ? prev.current_address : prev.permanent_address,
                               }));
+                              if (checked) {
+                                setFieldErrors(prev => {
+                                  const next = { ...prev };
+                                  delete next.permanent_city;
+                                  delete next.permanent_address;
+                                  return next;
+                                });
+                              }
                             }}
                             style={{ width: '16px', height: '16px', accentColor: '#2563eb' }}
                           />
@@ -1130,14 +1531,13 @@ export default function RegisterPage() {
                           onChange={handleAddressChange}
                           className="form-select"
                           disabled={addressForm.sameAsCurrent}
-                          required
                         >
                           {Object.keys(PROVINCE_CITIES).map(p => (
                             <option key={p} value={p}>{p}</option>
                           ))}
                         </select>
                       </Field>
-                      <Field label="City (Type / Search) *">
+                      <Field label="City (Type / Search) *" error={fieldErrors.permanent_city}>
                         <input
                           type="text"
                           name="permanent_city"
@@ -1148,10 +1548,13 @@ export default function RegisterPage() {
                           placeholder="Type or select city (e.g. Gujranwala, Lahore)..."
                           autoComplete="off"
                           disabled={addressForm.sameAsCurrent}
-                          required
+                          style={{
+                            borderColor: fieldErrors.permanent_city ? '#ef4444' : undefined,
+                            boxShadow: fieldErrors.permanent_city ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                          }}
                         />
                       </Field>
-                      <Field label="Permanent Street / House Address *" wide>
+                      <Field label="Permanent Street / House Address *" wide error={fieldErrors.permanent_address}>
                         <input
                           name="permanent_address"
                           value={addressForm.sameAsCurrent ? addressForm.current_address : addressForm.permanent_address}
@@ -1159,7 +1562,10 @@ export default function RegisterPage() {
                           className="form-input"
                           placeholder="Permanent House #, Street #, Village / Town"
                           disabled={addressForm.sameAsCurrent}
-                          required
+                          style={{
+                            borderColor: fieldErrors.permanent_address ? '#ef4444' : undefined,
+                            boxShadow: fieldErrors.permanent_address ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                          }}
                         />
                       </Field>
                     </>
@@ -1169,7 +1575,7 @@ export default function RegisterPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(1)}
+                    onClick={() => { setError(''); setCurrentStep(1); }}
                     className="btn btn-secondary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 600 }}
                   >
@@ -1177,7 +1583,7 @@ export default function RegisterPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => handleNextStep(3)}
                     className="btn btn-primary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px', fontSize: '14px', fontWeight: 600 }}
                   >
@@ -1191,14 +1597,32 @@ export default function RegisterPage() {
             {currentStep === 3 && (
               <>
                 <FormSection title="Academic Information" tone="warm">
-                  <Field label="Class *">
-                    <select name="class_id" value={form.class_id} onChange={handleChange} className="form-select" required>
+                  <Field label="Class *" error={fieldErrors.class_id}>
+                    <select
+                      name="class_id"
+                      value={form.class_id}
+                      onChange={handleChange}
+                      className="form-select"
+                      style={{
+                        borderColor: fieldErrors.class_id ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.class_id ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    >
                       <option value="">Select Class</option>
                       {classes.map(c => <option key={c.id} value={c.id}>{c.display_name}</option>)}
                     </select>
                   </Field>
-                  <Field label="Medium *">
-                    <select name="medium" value={form.medium} onChange={handleChange} className="form-select">
+                  <Field label="Medium *" error={fieldErrors.medium}>
+                    <select
+                      name="medium"
+                      value={form.medium}
+                      onChange={handleChange}
+                      className="form-select"
+                      style={{
+                        borderColor: fieldErrors.medium ? '#ef4444' : undefined,
+                        boxShadow: fieldErrors.medium ? '0 0 0 2px rgba(239, 68, 68, 0.15)' : undefined
+                      }}
+                    >
                       <option value="English">English Medium</option>
                       <option value="Urdu">Urdu Medium</option>
                     </select>
@@ -1239,7 +1663,7 @@ export default function RegisterPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={() => { setError(''); setCurrentStep(2); }}
                     className="btn btn-secondary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 18px', fontSize: '13.5px', fontWeight: 600 }}
                   >
@@ -1374,11 +1798,16 @@ function FormSection({ title, tone, children }) {
   );
 }
 
-function Field({ label, wide, children }) {
+function Field({ label, wide, error, children }) {
   return (
     <label className={wide ? 'auth-field wide' : 'auth-field'}>
-      <span className="form-label">{label}</span>
+      <span className="form-label" style={{ color: error ? '#ef4444' : undefined }}>{label}</span>
       {children}
+      {error && (
+        <span style={{ fontSize: 11.5, color: '#ef4444', fontWeight: 600, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+          ⚠️ {error}
+        </span>
+      )}
     </label>
   );
 }

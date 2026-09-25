@@ -1,4 +1,4 @@
-const { sequelize, User, StudentProfile, TeacherProfile, ParentProfile, Class, Subject, ClassSubject, Course, Enrollment, Exam, ExamAttempt, Attendance, Fee, Book, Notification, Document, Settings } = require('../models');
+const { sequelize, User, StudentProfile, TeacherProfile, ParentProfile, Class, Subject, ClassSubject, Course, Enrollment, Exam, ExamQuestion, ExamAttempt, Attendance, Fee, Book, LiveClass, Notification, Document, Settings } = require('../models');
 const { Op } = require('sequelize');
 const bcrypt = require('bcryptjs');
 
@@ -208,6 +208,25 @@ exports.updateStudent = async (req, res) => {
 
     const student = await User.findOne({ where: { id, role: 'student' } });
     if (!student) return res.status(404).json({ error: 'Student not found.' });
+
+    if (phone !== undefined && phone) {
+      const clean = String(phone).replace(/[^0-9]/g, '');
+      if (clean.length !== 11) {
+        return res.status(400).json({ error: 'Phone number must be exactly 11 digits.' });
+      }
+    }
+    if (contact_number_1 !== undefined && contact_number_1) {
+      const clean = String(contact_number_1).replace(/[^0-9]/g, '');
+      if (clean.length !== 11) {
+        return res.status(400).json({ error: 'Contact number 1 must be exactly 11 digits.' });
+      }
+    }
+    if (contact_number_2 !== undefined && contact_number_2) {
+      const clean = String(contact_number_2).replace(/[^0-9]/g, '');
+      if (clean.length !== 11) {
+        return res.status(400).json({ error: 'Contact number 2 must be exactly 11 digits.' });
+      }
+    }
 
     const updatedPhone = phone !== undefined ? phone : (contact_number_1 !== undefined ? contact_number_1 : student.phone);
     const updatedContact1 = contact_number_1 !== undefined ? contact_number_1 : (phone !== undefined ? phone : updatedPhone);
@@ -789,16 +808,16 @@ exports.getResultsStats = async (req, res) => {
     const attempts = await ExamAttempt.findAll({
       where: { status: 'graded' },
       include: [
-        { model: User, as: 'student', attributes: ['id', 'full_name'] },
+        { model: User, as: 'student', attributes: ['id', 'full_name', 'email', 'avatar'] },
         { 
           model: Exam, 
           as: 'exam',
-          attributes: ['id', 'title', 'total_marks'],
+          attributes: ['id', 'title', 'type', 'total_marks', 'passing_marks'],
           include: [{ model: Course, as: 'course', include: [{ model: Class, as: 'class' }, { model: Subject, as: 'subject' }] }]
         }
       ],
       order: [['created_at', 'DESC']],
-      limit: 100
+      limit: 500
     });
 
     res.json({ results: attempts });
@@ -1080,20 +1099,74 @@ exports.getExams = async (req, res) => {
   try {
     const exams = await Exam.findAll({
       include: [
-        { model: User, as: 'teacher', attributes: ['id', 'full_name'] },
+        { model: User, as: 'teacher', attributes: ['id', 'full_name', 'email', 'avatar'] },
         { 
           model: Course, 
           as: 'course',
           include: [
-            { model: Class, as: 'class', attributes: ['grade_level', 'section'] },
-            { model: Subject, as: 'subject', attributes: ['name'] }
+            { model: Class, as: 'class', attributes: ['id', 'grade_level', 'section', 'name', 'display_name'] },
+            { model: Subject, as: 'subject', attributes: ['id', 'name', 'code'] }
           ]
+        },
+        {
+          model: ExamQuestion,
+          as: 'questions'
         }
-      ]
+      ],
+      order: [['created_at', 'DESC']]
     });
     res.json({ exams });
   } catch (err) {
     console.error('Get exams error:', err);
     res.status(500).json({ error: 'Failed to fetch exams.' });
+  }
+};
+
+// ==================== LIVE CLASSES OVERVIEW ====================
+exports.getAllLiveClasses = async (req, res) => {
+  try {
+    const { status, class_id, teacher_id } = req.query;
+    const where = {};
+    if (status && status !== 'all') where.status = status;
+    if (teacher_id && teacher_id !== 'all') where.teacher_id = teacher_id;
+
+    const courseWhere = {};
+    if (class_id && class_id !== 'all') courseWhere.class_id = class_id;
+
+    const liveClasses = await LiveClass.findAll({
+      where,
+      include: [
+        { model: User, as: 'teacher', attributes: ['id', 'full_name', 'email', 'avatar', 'phone'] },
+        { 
+          model: Course, 
+          as: 'course',
+          where: Object.keys(courseWhere).length > 0 ? courseWhere : undefined,
+          include: [
+            { model: Class, as: 'class', attributes: ['id', 'grade_level', 'section', 'name', 'display_name'] },
+            { model: Subject, as: 'subject', attributes: ['id', 'name', 'code'] }
+          ]
+        }
+      ],
+      order: [['scheduled_at', 'DESC'], ['created_at', 'DESC']]
+    });
+
+    res.json({ liveClasses });
+  } catch (err) {
+    console.error('Get all live classes error:', err);
+    res.status(500).json({ error: 'Failed to fetch live classes.' });
+  }
+};
+
+exports.deleteLiveClass = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const liveClass = await LiveClass.findByPk(id);
+    if (!liveClass) return res.status(404).json({ error: 'Live class not found.' });
+
+    await liveClass.destroy();
+    res.json({ message: 'Live class deleted successfully.' });
+  } catch (err) {
+    console.error('Delete live class error:', err);
+    res.status(500).json({ error: 'Failed to delete live class.' });
   }
 };

@@ -12,6 +12,7 @@ export default function AdminStudents() {
   const [deleteModal, setDeleteModal] = useState(null); // student obj to delete
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [errors, setErrors] = useState({});
 
   const loadStudents = () => {
     api.get(`/admin/students?status=${filter}`)
@@ -27,10 +28,26 @@ export default function AdminStudents() {
   /* ── Edit handler ── */
   const handleEdit = async (e) => {
     e.preventDefault();
-    setSaving(true);
     setMsg('');
+
+    const phoneVal = (editModal.phone || editModal.studentProfile?.contact_number_1 || '').replace(/[^0-9]/g, '');
+    const contact2 = (editModal.studentProfile?.contact_number_2 || '').replace(/[^0-9]/g, '');
+
+    const newErrors = {};
+    if (!phoneVal || phoneVal.length !== 11) {
+      newErrors.phone = 'Phone number must be exactly 11 digits';
+    }
+    if (contact2 && contact2.length !== 11) {
+      newErrors.contact_number_2 = 'Contact number 2 must be exactly 11 digits';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setSaving(true);
     try {
-      const phoneVal = editModal.phone || editModal.studentProfile?.contact_number_1 || '';
       await api.put(`/admin/students/${editModal.id}`, {
         full_name: editModal.full_name,
         phone: phoneVal,
@@ -40,7 +57,7 @@ export default function AdminStudents() {
         mother_name: editModal.studentProfile?.mother_name,
         father_cnic: editModal.studentProfile?.father_cnic,
         contact_number_1: phoneVal,
-        contact_number_2: editModal.studentProfile?.contact_number_2,
+        contact_number_2: contact2,
         parent_email: editModal.studentProfile?.parent_email,
         class_id: editModal.studentProfile?.class_id,
         medium: editModal.studentProfile?.medium,
@@ -51,7 +68,7 @@ export default function AdminStudents() {
       });
       setMsg('✅ Student updated successfully!');
       loadStudents();
-      setTimeout(() => { setEditModal(null); setMsg(''); }, 800);
+      setTimeout(() => { setEditModal(null); setMsg(''); setErrors({}); }, 800);
     } catch (err) {
       setMsg('❌ ' + (err.response?.data?.error || 'Update failed.'));
     }
@@ -71,17 +88,32 @@ export default function AdminStudents() {
     setSaving(false);
   };
 
-  const field = (label, value, onChange, type = 'text', opts = null, maxLength = undefined) => (
+  const field = (label, value, onChange, type = 'text', opts = null, maxLength = undefined, error = null) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</label>
+      <label style={{ fontSize: 12, fontWeight: 600, color: error ? '#ef4444' : 'var(--text-secondary)' }}>{label}</label>
       {opts ? (
         <select value={value || ''} onChange={e => onChange(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-input)', fontSize: 13, background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+          style={{ padding: '8px 10px', borderRadius: 8, border: `1px solid ${error ? '#ef4444' : 'var(--border-input)'}`, fontSize: 13, background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
           {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       ) : (
         <input type={type} maxLength={maxLength} value={value || ''} onChange={e => onChange(e.target.value)}
-          style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-input)', fontSize: 13, color: 'var(--text-primary)', background: 'var(--bg-input)' }} />
+          style={{
+            padding: '8px 10px',
+            borderRadius: 8,
+            border: `1px solid ${error ? '#ef4444' : 'var(--border-input)'}`,
+            fontSize: 13,
+            color: 'var(--text-primary)',
+            background: 'var(--bg-input)',
+            outline: error ? 'none' : undefined,
+            boxShadow: error ? '0 0 0 1px #ef4444' : 'none',
+            transition: 'border-color 0.15s, box-shadow 0.15s'
+          }} />
+      )}
+      {error && (
+        <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 600, marginTop: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
+          ⚠️ {error}
+        </span>
       )}
     </div>
   );
@@ -158,6 +190,8 @@ export default function AdminStudents() {
                     <button
                       onClick={() => {
                         const currentPhone = s.phone || s.studentProfile?.contact_number_1 || '';
+                        setErrors({});
+                        setMsg('');
                         setEditModal({
                           ...s,
                           phone: currentPhone,
@@ -391,7 +425,16 @@ export default function AdminStudents() {
                       phone: clean,
                       studentProfile: { ...p.studentProfile, contact_number_1: clean }
                     }));
-                  }, 'text', null, 11)}
+                    if (clean.length > 0 && clean.length < 11) {
+                      setErrors(prev => ({ ...prev, phone: `Phone number must be 11 digits (${clean.length}/11)` }));
+                    } else {
+                      setErrors(prev => {
+                        const next = { ...prev };
+                        delete next.phone;
+                        return next;
+                      });
+                    }
+                  }, 'text', null, 11, errors.phone)}
                   {field('Gender', editModal.gender || editModal.studentProfile?.gender, v => {
                     setEditModal(p => ({ ...p, gender: v, studentProfile: { ...p.studentProfile, gender: v } }));
                   }, 'text', [
@@ -427,8 +470,29 @@ export default function AdminStudents() {
                       phone: clean,
                       studentProfile: { ...p.studentProfile, contact_number_1: clean }
                     }));
-                  }, 'text', null, 11)}
-                  {field('Contact 2', editModal.studentProfile?.contact_number_2, v => setProfile('contact_number_2', v.replace(/[^0-9]/g, '').slice(0, 11)), 'text', null, 11)}
+                    if (clean.length > 0 && clean.length < 11) {
+                      setErrors(prev => ({ ...prev, phone: `Phone number must be 11 digits (${clean.length}/11)` }));
+                    } else {
+                      setErrors(prev => {
+                        const next = { ...prev };
+                        delete next.phone;
+                        return next;
+                      });
+                    }
+                  }, 'text', null, 11, errors.phone)}
+                  {field('Contact 2', editModal.studentProfile?.contact_number_2, v => {
+                    const clean = v.replace(/[^0-9]/g, '').slice(0, 11);
+                    setProfile('contact_number_2', clean);
+                    if (clean.length > 0 && clean.length < 11) {
+                      setErrors(prev => ({ ...prev, contact_number_2: `Contact 2 must be 11 digits (${clean.length}/11)` }));
+                    } else {
+                      setErrors(prev => {
+                        const next = { ...prev };
+                        delete next.contact_number_2;
+                        return next;
+                      });
+                    }
+                  }, 'text', null, 11, errors.contact_number_2)}
                   {field('Class', editModal.studentProfile?.class_id, v => setProfile('class_id', v), 'text',
                     [{ value: '', label: '— Select Class —' }, ...classes.map(c => ({ value: c.id, label: c.display_name }))]
                   )}

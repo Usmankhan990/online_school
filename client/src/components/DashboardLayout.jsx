@@ -65,6 +65,7 @@ const NAV_CONFIG = {
     { label: 'Subjects', path: '/admin/subjects', icon: 'subjects' },
     { section: 'Academics' },
     { label: 'Time Table', path: '/admin/timetable', icon: 'timetable' },
+    { label: 'Live Classes', path: '/admin/live-classes', icon: 'live' },
     { label: 'Courses', path: '/admin/courses', icon: 'courses' },
     { label: 'Books', path: '/admin/books', icon: 'books' },
     { label: 'Exams', path: '/admin/exams', icon: 'exams' },
