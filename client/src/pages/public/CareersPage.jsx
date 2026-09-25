@@ -930,7 +930,7 @@ export default function CareersPage() {
                     {/* Form Title & Top Banner */}
                     <div
                       style={{
-                        padding: '18px 24px',
+                        padding: '18px 72px 18px 24px',
                         background: '#1C1917',
                         color: 'white',
                         borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -939,6 +939,7 @@ export default function CareersPage() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: 16,
+                        position: 'relative',
                       }}
                     >
                       <div>
@@ -994,6 +995,9 @@ export default function CareersPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 18,
+                            position: 'absolute',
+                            top: 18,
+                            right: 24,
                           }}
                           title="Close"
                         >
