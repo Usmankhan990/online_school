@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/online_school/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   timeout: 30000,
 });
 
-export const FILE_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : '/online_school';
+export const FILE_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api$/, '') : '';
 
 
 // Attach JWT token
@@ -28,7 +28,7 @@ api.interceptors.response.use(
         window.location.pathname.endsWith(p) || window.location.pathname === p
       );
       if (!isPublic) {
-        window.location.href = '/online_school/login';
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
