@@ -17,7 +17,7 @@ export default function PrivacyPage() {
             { t: 'Data Protection', c: 'All data is securely stored and encrypted. We use JWT-based authentication and bcrypt password hashing. Only authorized school administrators have access to student data.' },
             { t: 'Third-Party Sharing', c: 'We do not sell or share your personal information with third parties. Textbook resources are provided via PCTB and Ustad360 for educational purposes only.' },
             { t: 'Data Retention', c: 'Student records are retained for the duration of enrollment plus 2 years. You may request data deletion by contacting our admin office.' },
-            { t: 'Contact', c: 'For privacy-related concerns, email us at info@usmanonlineschool.com.' },
+            { t: 'Contact', c: 'For privacy-related concerns, email us at info@taleemghar.com.' },
           ].map((s, i) => (
             <div key={i} style={{ marginBottom: 24 }}>
               <h3 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{s.t}</h3>

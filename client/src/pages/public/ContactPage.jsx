@@ -37,8 +37,8 @@ export default function ContactPage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { icon: '📧', title: 'Email', value: 'info@usmanonlineschool.com' },
-              { icon: '📞', title: 'Phone', value: '+92 300 1234567' },
+              { icon: '📧', title: 'Email', value: 'info@taleemghar.com', href: 'mailto:info@taleemghar.com' },
+              { icon: '📞', title: 'Phone', value: '03095418441', href: 'tel:03095418441' },
               { icon: '📍', title: 'Address', value: 'Lahore, Punjab, Pakistan' },
               { icon: '⏰', title: 'Office Hours', value: 'Mon-Sat: 9:00 AM - 5:00 PM' },
             ].map(c => (
@@ -46,7 +46,11 @@ export default function ContactPage() {
                 <span style={{ fontSize: 28 }}>{c.icon}</span>
                 <div>
                   <p style={{ fontSize: 12, color: 'var(--text-tertiary, #8C827A)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{c.title}</p>
-                  <p style={{ color: 'var(--text-primary, #1C1917)', fontWeight: 600, fontSize: 15 }}>{c.value}</p>
+                  {c.href ? (
+                    <a href={c.href} style={{ color: 'var(--text-primary, #1C1917)', fontWeight: 600, fontSize: 15, textDecoration: 'none' }}>{c.value}</a>
+                  ) : (
+                    <p style={{ color: 'var(--text-primary, #1C1917)', fontWeight: 600, fontSize: 15 }}>{c.value}</p>
+                  )}
                 </div>
               </div>
             ))}
