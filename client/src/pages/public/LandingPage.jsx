@@ -218,12 +218,12 @@ function PublicNav() {
 }
 
 const SOCIAL_LINKS = [
-  { name: 'WhatsApp', icon: FaWhatsapp, href: '#' },
-  { name: 'Instagram', icon: FaInstagram, href: '#' },
-  { name: 'Facebook', icon: FaFacebookF, href: '#' },
-  { name: 'LinkedIn', icon: FaLinkedinIn, href: '#' },
-  { name: 'Twitter', icon: FaXTwitter, href: '#' },
-  { name: 'TikTok', icon: FaTiktok, href: '#' },
+  { name: 'WhatsApp', icon: FaWhatsapp, href: 'https://whatsapp.com/channel/0029VbDjfv323n3nkQJLDR30' },
+  { name: 'Instagram', icon: FaInstagram, href: 'https://www.instagram.com/taleemghar1/' },
+  { name: 'Facebook', icon: FaFacebookF, href: 'https://www.facebook.com/TaleemGhar11' },
+  { name: 'LinkedIn', icon: FaLinkedinIn, href: 'https://www.linkedin.com/company/taleem-ghar/' },
+  { name: 'Twitter', icon: FaXTwitter, href: 'https://x.com/TaleemGhar1' },
+  { name: 'TikTok', icon: FaTiktok, href: 'https://www.tiktok.com/@taleem.ghar1?is_from_webapp=1&sender_device=pc' },
 ];
 
 function Footer() {
@@ -274,9 +274,10 @@ function Footer() {
                   <a
                     key={s.name}
                     href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={s.name}
                     title={s.name}
-                    onClick={(e) => { if (s.href === '#') e.preventDefault(); }}
                     style={{
                       width: 36,
                       height: 36,
@@ -371,9 +372,10 @@ function Footer() {
                 <a
                   key={s.name}
                   href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={s.name}
                   title={s.name}
-                  onClick={(e) => { if (s.href === '#') e.preventDefault(); }}
                   style={{
                     width: 28,
                     height: 28,
