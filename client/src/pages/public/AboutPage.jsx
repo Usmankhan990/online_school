@@ -12,7 +12,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section style={{ maxWidth: 800, margin: '0 auto', padding: '64px 24px' }}>
+      <section style={{ maxWidth: 1400, width: '100%', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
         <div className="card" style={{ padding: 40, borderRadius: 24, border: '1px solid var(--border-light, #EBE4D5)' }}>
           <h2 style={{ color: 'var(--text-primary, #1C1917)', fontSize: 28, fontWeight: 800, marginBottom: 16 }}>Our Mission</h2>
           <p style={{ color: 'var(--text-secondary, #57534E)', fontSize: 16, lineHeight: 1.8, marginBottom: 24 }}>

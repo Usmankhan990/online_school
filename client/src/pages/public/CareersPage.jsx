@@ -600,7 +600,7 @@ export default function CareersPage() {
         </section>
 
         {/* ═════════ Teaching Perks / Highlights ═════════ */}
-        <section style={{ maxWidth: 1140, margin: '-24px auto 48px', padding: '0 20px', position: 'relative', zIndex: 3 }}>
+        <section style={{ maxWidth: 1600, width: '100%', margin: '-24px auto 48px', padding: '0 clamp(16px, 3.5vw, 48px)', position: 'relative', zIndex: 3 }}>
           <div
             style={{
               display: 'grid',
@@ -633,7 +633,7 @@ export default function CareersPage() {
         </section>
 
         {/* ═════════ Open Positions / Job Posts ═════════ */}
-        <section id="open-positions" style={{ maxWidth: 1140, margin: '0 auto 48px', padding: '0 20px' }}>
+        <section id="open-positions" style={{ maxWidth: 1600, width: '100%', margin: '0 auto 48px', padding: '0 clamp(16px, 3.5vw, 48px)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 28 }}>
             <div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#C05621', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6 }}>

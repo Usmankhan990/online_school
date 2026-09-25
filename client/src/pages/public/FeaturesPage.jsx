@@ -27,7 +27,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
+      <section style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
             {modules.map(m => (
               <div

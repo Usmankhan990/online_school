@@ -112,7 +112,7 @@ export default function AdmissionsPage() {
         </section>
 
         {/* Admission Steps */}
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3vw, 32px)' }}>
+        <section style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>
               Step-by-Step Guide
@@ -179,8 +179,8 @@ export default function AdmissionsPage() {
         </section>
 
         {/* Academic Levels Offered */}
-        <section style={{ background: 'var(--bg-surface-2)', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3vw, 32px)' }}>
-          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <section style={{ background: 'var(--bg-surface-2)', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
+          <div style={{ maxWidth: 1600, width: '100%', margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 40 }}>
               <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>
                 Grade Levels
@@ -238,7 +238,7 @@ export default function AdmissionsPage() {
         </section>
 
         {/* Required Documents */}
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3vw, 32px)' }}>
+        <section style={{ maxWidth: 1600, width: '100%', margin: '0 auto', padding: 'clamp(40px, 6vw, 64px) clamp(16px, 3.5vw, 48px)' }}>
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <span style={{ background: 'rgba(217, 119, 6, 0.1)', color: '#D97706', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '5px 16px', borderRadius: 999, display: 'inline-block' }}>
               Checklist
