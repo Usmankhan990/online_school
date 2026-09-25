@@ -3,17 +3,17 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  base: '/online_school/',
+  base: '/',
   plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
     hmr: { overlay: false },
     proxy: {
-      '/online_school/api': {
+      '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
-      '/online_school/uploads': {
+      '/uploads': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },

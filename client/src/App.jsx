@@ -141,7 +141,7 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter basename="/online_school">
+    <BrowserRouter>
       <ScrollToTop />
       <LanguageRouteSync />
       <AuthProvider>
